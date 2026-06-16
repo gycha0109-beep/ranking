@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PreviewControlPanel from './PreviewControlPanel'
+import SafeImage from '@/components/SafeImage'
 import { 
   ArrowLeft, 
   Award, 
@@ -99,6 +100,7 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
         {/* 1. 발행 제어 본부 컨트롤 패널 (클라이언트 컴포넌트 마운트) */}
         <PreviewControlPanel 
           rankingId={ranking.id}
+          rankingSlug={ranking.slug}
           status={ranking.status}
           validation={validation}
           isPublishable={isPublishable}
@@ -302,13 +304,11 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
 
                           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-white/5 bg-slate-900 shrink-0 flex items-center justify-center relative">
                             {entry.items?.image_url ? (
-                              <img 
+                              <SafeImage 
                                 src={entry.items.image_url} 
                                 alt={entry.items.title} 
                                 className="w-full h-full object-cover" 
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100'
-                                }}
+                                fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100"
                               />
                             ) : (
                               <Award className="w-6 h-6 text-slate-700" />

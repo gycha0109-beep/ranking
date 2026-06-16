@@ -51,7 +51,14 @@ export default async function AdminRankingsPage() {
               랭킹 문서를 생성하고, 평가 기준 및 상세 순위 엔트리를 작성하여 최종 검증 후 발행합니다.
             </p>
           </div>
-          <div>
+          <div className="flex gap-2">
+            <Link 
+              href="/admin/rankings/quick/new"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 border border-purple-500/30 text-white transition-all flex items-center gap-1.5 shadow-lg shadow-purple-600/15 shrink-0"
+            >
+              <Sparkles className="w-4 h-4" />
+              간편 작성
+            </Link>
             <Link 
               href="/admin/rankings/new"
               className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 border border-indigo-500/30 text-white transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/15 shrink-0"

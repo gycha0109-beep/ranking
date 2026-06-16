@@ -17,6 +17,7 @@ import {
 
 interface Props {
   rankingId: string
+  rankingSlug: string
   status: 'draft' | 'published' | 'archived'
   validation: {
     hasTitle: boolean
@@ -31,6 +32,7 @@ interface Props {
 
 export default function PreviewControlPanel({
   rankingId,
+  rankingSlug,
   status,
   validation,
   isPublishable
@@ -234,7 +236,7 @@ export default function PreviewControlPanel({
 
           {status === 'published' && (
             <Link
-              href={`/rankings/${rankingId}`} // 발행된 경우 공개 경로가 유효하므로 직접 상세 링크로 이동해서 검수 가능
+              href={`/rankings/${rankingSlug}`} // 발행된 경우 공개 경로가 유효하므로 직접 상세 링크로 이동해서 검수 가능
               target="_blank"
               className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-slate-300 text-center transition-all flex items-center justify-center gap-1.5"
             >

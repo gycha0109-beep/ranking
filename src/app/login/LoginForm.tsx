@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition } from 'react'
+import React, { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn, signUp } from '@/lib/actions/auth'
 import { Shield, Mail, Lock, User, AlertCircle, ArrowRight, Loader2 } from 'lucide-react'
@@ -20,22 +20,23 @@ export default function LoginForm() {
   )
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   
-  const [isPending, startTransition] = useTransition()
+  const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
     setSuccessMessage(null)
+    setIsPending(true)
 
-    const formData = new FormData()
-    formData.append('email', email)
-    formData.append('password', password)
-    
-    startTransition(async () => {
+    try {
+      const formData = new FormData()
+      formData.append('email', email)
+      formData.append('password', password)
+      
       if (isLogin) {
         const res = await signIn(formData)
-        if (res.error) {
-          setErrorMessage(res.error)
+        if (!res.ok) {
+          setErrorMessage(res.error || '로그인에 실패했습니다.')
         } else {
           router.push(nextPath)
           router.refresh()
@@ -43,15 +44,20 @@ export default function LoginForm() {
       } else {
         formData.append('displayName', displayName)
         const res = await signUp(formData)
-        if (res.error) {
-          setErrorMessage(res.error)
+        if (!res.ok) {
+          setErrorMessage(res.error || '회원가입에 실패했습니다.')
         } else {
           setSuccessMessage(res.message || '회원가입이 완료되었습니다!')
           setIsLogin(true)
           setPassword('')
         }
       }
-    })
+    } catch (err: any) {
+      console.error('Submit error:', err)
+      setErrorMessage(err.message || '요청 처리 중 오류가 발생했습니다.')
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (

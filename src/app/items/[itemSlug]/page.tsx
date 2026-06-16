@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getItemBySlug, getRankingsContainingItem } from '@/lib/queries/public'
 import { ExternalLink, Tag, ShieldAlert, Award, ArrowLeft, Layers } from 'lucide-react'
+import SafeImage from '@/components/SafeImage'
 
 interface Props {
   params: Promise<{
@@ -47,14 +48,11 @@ export default async function ItemDetailPage({ params }: Props) {
             {/* 아이템 이미지 */}
             <div className="w-48 h-48 sm:w-56 sm:h-56 relative rounded-2xl overflow-hidden border border-white/[0.08] bg-slate-900/50 flex items-center justify-center shrink-0">
               {item.image_url ? (
-                <img 
+                <SafeImage 
                   src={item.image_url} 
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  onError={(e) => {
-                    // 이미지 로드 실패 시 디폴트 처리
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400'
-                  }}
+                  fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-slate-500 gap-2">

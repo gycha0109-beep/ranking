@@ -727,3 +727,247 @@ export async function unpublishRanking(id: string) {
   revalidatePath('/', 'layout')
   return { success: true }
 }
+
+/* ==========================================
+ * 8. QUICK RANKING CREATE ACTION
+ * ========================================== */
+
+function slugify(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9ㄱ-ㅎㅏ-ㅣ가-힣]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+async function inferItemType(supabase: any, categoryId: string): Promise<string> {
+  const { data: category } = await supabase
+    .from('categories')
+    .select('name, slug')
+    .eq('id', categoryId)
+    .maybeSingle()
+
+  if (!category) return 'food'
+
+  const name = category.name.toLowerCase()
+  const slug = category.slug.toLowerCase()
+
+  if (name.includes('게임') || slug.includes('game')) {
+    return 'game'
+  }
+  if (name.includes('화장품') || name.includes('뷰티') || slug.includes('cosmetic') || slug.includes('beauty')) {
+    return 'cosmetics'
+  }
+  if (name.includes('it') || name.includes('기기') || name.includes('테크') || slug.includes('device') || slug.includes('tech') || slug.includes('it')) {
+    return 'it_device'
+  }
+  if (name.includes('콘텐츠') || name.includes('미디어') || slug.includes('content') || slug.includes('media')) {
+    return 'content'
+  }
+  if (name.includes('식품') || name.includes('푸드') || name.includes('음식') || slug.includes('food')) {
+    return 'food'
+  }
+
+  // TODO: Defaulting to 'food' as a safe default as no specific category mapping matched. Update or configure default mappings as needed.
+  return 'food'
+}
+
+export async function createQuickRanking(formData: {
+  title: string
+  category_id: string
+  summary: string
+  entries: Array<{ rank_position: number; item_name: string; reason: string }>
+}) {
+  const supabase = await createClient()
+  const user = await ensureAdmin(supabase)
+
+  if (!formData.title || !formData.category_id || !formData.summary) {
+    return { error: '제목, 카테고리, 요약 설명은 필수입니다.' }
+  }
+
+  // Filter valid entries where item_name is not empty
+  const validEntries = formData.entries.filter(e => e.item_name && e.item_name.trim() !== '')
+
+  if (validEntries.length === 0) {
+    return { error: '최소 1개 이상의 아이템 순위 정보를 입력해야 합니다.' }
+  }
+
+  // Validate rank positions are valid (1 or more, unique)
+  const positions = validEntries.map(e => Number(e.rank_position))
+  const uniquePositions = new Set(positions)
+  if (positions.some(pos => pos <= 0 || isNaN(pos))) {
+    return { error: '순위는 1 이상의 정수여야 합니다.' }
+  }
+  if (uniquePositions.size !== positions.length) {
+    return { error: '순위표에 중복된 순위가 존재합니다. 고유하게 구성해 주세요.' }
+  }
+
+  // Validate duplicate item names within the inputs (case-insensitive & trimmed)
+  const itemNames = validEntries.map(e => e.item_name.trim().toLowerCase())
+  const uniqueItemNames = new Set(itemNames)
+  if (uniqueItemNames.size !== itemNames.length) {
+    return { error: '입력된 순위표에 중복된 아이템 명이 존재합니다.' }
+  }
+
+  let createdRankingId: string | null = null
+  const createdCriteriaIds: string[] = []
+  const createdEntryIds: string[] = []
+  const createdItemIds: string[] = []
+
+  try {
+    // 1. Generate unique slug for ranking
+    let baseSlug = slugify(formData.title)
+    if (!baseSlug) baseSlug = 'ranking'
+    let rankingSlug = baseSlug
+    let rankingCounter = 1
+    while (true) {
+      const { data } = await supabase
+        .from('rankings')
+        .select('id')
+        .eq('slug', rankingSlug)
+        .maybeSingle()
+      if (!data) break
+      rankingSlug = `${baseSlug}-${rankingCounter}`
+      rankingCounter++
+    }
+
+    // 2. Infer item type from category
+    const inferredItemType = await inferItemType(supabase, formData.category_id)
+
+    // 3. Insert ranking draft
+    const { data: ranking, error: rankingError } = await supabase
+      .from('rankings')
+      .insert([{
+        title: formData.title,
+        category_id: formData.category_id,
+        summary: formData.summary,
+        slug: rankingSlug,
+        status: 'draft',
+        ranking_type: 'editor_pick',
+        featured: false,
+        created_by: user.id
+      }])
+      .select()
+      .maybeSingle()
+
+    if (rankingError || !ranking) {
+      throw new Error(`랭킹 생성 실패: ${rankingError?.message || '알 수 없는 오류'}`)
+    }
+
+    createdRankingId = ranking.id
+
+    // 4. Create default criteria
+    const criteriaToInsert = [
+      { ranking_id: createdRankingId, name: '핵심 평가 기준', sort_order: 1 },
+      { ranking_id: createdRankingId, name: '실사용/반응 근거', sort_order: 2 },
+      { ranking_id: createdRankingId, name: '정보 검증 가능성', sort_order: 3 }
+    ]
+
+    const { data: insertedCriteria, error: criteriaError } = await supabase
+      .from('ranking_criteria')
+      .insert(criteriaToInsert)
+      .select('id')
+
+    if (criteriaError || !insertedCriteria) {
+      throw new Error(`평가 기준 생성 실패: ${criteriaError?.message || '알 수 없는 오류'}`)
+    }
+    createdCriteriaIds.push(...insertedCriteria.map((c: any) => c.id))
+
+    // 5. Process entries: reuse or create items, and create ranking entries
+    for (const entry of validEntries) {
+      const trimmedName = entry.item_name.trim()
+
+      // Case-insensitive exact match for existing items using ILIKE
+      const { data: existingItems, error: fetchItemError } = await supabase
+        .from('items')
+        .select('id')
+        .ilike('title', trimmedName)
+        .limit(1)
+
+      if (fetchItemError) {
+        throw new Error(`아이템 조회 실패: ${fetchItemError.message}`)
+      }
+
+      let itemId: string
+      const existingItem = existingItems && existingItems.length > 0 ? existingItems[0] : null
+
+      if (existingItem) {
+        itemId = existingItem.id
+      } else {
+        // Generate unique slug for new item
+        let itemBaseSlug = slugify(trimmedName)
+        if (!itemBaseSlug) itemBaseSlug = 'item'
+        let itemSlug = itemBaseSlug
+        let itemCounter = 1
+        while (true) {
+          const { data } = await supabase
+            .from('items')
+            .select('id')
+            .eq('slug', itemSlug)
+            .maybeSingle()
+          if (!data) break
+          itemSlug = `${itemBaseSlug}-${itemCounter}`
+          itemCounter++
+        }
+
+        // Insert new item
+        const { data: newItem, error: newItemError } = await supabase
+          .from('items')
+          .insert([{
+            title: trimmedName,
+            slug: itemSlug,
+            item_type: inferredItemType,
+            status: 'active'
+          }])
+          .select('id')
+          .maybeSingle()
+
+        if (newItemError || !newItem) {
+          throw new Error(`아이템 생성 실패: ${newItemError?.message || '알 수 없는 오류'}`)
+        }
+
+        itemId = newItem.id
+        createdItemIds.push(itemId)
+      }
+
+      // Create ranking entry
+      const { data: newEntry, error: entryError } = await supabase
+        .from('ranking_entries')
+        .insert([{
+          ranking_id: createdRankingId,
+          item_id: itemId,
+          position: Number(entry.rank_position),
+          reason: entry.reason || '',
+          sponsor_flag: false,
+          score_json: {},
+          metadata: {}
+        }])
+        .select('id')
+        .maybeSingle()
+
+      if (entryError || !newEntry) {
+        throw new Error(`순위 항목(Entry) 생성 실패: ${entryError?.message || '알 수 없는 오류'}`)
+      }
+      createdEntryIds.push(newEntry.id)
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, rankingId: createdRankingId }
+
+  } catch (error: any) {
+    // Cleanup/Rollback in reverse order of creation
+    if (createdEntryIds.length > 0) {
+      await supabase.from('ranking_entries').delete().in('id', createdEntryIds)
+    }
+    if (createdCriteriaIds.length > 0) {
+      await supabase.from('ranking_criteria').delete().in('id', createdCriteriaIds)
+    }
+    if (createdRankingId) {
+      await supabase.from('rankings').delete().eq('id', createdRankingId)
+    }
+    if (createdItemIds.length > 0) {
+      await supabase.from('items').delete().in('id', createdItemIds)
+    }
+    return { error: error.message }
+  }
+}

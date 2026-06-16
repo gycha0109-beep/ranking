@@ -6,6 +6,7 @@ import {
   ChevronRight, Award, Scale, HelpCircle, Calendar, ExternalLink, 
   Tag, Info, Star, ShieldCheck, Compass, AlertCircle
 } from 'lucide-react'
+import SafeImage from '@/components/SafeImage'
 
 export const revalidate = 0
 
@@ -264,12 +265,27 @@ export default async function RankingDetailPage({ params }: Props) {
                     </div>
                   )}
 
-                  {/* 1. 순위 빅 뱃지 */}
-                  <div className="md:w-16 flex md:flex-col items-center justify-center shrink-0">
-                    <div className={`w-12 h-12 rounded-2xl border font-black text-xl flex items-center justify-center ${badgeColor}`}>
-                      {entry.position}
+                  {/* 1. 순위 빅 뱃지 & 이미지 */}
+                  <div className="flex items-center md:items-start gap-4 shrink-0">
+                    <div className="md:w-16 flex md:flex-col items-center justify-center shrink-0">
+                      <div className={`w-12 h-12 rounded-2xl border font-black text-xl flex items-center justify-center ${badgeColor}`}>
+                        {entry.position}
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-bold tracking-wider mt-1 ml-2 md:ml-0">RANK</span>
                     </div>
-                    <span className="text-[10px] text-slate-500 font-bold tracking-wider mt-1 ml-2 md:ml-0">RANK</span>
+
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-white/5 bg-slate-900 shrink-0 flex items-center justify-center relative">
+                      {item.image_url ? (
+                        <SafeImage 
+                          src={item.image_url} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover" 
+                          fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100"
+                        />
+                      ) : (
+                        <Award className="w-6 h-6 text-slate-700" />
+                      )}
+                    </div>
                   </div>
 
                   {/* 2. 아이템 정보 */}
