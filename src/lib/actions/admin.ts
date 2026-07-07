@@ -275,6 +275,12 @@ export async function createItem(formData: {
     return { error: '이름, 슬러그, 아이템 종류는 필수 입력 사항입니다.' }
   }
 
+  // Moderation 검증
+  const moderation = await moderateContent([
+    { text: formData.title, field: 'title' },
+    { text: formData.description || '', field: 'description' }
+  ])
+
   // A. 아이템 정보 등록
   const { data: item, error: itemError } = await supabase
     .from('items')
@@ -287,7 +293,9 @@ export async function createItem(formData: {
       brand_or_creator: formData.brand_or_creator,
       external_url: formData.external_url,
       affiliate_url: formData.affiliate_url,
-      status: formData.status
+      status: formData.status,
+      moderation_status: moderation.status,
+      moderation_reason: moderation.reason
     }])
     .select()
     .maybeSingle()
@@ -334,6 +342,12 @@ export async function updateItem(id: string, formData: {
   const supabase = await createClient()
   await ensureAdmin(supabase)
 
+  // Moderation 검증
+  const moderation = await moderateContent([
+    { text: formData.title, field: 'title' },
+    { text: formData.description || '', field: 'description' }
+  ])
+
   // A. 아이템 기본 정보 업데이트
   const { data: item, error: itemError } = await supabase
     .from('items')
@@ -346,7 +360,9 @@ export async function updateItem(id: string, formData: {
       brand_or_creator: formData.brand_or_creator,
       external_url: formData.external_url,
       affiliate_url: formData.affiliate_url,
-      status: formData.status
+      status: formData.status,
+      moderation_status: moderation.status,
+      moderation_reason: moderation.reason
     })
     .eq('id', id)
     .select()
@@ -436,13 +452,21 @@ export async function createRankingDraft(formData: {
     }
   }
 
+  // Moderation 검증
+  const moderation = await moderateContent([
+    { text: formData.title, field: 'title' },
+    { text: formData.summary, field: 'summary' }
+  ])
+
   const { data: ranking, error } = await supabase
     .from('rankings')
     .insert([{
       ...formData,
       status: 'draft',
       featured: false,
-      created_by: user.id
+      created_by: user.id,
+      moderation_status: moderation.status,
+      moderation_reason: moderation.reason
     }])
     .select()
     .maybeSingle()
@@ -529,6 +553,27 @@ export async function saveRankingE2E(
     // [B] 일괄 업데이트 처리 (부분 저장 실패 최소화)
     // ==========================================
 
+    // Moderation 검사
+    const rankingTexts = [
+      { text: rankingData.title, field: 'title' },
+      { text: rankingData.summary, field: 'summary' },
+      { text: rankingData.body || '', field: 'body' }
+    ]
+    criteria.forEach((c, idx) => {
+      rankingTexts.push({ text: c.name, field: `criteria[${idx}].name` })
+      if (c.description) {
+        rankingTexts.push({ text: c.description, field: `criteria[${idx}].description` })
+      }
+    })
+    sources.forEach((s, idx) => {
+      rankingTexts.push({ text: s.label, field: `sources[${idx}].label` })
+      if (s.note) {
+        rankingTexts.push({ text: s.note, field: `sources[${idx}].note` })
+      }
+    })
+
+    const rankingMod = await moderateContent(rankingTexts)
+
     // 1. Rankings 기본 필드 업데이트
     const { error: rankingError } = await supabase
       .from('rankings')
@@ -544,7 +589,9 @@ export async function saveRankingE2E(
         featured: rankingData.featured,
         seo_title: rankingData.seo_title || null,
         seo_description: rankingData.seo_description || null,
-        cover_image_url: rankingData.cover_image_url || null
+        cover_image_url: rankingData.cover_image_url || null,
+        moderation_status: rankingMod.status,
+        moderation_reason: rankingMod.reason
       })
       .eq('id', id)
 
@@ -611,15 +658,22 @@ export async function saveRankingE2E(
     if (deleteEntriesError) throw new Error(`기존 순위표 항목 초기화 오류: ${deleteEntriesError.message}`)
 
     if (entries.length > 0) {
-      const entriesToInsert = entries.map(e => ({
-        ranking_id: id,
-        item_id: e.item_id,
-        position: e.position,
-        reason: e.reason,
-        editor_score: e.editor_score || null,
-        score_json: e.score_json || {},
-        internal_note: e.internal_note || null,
-        sponsor_flag: e.sponsor_flag
+      const entriesToInsert = await Promise.all(entries.map(async e => {
+        const entryMod = await moderateContent([
+          { text: e.reason, field: `entry[position:${e.position}].reason` }
+        ])
+        return {
+          ranking_id: id,
+          item_id: e.item_id,
+          position: e.position,
+          reason: e.reason,
+          editor_score: e.editor_score || null,
+          score_json: e.score_json || {},
+          internal_note: e.internal_note || null,
+          sponsor_flag: e.sponsor_flag,
+          moderation_status: entryMod.status,
+          moderation_reason: entryMod.reason
+        }
       }))
       const { error: insertEntriesError } = await supabase
         .from('ranking_entries')
@@ -665,7 +719,7 @@ export async function publishRanking(id: string) {
   // 발행 전 필수 필드 데이터 최종 정밀 재검증 (서버 단 검증 강화!)
   const { data: ranking, error: rankingError } = await supabase
     .from('rankings')
-    .select('*, ranking_entries(id), ranking_criteria(id)')
+    .select('*, ranking_entries(id, moderation_status), ranking_criteria(id)')
     .eq('id', id)
     .maybeSingle()
 
@@ -686,6 +740,24 @@ export async function publishRanking(id: string) {
   }
   if (!ranking.ranking_criteria || ranking.ranking_criteria.length < 1) {
     return { error: '순위표 선정 기준(Criteria)이 최소 1개 이상 등록되어야 발행 가능합니다.' }
+  }
+
+  // Moderation Gate 검증
+  if (ranking.moderation_status === 'blocked') {
+    return { error: '해당 랭킹은 차단(blocked)된 콘텐츠를 포함하고 있어 발행할 수 없습니다.' }
+  }
+  if (ranking.moderation_status === 'needs_review') {
+    return { error: '해당 랭킹은 검토 대기(needs_review) 상태입니다. 관리자 승인 후 발행이 가능합니다.' }
+  }
+
+  const hasBlockedEntry = ranking.ranking_entries?.some((e: any) => e.moderation_status === 'blocked')
+  const hasReviewEntry = ranking.ranking_entries?.some((e: any) => e.moderation_status === 'needs_review')
+
+  if (hasBlockedEntry) {
+    return { error: '순위표 항목 중 차단(blocked)된 아이템이 있어 발행할 수 없습니다.' }
+  }
+  if (hasReviewEntry) {
+    return { error: '순위표 항목 중 검토 대기(needs_review) 상태인 아이템이 있어 발행할 수 없습니다.' }
   }
 
   // 상태 변경
@@ -834,6 +906,12 @@ export async function createQuickRanking(formData: {
     // 2. Infer item type from category
     const inferredItemType = await inferItemType(supabase, formData.category_id)
 
+    // Moderation 검증 (랭킹 본문)
+    const rankingMod = await moderateContent([
+      { text: formData.title, field: 'title' },
+      { text: formData.summary, field: 'summary' }
+    ])
+
     // 3. Insert ranking draft
     const { data: ranking, error: rankingError } = await supabase
       .from('rankings')
@@ -845,7 +923,9 @@ export async function createQuickRanking(formData: {
         status: 'draft',
         ranking_type: 'editor_pick',
         featured: false,
-        created_by: user.id
+        created_by: user.id,
+        moderation_status: rankingMod.status,
+        moderation_reason: rankingMod.reason
       }])
       .select()
       .maybeSingle()
@@ -910,6 +990,11 @@ export async function createQuickRanking(formData: {
           itemCounter++
         }
 
+        // Moderate new item
+        const itemMod = await moderateContent([
+          { text: trimmedName, field: 'title' }
+        ])
+
         // Insert new item
         const { data: newItem, error: newItemError } = await supabase
           .from('items')
@@ -917,7 +1002,9 @@ export async function createQuickRanking(formData: {
             title: trimmedName,
             slug: itemSlug,
             item_type: inferredItemType,
-            status: 'active'
+            status: 'active',
+            moderation_status: itemMod.status,
+            moderation_reason: itemMod.reason
           }])
           .select('id')
           .maybeSingle()
@@ -930,6 +1017,11 @@ export async function createQuickRanking(formData: {
         createdItemIds.push(itemId)
       }
 
+      // Moderate entry reason
+      const entryMod = await moderateContent([
+        { text: entry.reason || '', field: `entry[position:${entry.rank_position}].reason` }
+      ])
+
       // Create ranking entry
       const { data: newEntry, error: entryError } = await supabase
         .from('ranking_entries')
@@ -940,10 +1032,12 @@ export async function createQuickRanking(formData: {
           reason: entry.reason || '',
           sponsor_flag: false,
           score_json: {},
-          metadata: {}
+          metadata: {},
+          moderation_status: entryMod.status,
+          moderation_reason: entryMod.reason
         }])
-        .select('id')
-        .maybeSingle()
+          .select('id')
+          .maybeSingle()
 
       if (entryError || !newEntry) {
         throw new Error(`순위 항목(Entry) 생성 실패: ${entryError?.message || '알 수 없는 오류'}`)
@@ -969,5 +1063,102 @@ export async function createQuickRanking(formData: {
       await supabase.from('items').delete().in('id', createdItemIds)
     }
     return { error: error.message }
+  }
+}
+
+export async function approveModeration(id: string) {
+  const supabase = await createClient()
+  await ensureAdmin(supabase)
+
+  const { error } = await supabase
+    .from('rankings')
+    .update({
+      moderation_status: 'clean'
+    })
+    .eq('id', id)
+
+  if (error) {
+    return { error: `승인 도중 에러가 발생했습니다: ${error.message}` }
+  }
+
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+/**
+ * 텍스트 콘텐츠에 대한 Moderation 검사 수행
+ * - 매칭된 단어들의 severity 중 가장 심각도가 높은 것 기준으로 판정 (block > review > allow)
+ * - 'block' 매칭 시 status = 'blocked'
+ * - 'review' 매칭 시:
+ *   - category = 'sexual_suggestive' 이면 status = 'suggestive'
+ *   - 그 외 category 이면 status = 'needs_review'
+ * - 매칭 없을 시 status = 'clean'
+ */
+export async function moderateContent(texts: Array<{ text: string; field: string }>) {
+  const supabase = await createClient()
+
+  // 1. 활성화된 moderation_terms 가져오기
+  const { data: terms, error } = await supabase
+    .from('moderation_terms')
+    .select('term, severity, category')
+    .eq('enabled', true)
+
+  if (error || !terms) {
+    console.error('Failed to fetch moderation terms:', error)
+    return { status: 'clean', reason: 'none', matchedTerm: null, matchedField: null }
+  }
+
+  let finalStatus: 'clean' | 'suggestive' | 'needs_review' | 'blocked' = 'clean'
+  let finalReason: string = 'none'
+  let matchedTerm: string | null = null
+  let matchedField: string | null = null
+
+  // 심각도 순서: block (3) > review (2) > allow (1) > none (0)
+  let maxSeverityLevel = 0
+
+  for (const { text, field } of texts) {
+    if (!text) continue
+    const normalizedText = text.toLowerCase()
+
+    for (const termObj of terms) {
+      const term = termObj.term.toLowerCase()
+
+      // 공백 무시하고 키워드가 텍스트 내에 존재하는지 검사 (매우 단순하고 강건한 방식)
+      if (normalizedText.includes(term)) {
+        let currentLevel = 0
+        if (termObj.severity === 'block') currentLevel = 3
+        else if (termObj.severity === 'review') currentLevel = 2
+        else if (termObj.severity === 'allow') currentLevel = 1
+
+        if (currentLevel > maxSeverityLevel) {
+          maxSeverityLevel = currentLevel
+          matchedTerm = termObj.term
+          matchedField = field
+
+          if (termObj.severity === 'block') {
+            finalStatus = 'blocked'
+            finalReason = termObj.category
+          } else if (termObj.severity === 'review') {
+            if (termObj.category === 'sexual_suggestive') {
+              finalStatus = 'suggestive'
+            } else {
+              finalStatus = 'needs_review'
+            }
+            finalReason = termObj.category
+          } else {
+            // allow
+            finalStatus = 'clean'
+            finalReason = 'none'
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    status: finalStatus,
+    reason: finalReason,
+    matchedTerm,
+    matchedField
   }
 }

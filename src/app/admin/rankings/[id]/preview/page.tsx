@@ -71,7 +71,9 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
     hasCriteria: criteriaList.length >= 1,
   }
 
-  const isPublishable = Object.values(validation).every(Boolean)
+  const isPublishable = Object.values(validation).every(Boolean) && 
+    ranking.moderation_status !== 'blocked' && 
+    ranking.moderation_status !== 'needs_review'
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0a0a0f] to-[#07070a] text-slate-100">
@@ -104,6 +106,8 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
           status={ranking.status}
           validation={validation}
           isPublishable={isPublishable}
+          moderationStatus={ranking.moderation_status || 'clean'}
+          moderationReason={ranking.moderation_reason || 'none'}
         />
 
         {/* 구분선 */}
