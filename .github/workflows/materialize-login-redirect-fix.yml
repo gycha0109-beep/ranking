@@ -1,0 +1,22 @@
+name: Materialize login redirect fix
+
+on:
+  push:
+    branches:
+      - fix/p1-1-5-security-hotfix
+    paths:
+      - scripts/materialize-login-redirect-fix.sh
+      - .github/workflows/materialize-login-redirect-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: bash scripts/materialize-login-redirect-fix.sh
