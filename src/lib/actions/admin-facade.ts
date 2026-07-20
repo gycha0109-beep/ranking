@@ -3,6 +3,10 @@
 import * as legacy from './admin'
 import { createClient } from '@/lib/supabase/server'
 import { saveRankingE2E as saveRankingTransaction } from './save-ranking'
+import {
+  listModerationReviews as listReviews,
+  reviewModerationTarget as reviewTarget,
+} from './moderation-reviews'
 
 export async function listAdminCategories(...args: Parameters<typeof legacy.listAdminCategories>) { return legacy.listAdminCategories(...args) }
 export async function createCategory(...args: Parameters<typeof legacy.createCategory>) { return legacy.createCategory(...args) }
@@ -22,7 +26,8 @@ export async function createRankingDraft(...args: Parameters<typeof legacy.creat
 export async function publishRanking(...args: Parameters<typeof legacy.publishRanking>) { return legacy.publishRanking(...args) }
 export async function unpublishRanking(...args: Parameters<typeof legacy.unpublishRanking>) { return legacy.unpublishRanking(...args) }
 export async function createQuickRanking(...args: Parameters<typeof legacy.createQuickRanking>) { return legacy.createQuickRanking(...args) }
-export async function approveModeration(...args: Parameters<typeof legacy.approveModeration>) { return legacy.approveModeration(...args) }
+export async function reviewModerationTarget(...args: Parameters<typeof reviewTarget>) { return reviewTarget(...args) }
+export async function listModerationReviews(...args: Parameters<typeof listReviews>) { return listReviews(...args) }
 
 export async function saveRankingE2E(
   id: string,
