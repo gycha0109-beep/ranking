@@ -1,9 +1,21 @@
 import React, { Suspense } from 'react'
+import { redirect } from 'next/navigation'
 import LoginForm from './LoginForm'
 
 export const dynamic = 'force-dynamic'
 
-export default function LoginPage() {
+type Props = {
+  searchParams: Promise<{ next?: string | string[] }>
+}
+
+export default async function LoginPage({ searchParams }: Props) {
+  const params = await searchParams
+  const nextPath = Array.isArray(params.next) ? params.next[0] : params.next
+
+  if (nextPath && (!nextPath.startsWith('/') || nextPath.startsWith('//'))) {
+    redirect('/login')
+  }
+
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] text-slate-400 text-xs font-bold font-sans">
