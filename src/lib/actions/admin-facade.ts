@@ -3,6 +3,8 @@
 import * as legacy from './admin'
 import { createClient } from '@/lib/supabase/server'
 import { saveRankingE2E as saveRankingTransaction } from './save-ranking'
+import { listModerationReviews as listReviews, reviewModerationTarget as reviewTarget } from './moderation-reviews'
+import { getRankingModerationWorkspace as getWorkspace } from './moderation-workspace'
 
 export async function listAdminCategories(...args: Parameters<typeof legacy.listAdminCategories>) { return legacy.listAdminCategories(...args) }
 export async function createCategory(...args: Parameters<typeof legacy.createCategory>) { return legacy.createCategory(...args) }
@@ -22,7 +24,9 @@ export async function createRankingDraft(...args: Parameters<typeof legacy.creat
 export async function publishRanking(...args: Parameters<typeof legacy.publishRanking>) { return legacy.publishRanking(...args) }
 export async function unpublishRanking(...args: Parameters<typeof legacy.unpublishRanking>) { return legacy.unpublishRanking(...args) }
 export async function createQuickRanking(...args: Parameters<typeof legacy.createQuickRanking>) { return legacy.createQuickRanking(...args) }
-export async function approveModeration(...args: Parameters<typeof legacy.approveModeration>) { return legacy.approveModeration(...args) }
+export async function reviewModerationTarget(...args: Parameters<typeof reviewTarget>) { return reviewTarget(...args) }
+export async function listModerationReviews(...args: Parameters<typeof listReviews>) { return listReviews(...args) }
+export async function getRankingModerationWorkspace(...args: Parameters<typeof getWorkspace>) { return getWorkspace(...args) }
 
 export async function saveRankingE2E(
   id: string,
@@ -33,15 +37,7 @@ export async function saveRankingE2E(
   facetIds: Parameters<typeof saveRankingTransaction>[5]
 ) {
   const supabase = await createClient()
-  const { data: current, error } = await supabase
-    .from('rankings')
-    .select('updated_at')
-    .eq('id', id)
-    .maybeSingle()
-
-  if (error || !current?.updated_at) {
-    return { error: '저장 기준 버전을 확인할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.' }
-  }
-
+  const { data: current, error } = await supabase.from('rankings').select('updated_at').eq('id', id).maybeSingle()
+  if (error || !current?.updated_at) return { error: '저장 기준 버전을 확인할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.' }
   return saveRankingTransaction(id, rankingData, criteria, sources, entries, facetIds, current.updated_at)
 }
