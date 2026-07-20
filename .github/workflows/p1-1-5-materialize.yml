@@ -1,0 +1,23 @@
+name: Materialize P1-1.5 hotfix
+
+on:
+  push:
+    branches:
+      - fix/p1-1-5-security-hotfix
+    paths:
+      - scripts/materialize-p1-1-5.sh
+      - .github/workflows/p1-1-5-materialize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Materialize reviewed files
+        run: bash scripts/materialize-p1-1-5.sh
