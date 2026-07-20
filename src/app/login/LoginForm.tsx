@@ -8,7 +8,10 @@ import { Shield, Mail, Lock, User, AlertCircle, ArrowRight, Loader2 } from 'luci
 export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextPath = searchParams.get('next') || '/'
+  const rawNextPath = searchParams.get('next')
+  const nextPath = rawNextPath?.startsWith('/') && !rawNextPath.startsWith('//')
+    ? rawNextPath
+    : '/'
   const errorParam = searchParams.get('error')
 
   const [isLogin, setIsLogin] = useState(true)
