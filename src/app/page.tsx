@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { getHomeData } from '@/lib/queries/public'
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { 
   Award, 
   Layers, 
@@ -27,10 +27,10 @@ export default async function HomePage() {
   let totalItemsCount = 0
   
   try {
-    const supabase = await createClient()
+    const supabase = createPublicClient()
     const [rankingsRes, itemsRes] = await Promise.all([
-      supabase.from('rankings').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-      supabase.from('items').select('*', { count: 'exact', head: true }).eq('status', 'active')
+      supabase.from('rankings').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('items').select('id', { count: 'exact', head: true }).eq('status', 'active')
     ])
     totalRankingsCount = rankingsRes.count || 0
     totalItemsCount = itemsRes.count || 0
