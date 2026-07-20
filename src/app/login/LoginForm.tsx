@@ -8,7 +8,10 @@ import { Shield, Mail, Lock, User, AlertCircle, ArrowRight, Loader2 } from 'luci
 export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextPath = searchParams.get('next') || '/'
+  const rawNextPath = searchParams.get('next')
+  const nextPath = rawNextPath?.startsWith('/') && !rawNextPath.startsWith('//')
+    ? rawNextPath
+    : '/'
   const errorParam = searchParams.get('error')
 
   const [isLogin, setIsLogin] = useState(true)
@@ -19,7 +22,6 @@ export default function LoginForm() {
     errorParam === 'not_authorized' ? '어드민 권한이 필요한 페이지입니다.' : null
   )
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  
   const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +34,7 @@ export default function LoginForm() {
       const formData = new FormData()
       formData.append('email', email)
       formData.append('password', password)
-      
+
       if (isLogin) {
         const res = await signIn(formData)
         if (!res.ok) {
@@ -62,13 +64,10 @@ export default function LoginForm() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-[#0a0a0c] text-slate-100 overflow-hidden font-sans">
-      {/* 백그라운드 오로라 그라데이션 이펙트 */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
-      
-      {/* 컨테이너 */}
+
       <div className="relative z-10 w-full max-w-md mx-4">
-        {/* 로고 / 헤더 */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 mb-4 shadow-inner shadow-indigo-500/5">
             <Shield className="w-8 h-8 text-indigo-400 animate-pulse" />
@@ -81,11 +80,9 @@ export default function LoginForm() {
           </p>
         </div>
 
-        {/* 글래스모피즘 카드 */}
         <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 shadow-2xl rounded-3xl p-8 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-          
-          {/* 에러 피드백 */}
+
           {errorMessage && (
             <div className="flex items-start gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-300 text-sm mb-6 animate-fade-in">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -93,7 +90,6 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* 성공 피드백 */}
           {successMessage && (
             <div className="flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-300 text-sm mb-6 animate-fade-in">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
@@ -102,7 +98,6 @@ export default function LoginForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* 이름 입력 (회원가입인 경우만) */}
             {!isLogin && (
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">이름 / 닉네임</label>
@@ -120,7 +115,6 @@ export default function LoginForm() {
               </div>
             )}
 
-            {/* 이메일 */}
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">이메일 주소</label>
               <div className="relative">
@@ -136,7 +130,6 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* 비밀번호 */}
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">비밀번호</label>
               <div className="relative">
@@ -152,7 +145,6 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* 제출 버튼 */}
             <button
               type="submit"
               disabled={isPending}
@@ -169,7 +161,6 @@ export default function LoginForm() {
             </button>
           </form>
 
-          {/* 모드 전환 */}
           <div className="mt-6 text-center text-xs text-slate-400">
             {isLogin ? (
               <span>
@@ -200,16 +191,6 @@ export default function LoginForm() {
             )}
           </div>
         </div>
-
-        {/* 첫 어드민 팁 박스 */}
-        {isLogin && (
-          <div className="mt-8 backdrop-blur-md bg-white/[0.01] border border-white/5 p-5 rounded-2xl text-xs text-slate-400 flex flex-col gap-2">
-            <span className="font-semibold text-indigo-300">💡 로컬/개발 환경 팁:</span>
-            <p className="leading-relaxed">
-              `.env.local` 에 `ADMIN_BOOTSTRAP_EMAIL` 을 추가하고, 해당 메일로 로그인(혹은 신규 가입 후 로그인)하면 RLS 우회 트리거를 통해 자동으로 **admin** 권한이 부여됩니다.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )
