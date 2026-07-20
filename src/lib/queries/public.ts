@@ -1,6 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 const PUBLIC_MODERATION_STATUSES = ['clean', 'suggestive']
+
+const PUBLIC_RANKING_COLUMNS = 'id,category_id,subcategory_id,title,slug,summary,body,ranking_type,scope_json,status,featured,cover_image_url,seo_title,seo_description,published_at,created_at,updated_at'
+const PUBLIC_ITEM_COLUMNS = 'id,title,slug,description,item_type,image_url,brand_or_creator,external_url,affiliate_url,status,metadata,created_at,updated_at'
+const PUBLIC_ENTRY_COLUMNS = 'id,ranking_id,item_id,position,reason,editor_score,score_json,sponsor_flag,metadata,created_at,updated_at'
+const PUBLIC_CATEGORY_COLUMNS = 'id,name,slug,description,is_visible,sort_order,created_at,updated_at'
+const PUBLIC_SUBCATEGORY_COLUMNS = 'id,category_id,name,slug,description,is_visible,sort_order,created_at,updated_at'
 
 type RelatedCandidate = {
   id: string
@@ -47,11 +53,11 @@ function sortCandidates(a: RelatedCandidate, b: RelatedCandidate) {
  * - 공개 카테고리 목록
  */
 export async function getHomeData() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: featuredRanking } = await supabase
     .from('rankings')
-    .select('*, categories(name, slug), subcategories(name, slug)')
+    .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -62,7 +68,7 @@ export async function getHomeData() {
 
   const { data: recentRankings } = await supabase
     .from('rankings')
-    .select('*, categories(name, slug), subcategories(name, slug)')
+    .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -71,86 +77,86 @@ export async function getHomeData() {
 
   const { data: categories } = await supabase
     .from('categories')
-    .select('*')
+    .select(PUBLIC_CATEGORY_COLUMNS)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true })
 
   return {
-    featuredRanking: featuredRanking || null,
-    recentRankings: recentRankings || [],
-    categories: categories || [],
+    featuredRanking: (featuredRanking as any) || null,
+    recentRankings: (recentRankings || []) as any[],
+    categories: (categories || []) as any[],
   }
 }
 
 export async function getVisibleCategories() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
-    .select('*, subcategories(*)')
+    .select(`${PUBLIC_CATEGORY_COLUMNS}, subcategories(${PUBLIC_SUBCATEGORY_COLUMNS})`)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true })
-  return data || []
+  return (data || []) as any[]
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
-    .select('*, subcategories(*)')
+    .select(`${PUBLIC_CATEGORY_COLUMNS}, subcategories(${PUBLIC_SUBCATEGORY_COLUMNS})`)
     .eq('slug', slug)
     .eq('is_visible', true)
     .maybeSingle()
-  return data || null
+  return (data as any) || null
 }
 
 export async function getSubcategoryBySlug(categorySlug: string, subcategorySlug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('subcategories')
-    .select('*, categories!inner(*)')
+    .select(`${PUBLIC_SUBCATEGORY_COLUMNS}, categories!inner(${PUBLIC_CATEGORY_COLUMNS})`)
     .eq('slug', subcategorySlug)
     .eq('categories.slug', categorySlug)
     .eq('is_visible', true)
     .maybeSingle()
-  return data || null
+  return (data as any) || null
 }
 
 export async function getPublishedRankingsByCategory(categorySlug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('rankings')
-    .select('*, categories!inner(*), subcategories(*)')
+    .select(`${PUBLIC_RANKING_COLUMNS}, categories!inner(${PUBLIC_CATEGORY_COLUMNS}), subcategories(${PUBLIC_SUBCATEGORY_COLUMNS})`)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('categories.slug', categorySlug)
     .order('published_at', { ascending: false })
-  return data || []
+  return (data || []) as any[]
 }
 
 export async function getPublishedRankingsBySubcategory(categorySlug: string, subcategorySlug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('rankings')
-    .select('*, categories!inner(*), subcategories!inner(*)')
+    .select(`${PUBLIC_RANKING_COLUMNS}, categories!inner(${PUBLIC_CATEGORY_COLUMNS}), subcategories!inner(${PUBLIC_SUBCATEGORY_COLUMNS})`)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('categories.slug', categorySlug)
     .eq('subcategories.slug', subcategorySlug)
     .order('published_at', { ascending: false })
-  return data || []
+  return (data || []) as any[]
 }
 
 /**
  * published 랭킹 상세 및 공개 가능한 하위 데이터 조회.
  */
 export async function getPublishedRankingBySlug(slug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: ranking } = await supabase
     .from('rankings')
-    .select('*, categories(name, slug), subcategories(name, slug)')
+    .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
     .eq('slug', slug)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -162,7 +168,7 @@ export async function getPublishedRankingBySlug(slug: string) {
   const [{ data: entries }, { data: criteria }, { data: sources }, { data: facetsData }] = await Promise.all([
     supabase
       .from('ranking_entries')
-      .select('*, items!inner(*)')
+      .select(`${PUBLIC_ENTRY_COLUMNS}, items!inner(${PUBLIC_ITEM_COLUMNS})`)
       .eq('ranking_id', ranking.id)
       .in('moderation_status', PUBLIC_MODERATION_STATUSES)
       .eq('items.status', 'active')
@@ -171,12 +177,12 @@ export async function getPublishedRankingBySlug(slug: string) {
       .order('position', { ascending: true }),
     supabase
       .from('ranking_criteria')
-      .select('*')
+      .select('id,ranking_id,name,description,weight,sort_order,created_at,updated_at')
       .eq('ranking_id', ranking.id)
       .order('sort_order', { ascending: true }),
     supabase
       .from('ranking_sources')
-      .select('*')
+      .select('id,ranking_id,label,url,source_type,note,is_public,created_at')
       .eq('ranking_id', ranking.id)
       .eq('is_public', true),
     supabase
@@ -195,15 +201,15 @@ export async function getPublishedRankingBySlug(slug: string) {
     criteria: criteria || [],
     sources: sources || [],
     facets,
-  }
+  } as any
 }
 
 export async function getItemBySlug(slug: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: item } = await supabase
     .from('items')
-    .select('*')
+    .select(PUBLIC_ITEM_COLUMNS)
     .eq('slug', slug)
     .eq('status', 'active')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -224,15 +230,15 @@ export async function getItemBySlug(slug: string) {
   return {
     ...item,
     facets,
-  }
+  } as any
 }
 
 export async function getRankingsContainingItem(itemId: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: entries } = await supabase
     .from('ranking_entries')
-    .select('position, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
+    .select(`position, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
     .eq('item_id', itemId)
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('rankings.status', 'published')
@@ -250,7 +256,7 @@ export async function getRankingsContainingItem(itemId: string) {
  * 공유 아이템 > 동일 서브카테고리 > 동일 카테고리 > 공유 Facet > 최신 발행일.
  */
 export async function getRelatedRankings(ranking: any) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const candidates = new Map<string, RelatedCandidate>()
   const itemIds = (ranking.entries || []).map((entry: any) => entry.item_id).filter(Boolean)
   const facetIds = (ranking.facets || []).map((facet: any) => facet.id).filter(Boolean)
@@ -258,7 +264,7 @@ export async function getRelatedRankings(ranking: any) {
   if (itemIds.length > 0) {
     const { data } = await supabase
       .from('ranking_entries')
-      .select('ranking_id, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
+      .select(`ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
       .in('item_id', itemIds)
       .neq('ranking_id', ranking.id)
       .in('moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -273,7 +279,7 @@ export async function getRelatedRankings(ranking: any) {
   if (ranking.subcategory_id) {
     const { data } = await supabase
       .from('rankings')
-      .select('*, categories(name, slug), subcategories(name, slug)')
+      .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
       .eq('subcategory_id', ranking.subcategory_id)
       .neq('id', ranking.id)
       .eq('status', 'published')
@@ -288,7 +294,7 @@ export async function getRelatedRankings(ranking: any) {
   if (ranking.category_id) {
     const { data } = await supabase
       .from('rankings')
-      .select('*, categories(name, slug), subcategories(name, slug)')
+      .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
       .eq('category_id', ranking.category_id)
       .neq('id', ranking.id)
       .eq('status', 'published')
@@ -303,7 +309,7 @@ export async function getRelatedRankings(ranking: any) {
   if (facetIds.length > 0) {
     const { data } = await supabase
       .from('ranking_facets')
-      .select('ranking_id, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
+      .select(`ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
       .in('facet_id', facetIds)
       .neq('ranking_id', ranking.id)
       .eq('rankings.status', 'published')
@@ -329,14 +335,14 @@ export async function getRelatedRankings(ranking: any) {
  * 같은 브랜드/제작자 > 공유 Facet > 같은 공개 랭킹·카테고리.
  */
 export async function getRelatedItems(item: any) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const candidates = new Map<string, RelatedCandidate>()
   const facetIds = (item.facets || []).map((facet: any) => facet.id).filter(Boolean)
 
   if (item.brand_or_creator) {
     const { data } = await supabase
       .from('items')
-      .select('*')
+      .select(PUBLIC_ITEM_COLUMNS)
       .eq('brand_or_creator', item.brand_or_creator)
       .neq('id', item.id)
       .eq('status', 'active')
@@ -351,7 +357,7 @@ export async function getRelatedItems(item: any) {
   if (facetIds.length > 0) {
     const { data } = await supabase
       .from('item_facets')
-      .select('item_id, items!inner(*)')
+      .select(`item_id, items!inner(${PUBLIC_ITEM_COLUMNS})`)
       .in('facet_id', facetIds)
       .neq('item_id', item.id)
       .eq('items.status', 'active')
@@ -377,7 +383,7 @@ export async function getRelatedItems(item: any) {
   if (containingRankingIds.length > 0) {
     const { data } = await supabase
       .from('ranking_entries')
-      .select('item_id, items!inner(*)')
+      .select(`item_id, items!inner(${PUBLIC_ITEM_COLUMNS})`)
       .in('ranking_id', containingRankingIds)
       .neq('item_id', item.id)
       .in('moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -404,7 +410,7 @@ export async function getRelatedItems(item: any) {
     if (categoryRankingIds.length > 0) {
       const { data } = await supabase
         .from('ranking_entries')
-        .select('item_id, items!inner(*)')
+        .select(`item_id, items!inner(${PUBLIC_ITEM_COLUMNS})`)
         .in('ranking_id', categoryRankingIds)
         .neq('item_id', item.id)
         .in('moderation_status', PUBLIC_MODERATION_STATUSES)
