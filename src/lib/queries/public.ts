@@ -1,33 +1,74 @@
 import { createClient } from '@/lib/supabase/server'
 
+const PUBLIC_MODERATION_STATUSES = ['clean', 'suggestive']
+
+type RelatedCandidate = {
+  id: string
+  priority: number
+  matchCount: number
+  reason: string
+  data: any
+}
+
+function upsertCandidate(
+  candidates: Map<string, RelatedCandidate>,
+  data: any,
+  priority: number,
+  reason: string
+) {
+  if (!data?.id) return
+
+  const current = candidates.get(data.id)
+  if (!current) {
+    candidates.set(data.id, { id: data.id, priority, matchCount: 1, reason, data })
+    return
+  }
+
+  current.matchCount += 1
+  if (priority < current.priority) {
+    current.priority = priority
+    current.reason = reason
+  }
+}
+
+function sortCandidates(a: RelatedCandidate, b: RelatedCandidate) {
+  if (a.priority !== b.priority) return a.priority - b.priority
+  if (a.matchCount !== b.matchCount) return b.matchCount - a.matchCount
+
+  const aDate = new Date(a.data.published_at || a.data.updated_at || a.data.created_at || 0).getTime()
+  const bDate = new Date(b.data.published_at || b.data.updated_at || b.data.created_at || 0).getTime()
+  return bDate - aDate
+}
+
 /**
  * 1. 홈 데이터 조회
- * - featured = true 이고 published 상태인 대표 랭킹
- * - 최신 published 랭킹 5개
+ * - 공개 가능한 featured 랭킹
+ * - 최신 공개 랭킹
  * - 공개 카테고리 목록
  */
 export async function getHomeData() {
   const supabase = await createClient()
 
-  // 대표 랭킹
   const { data: featuredRanking } = await supabase
     .from('rankings')
     .select('*, categories(name, slug), subcategories(name, slug)')
     .eq('status', 'published')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('featured', true)
     .order('published_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  // 최신 랭킹
   const { data: recentRankings } = await supabase
     .from('rankings')
     .select('*, categories(name, slug), subcategories(name, slug)')
     .eq('status', 'published')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .order('published_at', { ascending: false })
     .limit(6)
 
-  // 공개 카테고리
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
@@ -41,9 +82,6 @@ export async function getHomeData() {
   }
 }
 
-/**
- * 2. 모든 공개 카테고리 조회
- */
 export async function getVisibleCategories() {
   const supabase = await createClient()
   const { data } = await supabase
@@ -54,9 +92,6 @@ export async function getVisibleCategories() {
   return data || []
 }
 
-/**
- * 3. 슬러그로 카테고리 상세 정보 조회
- */
 export async function getCategoryBySlug(slug: string) {
   const supabase = await createClient()
   const { data } = await supabase
@@ -68,9 +103,6 @@ export async function getCategoryBySlug(slug: string) {
   return data || null
 }
 
-/**
- * 4. 슬러그로 서브카테고리 상세 정보 조회
- */
 export async function getSubcategoryBySlug(categorySlug: string, subcategorySlug: string) {
   const supabase = await createClient()
   const { data } = await supabase
@@ -83,29 +115,27 @@ export async function getSubcategoryBySlug(categorySlug: string, subcategorySlug
   return data || null
 }
 
-/**
- * 5. 특정 카테고리에 속한 published 랭킹 목록 조회
- */
 export async function getPublishedRankingsByCategory(categorySlug: string) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('rankings')
     .select('*, categories!inner(*), subcategories(*)')
     .eq('status', 'published')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('categories.slug', categorySlug)
     .order('published_at', { ascending: false })
   return data || []
 }
 
-/**
- * 6. 특정 서브카테고리에 속한 published 랭킹 목록 조회
- */
 export async function getPublishedRankingsBySubcategory(categorySlug: string, subcategorySlug: string) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('rankings')
     .select('*, categories!inner(*), subcategories!inner(*)')
     .eq('status', 'published')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('categories.slug', categorySlug)
     .eq('subcategories.slug', subcategorySlug)
     .order('published_at', { ascending: false })
@@ -113,48 +143,47 @@ export async function getPublishedRankingsBySubcategory(categorySlug: string, su
 }
 
 /**
- * 7. 슬러그로 published 랭킹 상세 및 하위 엔트리/기준/출처 조회
- * - entries는 position 순으로 오름차순 정렬
+ * published 랭킹 상세 및 공개 가능한 하위 데이터 조회.
  */
 export async function getPublishedRankingBySlug(slug: string) {
   const supabase = await createClient()
 
-  // 랭킹 상세 및 카테고리 정보
   const { data: ranking } = await supabase
     .from('rankings')
     .select('*, categories(name, slug), subcategories(name, slug)')
     .eq('slug', slug)
     .eq('status', 'published')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .maybeSingle()
 
   if (!ranking) return null
 
-  // 순위표 엔트리 및 연결된 아이템 정보
-  const { data: entries } = await supabase
-    .from('ranking_entries')
-    .select('*, items(*)')
-    .eq('ranking_id', ranking.id)
-    .order('position', { ascending: true })
-
-  // 선정 기준
-  const { data: criteria } = await supabase
-    .from('ranking_criteria')
-    .select('*')
-    .eq('ranking_id', ranking.id)
-    .order('sort_order', { ascending: true })
-
-  // 공개 출처 정보
-  const { data: sources } = await supabase
-    .from('ranking_sources')
-    .select('*')
-    .eq('ranking_id', ranking.id)
-    .eq('is_public', true)
-
-  // 관련 Facet
-  const { data: facetsData } = await supabase
-    .from('ranking_facets')
-    .select('facets(id, name, slug, facet_groups(name, code))')
-    .eq('ranking_id', ranking.id)
+  const [{ data: entries }, { data: criteria }, { data: sources }, { data: facetsData }] = await Promise.all([
+    supabase
+      .from('ranking_entries')
+      .select('*, items!inner(*)')
+      .eq('ranking_id', ranking.id)
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .eq('items.status', 'active')
+      .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('position', { ascending: true }),
+    supabase
+      .from('ranking_criteria')
+      .select('*')
+      .eq('ranking_id', ranking.id)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('ranking_sources')
+      .select('*')
+      .eq('ranking_id', ranking.id)
+      .eq('is_public', true),
+    supabase
+      .from('ranking_facets')
+      .select('facets(id, name, slug, facet_groups(name, code))')
+      .eq('ranking_id', ranking.id),
+  ])
 
   const facets = (facetsData || [])
     .map((rf: any) => rf.facets)
@@ -169,9 +198,6 @@ export async function getPublishedRankingBySlug(slug: string) {
   }
 }
 
-/**
- * 8. 슬러그로 아이템 정보 및 연결된 Facet 정보 조회
- */
 export async function getItemBySlug(slug: string) {
   const supabase = await createClient()
 
@@ -180,11 +206,12 @@ export async function getItemBySlug(slug: string) {
     .select('*')
     .eq('slug', slug)
     .eq('status', 'active')
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .maybeSingle()
 
   if (!item) return null
 
-  // 아이템의 Facet 정보 조회
   const { data: facetsData } = await supabase
     .from('item_facets')
     .select('facets(id, name, slug, facet_groups(name, code))')
@@ -200,28 +227,202 @@ export async function getItemBySlug(slug: string) {
   }
 }
 
-/**
- * 9. 특정 아이템이 포함된 모든 published 랭킹 목록 조회
- */
 export async function getRankingsContainingItem(itemId: string) {
   const supabase = await createClient()
 
   const { data: entries } = await supabase
     .from('ranking_entries')
-    .select('position, rankings(*, categories(name, slug), subcategories(name, slug))')
+    .select('position, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
     .eq('item_id', itemId)
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .eq('rankings.status', 'published')
+    .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .order('created_at', { ascending: false })
 
-  const rankings = (entries || [])
-    .map((entry: any) => {
-      if (!entry.rankings) return null
-      return {
-        ...entry.rankings,
-        position: entry.position,
-      }
-    })
+  return (entries || [])
+    .map((entry: any) => entry.rankings ? { ...entry.rankings, position: entry.position } : null)
     .filter(Boolean)
+}
 
-  return rankings
+/**
+ * 관련 랭킹 우선순위:
+ * 공유 아이템 > 동일 서브카테고리 > 동일 카테고리 > 공유 Facet > 최신 발행일.
+ */
+export async function getRelatedRankings(ranking: any) {
+  const supabase = await createClient()
+  const candidates = new Map<string, RelatedCandidate>()
+  const itemIds = (ranking.entries || []).map((entry: any) => entry.item_id).filter(Boolean)
+  const facetIds = (ranking.facets || []).map((facet: any) => facet.id).filter(Boolean)
+
+  if (itemIds.length > 0) {
+    const { data } = await supabase
+      .from('ranking_entries')
+      .select('ranking_id, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
+      .in('item_id', itemIds)
+      .neq('ranking_id', ranking.id)
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .eq('rankings.status', 'published')
+      .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .limit(60)
+
+    for (const row of data || []) upsertCandidate(candidates, row.rankings, 1, '공유 아이템')
+  }
+
+  if (ranking.subcategory_id) {
+    const { data } = await supabase
+      .from('rankings')
+      .select('*, categories(name, slug), subcategories(name, slug)')
+      .eq('subcategory_id', ranking.subcategory_id)
+      .neq('id', ranking.id)
+      .eq('status', 'published')
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('published_at', { ascending: false })
+      .limit(20)
+
+    for (const row of data || []) upsertCandidate(candidates, row, 2, '같은 세부 분류')
+  }
+
+  if (ranking.category_id) {
+    const { data } = await supabase
+      .from('rankings')
+      .select('*, categories(name, slug), subcategories(name, slug)')
+      .eq('category_id', ranking.category_id)
+      .neq('id', ranking.id)
+      .eq('status', 'published')
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('published_at', { ascending: false })
+      .limit(30)
+
+    for (const row of data || []) upsertCandidate(candidates, row, 3, '같은 카테고리')
+  }
+
+  if (facetIds.length > 0) {
+    const { data } = await supabase
+      .from('ranking_facets')
+      .select('ranking_id, rankings!inner(*, categories(name, slug), subcategories(name, slug))')
+      .in('facet_id', facetIds)
+      .neq('ranking_id', ranking.id)
+      .eq('rankings.status', 'published')
+      .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .limit(60)
+
+    for (const row of data || []) upsertCandidate(candidates, row.rankings, 4, '공유 태그')
+  }
+
+  return [...candidates.values()]
+    .sort(sortCandidates)
+    .slice(0, 6)
+    .map(candidate => ({
+      ...candidate.data,
+      related_reason: candidate.reason,
+      related_match_count: candidate.matchCount,
+    }))
+}
+
+/**
+ * 관련 아이템 우선순위:
+ * 같은 브랜드/제작자 > 공유 Facet > 같은 공개 랭킹·카테고리.
+ */
+export async function getRelatedItems(item: any) {
+  const supabase = await createClient()
+  const candidates = new Map<string, RelatedCandidate>()
+  const facetIds = (item.facets || []).map((facet: any) => facet.id).filter(Boolean)
+
+  if (item.brand_or_creator) {
+    const { data } = await supabase
+      .from('items')
+      .select('*')
+      .eq('brand_or_creator', item.brand_or_creator)
+      .neq('id', item.id)
+      .eq('status', 'active')
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    for (const row of data || []) upsertCandidate(candidates, row, 1, '같은 브랜드·제작자')
+  }
+
+  if (facetIds.length > 0) {
+    const { data } = await supabase
+      .from('item_facets')
+      .select('item_id, items!inner(*)')
+      .in('facet_id', facetIds)
+      .neq('item_id', item.id)
+      .eq('items.status', 'active')
+      .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .limit(60)
+
+    for (const row of data || []) upsertCandidate(candidates, row.items, 2, '공유 태그')
+  }
+
+  const { data: containingRows } = await supabase
+    .from('ranking_entries')
+    .select('ranking_id, rankings!inner(id, category_id)')
+    .eq('item_id', item.id)
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .eq('rankings.status', 'published')
+    .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+
+  const containingRankingIds = [...new Set((containingRows || []).map((row: any) => row.ranking_id).filter(Boolean))]
+  const categoryIds = [...new Set((containingRows || []).map((row: any) => row.rankings?.category_id).filter(Boolean))]
+
+  if (containingRankingIds.length > 0) {
+    const { data } = await supabase
+      .from('ranking_entries')
+      .select('item_id, items!inner(*)')
+      .in('ranking_id', containingRankingIds)
+      .neq('item_id', item.id)
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .eq('items.status', 'active')
+      .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .limit(80)
+
+    for (const row of data || []) upsertCandidate(candidates, row.items, 3, '같은 랭킹에 등장')
+  }
+
+  if (categoryIds.length > 0) {
+    const { data: categoryRankings } = await supabase
+      .from('rankings')
+      .select('id')
+      .in('category_id', categoryIds)
+      .eq('status', 'published')
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('published_at', { ascending: false })
+      .limit(30)
+
+    const categoryRankingIds = (categoryRankings || []).map(row => row.id)
+    if (categoryRankingIds.length > 0) {
+      const { data } = await supabase
+        .from('ranking_entries')
+        .select('item_id, items!inner(*)')
+        .in('ranking_id', categoryRankingIds)
+        .neq('item_id', item.id)
+        .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+        .eq('items.status', 'active')
+        .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+        .limit(100)
+
+      for (const row of data || []) upsertCandidate(candidates, row.items, 4, '같은 카테고리')
+    }
+  }
+
+  return [...candidates.values()]
+    .sort(sortCandidates)
+    .slice(0, 10)
+    .map(candidate => ({
+      ...candidate.data,
+      related_reason: candidate.reason,
+      related_match_count: candidate.matchCount,
+    }))
 }

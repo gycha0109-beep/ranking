@@ -12,8 +12,7 @@ import {
   Sparkles, 
   FileEdit,
   Eye,
-  RefreshCw,
-  Award
+  RefreshCw
 } from 'lucide-react'
 
 interface Props {
@@ -31,6 +30,7 @@ interface Props {
   isPublishable: boolean
   moderationStatus: string
   moderationReason: string
+  moderationIssues: Array<{ label: string; status: string; reason: string }>
 }
 
 export default function PreviewControlPanel({
@@ -40,7 +40,8 @@ export default function PreviewControlPanel({
   validation,
   isPublishable,
   moderationStatus,
-  moderationReason
+  moderationReason,
+  moderationIssues
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -86,13 +87,13 @@ export default function PreviewControlPanel({
       if (result.error) {
         setErrorMessage(result.error)
       } else {
-        setSuccessMessage('콘텐츠 검열 심사가 수동 승인(Clean) 처리되었습니다!')
+        setSuccessMessage('랭킹, 순위 항목, 연결 아이템의 텍스트 검토가 관리자 승인으로 기록되었습니다.')
         router.refresh()
       }
     })
   }
 
-  const isApproved = moderationStatus === 'clean' || moderationStatus === 'suggestive'
+  const isApproved = moderationIssues.length === 0
 
   return (
     <div className="rounded-3xl border border-indigo-500/20 bg-indigo-950/10 p-5 sm:p-6 backdrop-blur-xl space-y-6">
@@ -150,6 +151,22 @@ export default function PreviewControlPanel({
             <span>[참고] 이 문서는 약간의 선정성/민감성 표현(suggestive)을 포함하고 있습니다. 발행은 가능합니다.</span>
           </div>
           <span className="text-[10px] text-purple-400 pl-6 block">감지 사유: {moderationReason}</span>
+        </div>
+      )}
+
+      {moderationIssues.length > 0 && (
+        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-200 text-xs space-y-2">
+          <div className="flex items-center gap-2 font-bold">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>발행 차단 요소 {moderationIssues.length}건이 확인되었습니다.</span>
+          </div>
+          <ul className="space-y-1 pl-6 text-[10px] text-amber-300/90">
+            {moderationIssues.map((issue, index) => (
+              <li key={`${issue.label}-${index}`}>
+                {issue.label}: {issue.status} / {issue.reason}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -251,9 +268,8 @@ export default function PreviewControlPanel({
                 <X className="w-4 h-4 text-rose-400 shrink-0" />
               )}
               <span className={isApproved ? 'text-slate-300' : 'text-rose-400 font-bold'}>
-                {moderationStatus === 'blocked' && `콘텐츠 검열 차단됨 (blocked: ${moderationReason})`}
-                {moderationStatus === 'needs_review' && `검토 대기 상태 (needs_review: ${moderationReason})`}
-                {isApproved && `콘텐츠 검열 통과 (${moderationStatus})`}
+                {!isApproved && `검토 또는 차단 상태 ${moderationIssues.length}건 존재`}
+                {isApproved && `랭킹 및 하위 콘텐츠 검열 통과 (${moderationStatus})`}
               </span>
             </div>
           </div>
@@ -283,7 +299,7 @@ export default function PreviewControlPanel({
                 </p>
               )}
 
-              {/* 수동 승인 버튼 (needs_review 또는 blocked 일 때 어드민 오버라이드용) */}
+              {/* 발행 차단 상태를 프리뷰에서 검토한 뒤 감사 정보와 함께 승인 */}
               {!isApproved && (
                 <button
                   type="button"
@@ -292,7 +308,7 @@ export default function PreviewControlPanel({
                   className="w-full py-2 px-4 rounded-xl text-xs font-bold bg-white/[0.04] hover:bg-white/[0.08] border border-indigo-500/20 text-indigo-300 hover:text-white transition-all flex items-center justify-center gap-1.5"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  수동 검토 승인 (Force Clean)
+                  관리자 검토 완료
                 </button>
               )}
             </>

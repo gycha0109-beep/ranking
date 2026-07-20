@@ -1,10 +1,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getPublishedRankingBySlug } from '@/lib/queries/public'
+import { getPublishedRankingBySlug, getRelatedRankings } from '@/lib/queries/public'
 import { 
   ChevronRight, Award, Scale, HelpCircle, Calendar, ExternalLink, 
-  Tag, Info, Star, ShieldCheck, Compass, AlertCircle
+  Tag, Info, Star, ShieldCheck, Compass, AlertCircle, Network
 } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
 
@@ -40,6 +40,8 @@ export default async function RankingDetailPage({ params }: Props) {
   }
 
   // scope_json을 파싱하여 렌더링하기 쉽게 포맷팅
+  const relatedRankings = await getRelatedRankings(ranking)
+
   const scopeItems = Object.entries(ranking.scope_json || {}).map(([key, val]) => ({
     label: key.toUpperCase(),
     value: String(val)
@@ -373,6 +375,52 @@ export default async function RankingDetailPage({ params }: Props) {
             })}
           </div>
         </section>
+
+        {relatedRankings.length > 0 && (
+          <section className="space-y-5 pt-6 border-t border-white/[0.04]">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Network className="w-5 h-5 text-purple-400" />
+                <h2 className="text-xl font-black text-white">이 랭킹과 관련된 추천 랭킹</h2>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Wiki Connections
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedRankings.map((related: any) => (
+                <Link
+                  key={related.id}
+                  href={`/rankings/${related.slug}`}
+                  className="group rounded-2xl border border-white/[0.06] bg-white/[0.015] p-5 hover:bg-white/[0.04] hover:border-purple-500/25 transition-all"
+                >
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="px-2 py-1 rounded-lg text-[10px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                      {related.related_reason}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">
+                      {related.categories?.name}
+                    </span>
+                    {related.subcategories?.name && (
+                      <span className="text-[10px] font-bold text-slate-600">· {related.subcategories.name}</span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-100 group-hover:text-purple-300 transition-colors line-clamp-2">
+                    {related.title}
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500 line-clamp-2">
+                    {related.summary}
+                  </p>
+                  <div className="mt-4 flex items-center justify-between text-[10px] font-semibold text-slate-600">
+                    <span>{getRankingTypeName(related.ranking_type)}</span>
+                    <span>{new Date(related.published_at || related.updated_at).toLocaleDateString()}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </div>

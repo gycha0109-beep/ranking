@@ -1,9 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getItemBySlug, getRankingsContainingItem } from '@/lib/queries/public'
-import { ExternalLink, Tag, ShieldAlert, Award, ArrowLeft, Layers } from 'lucide-react'
+import { getItemBySlug, getRankingsContainingItem, getRelatedItems } from '@/lib/queries/public'
+import { ExternalLink, Tag, ShieldAlert, Award, ArrowLeft, Layers, Network } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
 
 interface Props {
@@ -23,7 +22,10 @@ export default async function ItemDetailPage({ params }: Props) {
   }
 
   // 2. 이 아이템이 포함된 모든 published 랭킹 조회
-  const rankings = await getRankingsContainingItem(item.id)
+  const [rankings, relatedItems] = await Promise.all([
+    getRankingsContainingItem(item.id),
+    getRelatedItems(item),
+  ])
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0a0a0f] to-[#07070a] text-slate-100">
@@ -176,6 +178,11 @@ export default async function ItemDetailPage({ params }: Props) {
                       <h3 className="text-sm sm:text-base font-bold text-slate-200 group-hover:text-indigo-300 transition-colors">
                         {ranking.title}
                       </h3>
+                      {ranking.summary && (
+                        <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2">
+                          {ranking.summary}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -196,6 +203,59 @@ export default async function ItemDetailPage({ params }: Props) {
             </div>
           )}
         </div>
+
+        {relatedItems.length > 0 && (
+          <section className="relative rounded-3xl border border-white/[0.06] bg-white/[0.01] p-6 sm:p-8 mt-8">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <Network className="w-5 h-5 text-purple-400" />
+                관련 추천 아이템
+              </h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Wiki Connections
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedItems.map((related: any) => (
+                <Link
+                  key={related.id}
+                  href={`/items/${related.slug}`}
+                  className="group overflow-hidden rounded-2xl border border-white/[0.05] bg-white/[0.015] hover:bg-white/[0.04] hover:border-purple-500/25 transition-all"
+                >
+                  <div className="aspect-[16/10] bg-slate-900/60 overflow-hidden flex items-center justify-center">
+                    {related.image_url ? (
+                      <SafeImage
+                        src={related.image_url}
+                        alt={related.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fallbackSrc="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400"
+                      />
+                    ) : (
+                      <Layers className="w-8 h-8 text-slate-700" />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-1 rounded-lg text-[9px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                        {related.related_reason}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-600">
+                        {related.item_type}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-100 group-hover:text-purple-300 transition-colors line-clamp-2">
+                      {related.title}
+                    </h3>
+                    {related.brand_or_creator && (
+                      <p className="mt-1 text-xs text-slate-500 line-clamp-1">{related.brand_or_creator}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </div>

@@ -71,9 +71,23 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
     hasCriteria: criteriaList.length >= 1,
   }
 
-  const isPublishable = Object.values(validation).every(Boolean) && 
-    ranking.moderation_status !== 'blocked' && 
-    ranking.moderation_status !== 'needs_review'
+  const moderationIssues: Array<{ label: string; status: string; reason: string }> = []
+  const addIssue = (label: string, status?: string | null, reason?: string | null) => {
+    if (status === 'blocked' || status === 'needs_review') {
+      moderationIssues.push({ label, status, reason: reason || 'none' })
+    }
+  }
+
+  addIssue('랭킹 본문', ranking.moderation_status, ranking.moderation_reason)
+  addIssue('랭킹 커버 이미지', ranking.image_moderation_status, ranking.image_moderation_reason)
+
+  entries.forEach((entry: any) => {
+    addIssue(`${entry.position}위 선정 사유`, entry.moderation_status, entry.moderation_reason)
+    addIssue(`${entry.position}위 아이템`, entry.items?.moderation_status, entry.items?.moderation_reason)
+    addIssue(`${entry.position}위 아이템 이미지`, entry.items?.image_moderation_status, entry.items?.image_moderation_reason)
+  })
+
+  const isPublishable = Object.values(validation).every(Boolean) && moderationIssues.length === 0
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0a0a0f] to-[#07070a] text-slate-100">
@@ -108,6 +122,7 @@ export default async function AdminRankingPreviewPage({ params }: Props) {
           isPublishable={isPublishable}
           moderationStatus={ranking.moderation_status || 'clean'}
           moderationReason={ranking.moderation_reason || 'none'}
+          moderationIssues={moderationIssues}
         />
 
         {/* 구분선 */}
