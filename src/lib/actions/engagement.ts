@@ -10,6 +10,23 @@ type LikeSummary = {
   likeCount: number
 }
 
+type LikeTarget = LikeSummary & {
+  type: LikeTargetType
+  id: string
+  title: string
+}
+
+type LikeTargetResult = {
+  target: LikeTarget | null
+}
+
+type LikeMutationResult = {
+  success?: true
+  liked?: boolean
+  likeCount?: number
+  error?: string
+}
+
 function parseLikeSummary(data: unknown): LikeSummary {
   const value = (data || {}) as { liked?: unknown; like_count?: unknown }
   return {
@@ -18,19 +35,31 @@ function parseLikeSummary(data: unknown): LikeSummary {
   }
 }
 
-export async function getLikeTargetByPath(pathname: string) {
+function parseTargetPath(pathname: string): { type: LikeTargetType; slug: string } | null {
   const match = pathname.match(/^\/(rankings|items)\/([^/?#]+)$/)
-  if (!match) return { target: null }
+  if (!match) return null
 
-  const targetType: LikeTargetType = match[1] === 'rankings' ? 'ranking' : 'item'
-  const slug = decodeURIComponent(match[2])
+  try {
+    return {
+      type: match[1] === 'rankings' ? 'ranking' : 'item',
+      slug: decodeURIComponent(match[2]),
+    }
+  } catch {
+    return null
+  }
+}
+
+export async function getLikeTargetByPath(pathname: string): Promise<LikeTargetResult> {
+  const parsed = parseTargetPath(pathname)
+  if (!parsed) return { target: null }
+
   const supabase = await createClient()
 
-  if (targetType === 'ranking') {
+  if (parsed.type === 'ranking') {
     const { data: ranking, error } = await supabase
       .from('rankings')
       .select('id, title')
-      .eq('slug', slug)
+      .eq('slug', parsed.slug)
       .eq('status', 'published')
       .in('moderation_status', ['clean', 'suggestive'])
       .in('image_moderation_status', ['clean', 'suggestive'])
@@ -45,7 +74,7 @@ export async function getLikeTargetByPath(pathname: string) {
 
     return {
       target: {
-        type: targetType,
+        type: parsed.type,
         id: ranking.id,
         title: ranking.title,
         ...parseLikeSummary(summary),
@@ -56,7 +85,7 @@ export async function getLikeTargetByPath(pathname: string) {
   const { data: item, error } = await supabase
     .from('items')
     .select('id, title')
-    .eq('slug', slug)
+    .eq('slug', parsed.slug)
     .eq('status', 'active')
     .in('moderation_status', ['clean', 'suggestive'])
     .in('image_moderation_status', ['clean', 'suggestive'])
@@ -71,7 +100,7 @@ export async function getLikeTargetByPath(pathname: string) {
 
   return {
     target: {
-      type: targetType,
+      type: parsed.type,
       id: item.id,
       title: item.title,
       ...parseLikeSummary(summary),
@@ -84,10 +113,16 @@ export async function setContentLike(input: {
   targetId: string
   liked: boolean
   pathname: string
-}) {
+}): Promise<LikeMutationResult> {
+  const expectedPrefix = input.targetType === 'ranking' ? '/rankings/' : '/items/'
+  const parsedPath = parseTargetPath(input.pathname)
+  if (!parsedPath || parsedPath.type !== input.targetType || !input.pathname.startsWith(expectedPrefix)) {
+    return { error: '좋아요 요청 경로가 올바르지 않습니다.' }
+  }
+
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user) return { error: 'AUTH_REQUIRED' as const }
+  if (userError || !user) return { error: 'AUTH_REQUIRED' }
 
   const rpcName = input.targetType === 'ranking' ? 'set_ranking_like' : 'set_item_like'
   const idParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
@@ -96,10 +131,8 @@ export async function setContentLike(input: {
     p_liked: input.liked,
   })
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
-  if (input.pathname.startsWith('/')) revalidatePath(input.pathname)
+  revalidatePath(input.pathname)
   return { success: true, ...parseLikeSummary(data) }
 }
