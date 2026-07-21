@@ -13,7 +13,7 @@ CREATE TABLE public.content_daily_views (
   CONSTRAINT content_daily_views_hash_format
     CHECK (viewer_key_hash ~ '^[0-9a-f]{64}$'),
   CONSTRAINT content_daily_views_key_version
-    CHECK (key_version >= 1)
+    CHECK (key_version = 1)
 );
 
 CREATE UNIQUE INDEX uq_content_daily_views_ranking
@@ -91,8 +91,8 @@ BEGIN
     RAISE EXCEPTION '조회 날짜는 현재 UTC 날짜여야 합니다.' USING ERRCODE = '22023';
   END IF;
 
-  IF p_key_version IS NULL OR p_key_version < 1 THEN
-    RAISE EXCEPTION '조회자 키 버전이 올바르지 않습니다.' USING ERRCODE = '22023';
+  IF p_key_version IS DISTINCT FROM 1 THEN
+    RAISE EXCEPTION '지원하지 않는 조회자 키 버전입니다.' USING ERRCODE = '22023';
   END IF;
 
   IF p_ranking_id IS NOT NULL THEN
