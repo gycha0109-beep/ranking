@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import LikeDock from '@/components/engagement/LikeDock'
 import { Shield } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -16,15 +17,14 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased dark">
       <body className="min-h-full flex flex-col bg-[#07070a] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
-        {/* 네비게이션바 탑재 */}
         <Navbar />
 
-        {/* 메인 콘텐츠 영역 */}
         <main className="flex-grow flex flex-col relative">
           {children}
         </main>
 
-        {/* 푸터 영역 */}
+        <LikeDock />
+
         <footer className="bg-[#050508] border-t border-white/[0.04] py-8 text-center text-xs text-slate-500 relative z-10">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
