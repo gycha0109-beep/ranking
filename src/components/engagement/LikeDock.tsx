@@ -2,8 +2,13 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bookmark, Heart, Loader2 } from 'lucide-react'
-import { getEngagementTargetByPath, setContentBookmark, setContentLike } from '@/lib/actions/engagement'
+import { Bookmark, Eye, Heart, Loader2 } from 'lucide-react'
+import {
+  getEngagementTargetByPath,
+  recordContentView,
+  setContentBookmark,
+  setContentLike,
+} from '@/lib/actions/engagement'
 
 type EngagementTarget = {
   type: 'ranking' | 'item'
@@ -13,6 +18,7 @@ type EngagementTarget = {
   likeCount: number
   bookmarked: boolean
   authenticated: boolean
+  uniqueViewCount: number
 }
 
 export default function LikeDock() {
@@ -41,6 +47,26 @@ export default function LikeDock() {
     void load()
     return () => { active = false }
   }, [pathname])
+
+  useEffect(() => {
+    if (!target) return
+
+    let active = true
+    const targetId = target.id
+    const targetType = target.type
+
+    const record = async () => {
+      const result = await recordContentView({ targetType, targetId, pathname })
+      if (!active || !result.success || result.uniqueViewCount === undefined) return
+
+      setTarget(current => current?.id === targetId
+        ? { ...current, uniqueViewCount: result.uniqueViewCount ?? current.uniqueViewCount }
+        : current)
+    }
+
+    void record()
+    return () => { active = false }
+  }, [pathname, target?.id, target?.type])
 
   if (!pathname.match(/^\/(rankings|items)\/[^/]+$/)) return null
   if (loading) {
@@ -139,6 +165,18 @@ export default function LikeDock() {
         </div>
       )}
       <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#101017]/95 p-2 shadow-2xl backdrop-blur-xl">
+        <div
+          className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 text-slate-300"
+          aria-label={`${target.title} 일일 고유 조회 누적 ${target.uniqueViewCount}회`}
+          title="일일 중복을 제거한 누적 조회수"
+        >
+          <Eye className="h-4 w-4 text-cyan-300" />
+          <span className="text-left">
+            <span className="block text-xs font-bold">조회</span>
+            <span className="block text-[10px] text-slate-400">{target.uniqueViewCount.toLocaleString('ko-KR')}회</span>
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={handleLike}
