@@ -15,4 +15,4 @@
 - [x] Hosted Supabase migration history contains all forward migrations.
 - [x] Transactional hosted smoke tests passed and rolled back.
 - [x] Independent review findings were corrected and documented.
-- [ ] Final pull-request lint and production build pass.
+- [x] Final pull-request lint and production build pass.
