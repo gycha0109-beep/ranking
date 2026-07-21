@@ -1,0 +1,117 @@
+'use client'
+
+import { useEffect, useState, useTransition } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Heart, Loader2 } from 'lucide-react'
+import { getLikeTargetByPath, setContentLike } from '@/lib/actions/engagement'
+
+type LikeTarget = {
+  type: 'ranking' | 'item'
+  id: string
+  title: string
+  liked: boolean
+  likeCount: number
+}
+
+export default function LikeDock() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const [target, setTarget] = useState<LikeTarget | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    let active = true
+    setTarget(null)
+    setMessage(null)
+
+    const load = async () => {
+      setLoading(true)
+      const result = await getLikeTargetByPath(pathname)
+      if (active) {
+        setTarget((result.target as LikeTarget | null) || null)
+        setLoading(false)
+      }
+    }
+
+    void load()
+    return () => { active = false }
+  }, [pathname])
+
+  if (!pathname.match(/^\/(rankings|items)\/[^/]+$/)) return null
+  if (loading) {
+    return (
+      <div className="fixed bottom-5 right-5 z-50 rounded-2xl border border-white/10 bg-[#101017]/95 p-3 text-slate-400 shadow-2xl backdrop-blur-xl">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    )
+  }
+  if (!target) return null
+
+  const handleClick = () => {
+    const previous = target
+    const nextLiked = !target.liked
+    setMessage(null)
+    setTarget({ ...target, liked: nextLiked, likeCount: Math.max(0, target.likeCount + (nextLiked ? 1 : -1)) })
+
+    startTransition(async () => {
+      const result = await setContentLike({
+        targetType: target.type,
+        targetId: target.id,
+        liked: nextLiked,
+        pathname,
+      })
+
+      if (result.error === 'AUTH_REQUIRED') {
+        setTarget(previous)
+        router.push(`/login?next=${encodeURIComponent(pathname)}`)
+        return
+      }
+
+      if (result.error) {
+        setTarget(previous)
+        setMessage(result.error)
+        return
+      }
+
+      setTarget(current => current ? {
+        ...current,
+        liked: result.liked ?? nextLiked,
+        likeCount: result.likeCount ?? current.likeCount,
+      } : current)
+    })
+  }
+
+  return (
+    <div className="fixed bottom-5 right-5 z-50 max-w-[calc(100vw-2.5rem)]">
+      {message && (
+        <div className="mb-2 rounded-xl border border-rose-500/20 bg-rose-950/95 px-3 py-2 text-[10px] text-rose-200 shadow-xl">
+          {message}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isPending}
+        aria-pressed={target.liked}
+        aria-label={`${target.title} 좋아요 ${target.liked ? '취소' : '추가'}`}
+        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-all disabled:cursor-wait disabled:opacity-70 ${
+          target.liked
+            ? 'border-rose-400/30 bg-rose-500/20 text-rose-100'
+            : 'border-white/10 bg-[#101017]/95 text-slate-200 hover:border-rose-400/25 hover:bg-rose-500/10'
+        }`}
+      >
+        {isPending ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <Heart className={`h-5 w-5 ${target.liked ? 'fill-current text-rose-400' : 'text-slate-400'}`} />
+        )}
+        <span className="min-w-0 text-left">
+          <span className="block truncate text-xs font-bold">{target.liked ? '좋아요 완료' : '좋아요'}</span>
+          <span className="block text-[10px] text-slate-400">{target.likeCount.toLocaleString('ko-KR')}명</span>
+        </span>
+      </button>
+    </div>
+  )
+}
