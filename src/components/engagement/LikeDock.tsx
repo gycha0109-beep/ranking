@@ -164,7 +164,7 @@ export default function LikeDock() {
           {message}
         </div>
       )}
-      <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#101017]/95 p-2 shadow-2xl backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-white/10 bg-[#101017]/95 p-2 shadow-2xl backdrop-blur-xl">
         <div
           className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 text-slate-300"
           aria-label={`${target.title} 일일 고유 조회 누적 ${target.uniqueViewCount}회`}
