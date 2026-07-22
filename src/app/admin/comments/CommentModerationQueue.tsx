@@ -35,12 +35,14 @@ const REASONS = [
   ['system_error', '시스템 오류'],
 ] as const
 
+type ReviewReason = typeof REASONS[number][0] | 'none' | 'sexual_suggestive'
+
 export default function CommentModerationQueue({ initialRows, initialError }: Props) {
   const [rows, setRows] = useState(initialRows)
   const [error, setError] = useState(initialError || null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
-  const [reasons, setReasons] = useState<Record<string, string>>({})
+  const [reasons, setReasons] = useState<Record<string, ReviewReason>>({})
 
   const refresh = async () => {
     setError(null)
@@ -56,16 +58,19 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
     setBusyId(row.commentId)
     setError(null)
 
-    const decisionReason = decisionStatus === 'clean'
+    const selectedReason = reasons[row.commentId]
+    const decisionReason: ReviewReason = decisionStatus === 'clean'
       ? 'none'
       : decisionStatus === 'suggestive'
         ? 'sexual_suggestive'
-        : reasons[row.commentId] || row.moderationReason || 'spam'
+        : selectedReason && selectedReason !== 'none' && selectedReason !== 'sexual_suggestive'
+          ? selectedReason
+          : 'spam'
 
     const result = await reviewCommentModeration({
       commentId: row.commentId,
       decisionStatus,
-      decisionReason: decisionReason as 'none' | 'sexual_suggestive' | 'spam' | 'hate' | 'violence' | 'privacy' | 'illegal' | 'explicit_sexual' | 'minor_sexualization' | 'real_person_sexualization' | 'system_error',
+      decisionReason,
       note: notes[row.commentId],
     })
 
@@ -89,7 +94,7 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
           type="button"
           onClick={() => void refresh()}
           disabled={busyId !== null}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/[0.06] disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-bold text-slate-300 hover:bg-white/[0.06] disabled:opacity-50"
         >
           <RefreshCcw className="h-3.5 w-3.5" />
           새로고침
@@ -113,9 +118,13 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
         <div className="space-y-5">
           {rows.map((row) => {
             const targetHref = row.targetType === 'ranking'
-              ? `/rankings/${row.targetId}`
-              : `/items/${row.targetId}`
+              ? `/rankings/${row.targetSlug}`
+              : `/items/${row.targetSlug}`
             const isBusy = busyId === row.commentId
+            const selectedReason = reasons[row.commentId]
+              || (REASONS.some(([value]) => value === row.moderationReason)
+                ? row.moderationReason as ReviewReason
+                : 'spam')
 
             return (
               <article
@@ -160,16 +169,16 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
                   </p>
                 </div>
 
-                <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
+                <div className="mt-5 grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3">
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
                       차단 사유
                     </label>
                     <select
-                      value={reasons[row.commentId] || row.moderationReason || 'spam'}
+                      value={selectedReason}
                       onChange={(event) => setReasons((current) => ({
                         ...current,
-                        [row.commentId]: event.target.value,
+                        [row.commentId]: event.target.value as ReviewReason,
                       }))}
                       className="w-full rounded-xl border border-white/10 bg-[#0d0d13] px-3 py-2.5 text-xs text-slate-200 outline-none focus:border-indigo-500/30"
                     >
@@ -200,7 +209,7 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
                     type="button"
                     onClick={() => void decide(row, 'clean')}
                     disabled={busyId !== null}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-50"
                   >
                     {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                     정상 공개
@@ -209,7 +218,7 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
                     type="button"
                     onClick={() => void decide(row, 'suggestive')}
                     disabled={busyId !== null}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-200 hover:bg-amber-500/20 disabled:opacity-50"
                   >
                     <Sparkles className="h-3.5 w-3.5" />
                     제한적 공개
@@ -218,7 +227,7 @@ export default function CommentModerationQueue({ initialRows, initialError }: Pr
                     type="button"
                     onClick={() => void decide(row, 'blocked')}
                     disabled={busyId !== null}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
                   >
                     <ShieldAlert className="h-3.5 w-3.5" />
                     차단 유지
