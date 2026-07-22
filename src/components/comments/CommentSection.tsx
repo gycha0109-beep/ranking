@@ -33,9 +33,9 @@ type Props = {
 }
 
 function mergeRows(current: CommentListRow[], incoming: CommentListRow[]) {
-  const byId = new Map(current.map((row) => [row.id, row]))
-  for (const row of incoming) byId.set(row.id, row)
-  return Array.from(byId.values())
+  const rows = new Map(current.map((row) => [row.id, row]))
+  for (const row of incoming) rows.set(row.id, row)
+  return Array.from(rows.values())
 }
 
 function statusLabel(status: CommentListRow['status']) {
@@ -45,17 +45,21 @@ function statusLabel(status: CommentListRow['status']) {
   return null
 }
 
-function mutationMessage(visibility?: string) {
-  if (visibility === 'needs_review') return '댓글이 등록되었으며 운영 검토를 기다리고 있습니다.'
-  if (visibility === 'blocked') return '댓글이 운영 정책에 따라 공개되지 않았습니다.'
-  if (visibility === 'deleted') return '댓글을 삭제했습니다.'
-  return '댓글이 등록되었습니다.'
+function resultMessage(visibility?: string, edit = false) {
+  if (visibility === 'needs_review') return edit
+    ? '수정된 댓글이 운영 검토를 기다리고 있습니다.'
+    : '댓글이 등록되었으며 운영 검토를 기다리고 있습니다.'
+  if (visibility === 'blocked') return edit
+    ? '수정된 댓글이 운영 정책에 따라 공개되지 않았습니다.'
+    : '댓글이 운영 정책에 따라 공개되지 않았습니다.'
+  return edit ? '댓글을 수정했습니다.' : '댓글이 등록되었습니다.'
 }
 
 export default function CommentSection({ targetType, targetId, pathname }: Props) {
   const router = useRouter()
   const [comments, setComments] = useState<CommentListRow[]>([])
   const [nextCursor, setNextCursor] = useState<CommentCursor | null>(null)
+  const [totalCount, setTotalCount] = useState(0)
   const [authenticated, setAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -74,6 +78,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     const result = await listComments({ targetType, targetId, limit: 20 })
     setComments(result.data.comments)
     setNextCursor(result.data.nextCursor)
+    setTotalCount(result.data.totalCount)
     setAuthenticated(result.data.authenticated)
     setError(result.error || null)
     setLoading(false)
@@ -83,19 +88,23 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     void loadFirstPage()
   }, [loadFirstPage])
 
-  const roots = useMemo(() => comments.filter((comment) => !comment.parentId), [comments])
+  const roots = useMemo(
+    () => comments.filter((comment) => !comment.parentId),
+    [comments],
+  )
+
   const repliesByParent = useMemo(() => {
-    const map = new Map<string, CommentListRow[]>()
+    const result = new Map<string, CommentListRow[]>()
     for (const comment of comments) {
       if (!comment.parentId) continue
-      const rows = map.get(comment.parentId) || []
-      rows.push(comment)
-      map.set(comment.parentId, rows)
+      const replies = result.get(comment.parentId) || []
+      replies.push(comment)
+      result.set(comment.parentId, replies)
     }
-    for (const rows of map.values()) {
-      rows.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
+    for (const replies of result.values()) {
+      replies.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
     }
-    return map
+    return result
   }, [comments])
 
   const requireLogin = () => {
@@ -109,6 +118,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     const result = await listComments({ targetType, targetId, cursor: nextCursor, limit: 20 })
     setComments((current) => mergeRows(current, result.data.comments))
     setNextCursor(result.data.nextCursor)
+    setTotalCount(result.data.totalCount)
     setAuthenticated(result.data.authenticated)
     setError(result.error || null)
     setLoadingMore(false)
@@ -139,14 +149,13 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
       requireLogin()
       return
     }
-
     if (result.error) {
       setError(result.error)
       setSubmitting(false)
       return
     }
 
-    setMessage(mutationMessage(result.visibility))
+    setMessage(resultMessage(result.visibility))
     if (parentId) {
       setReplyBody('')
       setReplyTo(null)
@@ -177,7 +186,6 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
       requireLogin()
       return
     }
-
     if (result.error) {
       setError(result.error)
       setSubmitting(false)
@@ -185,11 +193,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
       return
     }
 
-    setMessage(result.visibility === 'needs_review'
-      ? '수정된 댓글이 운영 검토를 기다리고 있습니다.'
-      : result.visibility === 'blocked'
-        ? '수정된 댓글이 운영 정책에 따라 공개되지 않았습니다.'
-        : '댓글을 수정했습니다.')
+    setMessage(resultMessage(result.visibility, true))
     setEditingId(null)
     setEditBody('')
     await loadFirstPage()
@@ -215,7 +219,6 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
       requireLogin()
       return
     }
-
     if (result.error) {
       setError(result.error)
       setSubmitting(false)
@@ -234,7 +237,8 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     const label = statusLabel(comment.status)
     const canMutate = comment.isMine && comment.status !== 'deleted'
     const canReply = depth === 0 && comment.status === 'visible'
-    const authorName = comment.author.displayName || (comment.status === 'deleted' ? '삭제된 사용자' : '익명 사용자')
+    const authorName = comment.author.displayName
+      || (comment.status === 'deleted' ? '삭제된 사용자' : '익명 사용자')
 
     return (
       <article
@@ -244,7 +248,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
           : 'ml-5 rounded-2xl border border-white/[0.05] bg-black/20 p-4 sm:ml-10'}
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.07] bg-slate-900/80 text-slate-500">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-slate-900/80 text-slate-500">
             <UserRound className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
@@ -276,7 +280,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                   onChange={(event) => setEditBody(event.target.value)}
                   maxLength={2000}
                   rows={4}
-                  className="w-full resize-y rounded-xl border border-indigo-500/20 bg-black/30 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400/40"
+                  className="w-full resize-y rounded-xl border border-indigo-500/20 bg-black/30 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-indigo-400/40"
                 />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[10px] text-slate-600">{editBody.length.toLocaleString('ko-KR')} / 2,000</span>
@@ -288,7 +292,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                         setEditBody('')
                       }}
                       disabled={submitting}
-                      className="rounded-lg border border-white/10 px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-white disabled:opacity-50"
+                      className="rounded-lg border border-white/10 px-3 py-1.5 text-[10px] font-bold text-slate-400 disabled:opacity-50"
                     >
                       취소
                     </button>
@@ -325,7 +329,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                       setReplyTo((current) => current === comment.id ? null : comment.id)
                       setReplyBody('')
                     }}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 transition hover:text-indigo-300"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-indigo-300"
                   >
                     <Reply className="h-3 w-3" />
                     답글
@@ -340,7 +344,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                         setEditBody(comment.body)
                         setReplyTo(null)
                       }}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 transition hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-indigo-300"
                     >
                       <Edit3 className="h-3 w-3" />
                       수정
@@ -349,7 +353,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                       type="button"
                       onClick={() => void submitDelete(comment)}
                       disabled={submitting}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 transition hover:text-rose-300 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-rose-300 disabled:opacity-50"
                     >
                       <Trash2 className="h-3 w-3" />
                       삭제
@@ -369,7 +373,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
               maxLength={2000}
               rows={3}
               placeholder="답글을 입력해 주세요."
-              className="w-full resize-y rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-slate-100 outline-none transition placeholder:text-slate-700 focus:border-indigo-400/35"
+              className="w-full resize-y rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-700 focus:border-indigo-400/35"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] text-slate-600">{replyBody.length.toLocaleString('ko-KR')} / 2,000</span>
@@ -381,7 +385,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                     setReplyBody('')
                   }}
                   disabled={submitting}
-                  className="rounded-lg border border-white/10 px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-white disabled:opacity-50"
+                  className="rounded-lg border border-white/10 px-3 py-1.5 text-[10px] font-bold text-slate-400 disabled:opacity-50"
                 >
                   취소
                 </button>
@@ -407,7 +411,10 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-indigo-400" />
-          <h2 id="comments-heading" className="text-xl font-black text-white">댓글과 답글</h2>
+          <h2 id="comments-heading" className="text-xl font-black text-white">
+            댓글과 답글
+            <span className="ml-2 text-sm font-bold text-indigo-300">{totalCount.toLocaleString('ko-KR')}</span>
+          </h2>
         </div>
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600">
           <Lock className="h-3 w-3" />
@@ -444,7 +451,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
               maxLength={2000}
               rows={4}
               placeholder="이 콘텐츠에 대한 의견을 남겨 주세요. 일반 텍스트만 지원합니다."
-              className="w-full resize-y rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-700 focus:border-indigo-400/35"
+              className="w-full resize-y rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm text-slate-100 outline-none placeholder:text-slate-700 focus:border-indigo-400/35"
             />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-[10px] text-slate-600">{body.length.toLocaleString('ko-KR')} / 2,000</span>
@@ -452,7 +459,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                 type="button"
                 onClick={() => void submitCreate(null)}
                 disabled={submitting || !body.trim()}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/15 px-4 py-2 text-xs font-bold text-indigo-100 transition hover:bg-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/15 px-4 py-2 text-xs font-bold text-indigo-100 hover:bg-indigo-500/25 disabled:opacity-50"
               >
                 {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                 댓글 등록
@@ -463,7 +470,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
           <button
             type="button"
             onClick={requireLogin}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 py-7 text-xs font-bold text-slate-400 transition hover:border-indigo-500/25 hover:text-indigo-200"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 py-7 text-xs font-bold text-slate-400 hover:border-indigo-500/25 hover:text-indigo-200"
           >
             <MessageCircle className="h-4 w-4" />
             로그인하고 댓글 작성하기
@@ -497,7 +504,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
             type="button"
             onClick={() => void loadMore()}
             disabled={loadingMore}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-xs font-bold text-slate-400 transition hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-xs font-bold text-slate-400 hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
           >
             {loadingMore ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ChevronDown className="h-3.5 w-3.5" />}
             댓글 더 보기
