@@ -31,6 +31,7 @@ export type CommentModerationQueueItem = {
   authorAvatarUrl: string | null
   targetType: 'ranking' | 'item'
   targetId: string
+  targetSlug: string
   targetTitle: string
   reviews: CommentModerationReview[]
 }
@@ -106,6 +107,7 @@ export async function loadCommentModerationQueue(): Promise<{
         typeof row.comment_id !== 'string'
         || typeof row.body !== 'string'
         || typeof row.target_id !== 'string'
+        || typeof row.target_slug !== 'string'
       ) return []
 
       return [{
@@ -120,6 +122,7 @@ export async function loadCommentModerationQueue(): Promise<{
         authorAvatarUrl: typeof row.author_avatar_url === 'string' ? row.author_avatar_url : null,
         targetType: row.target_type === 'item' ? 'item' : 'ranking',
         targetId: row.target_id,
+        targetSlug: row.target_slug,
         targetTitle: typeof row.target_title === 'string' ? row.target_title : '제목 없음',
         reviews: reviewsByComment.get(row.comment_id) || [],
       }]
