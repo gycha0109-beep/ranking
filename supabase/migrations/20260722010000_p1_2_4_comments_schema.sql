@@ -30,7 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_comments_user_updated
   ON public.comments(user_id, updated_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_comments_blocked_redaction
-  ON public.comments(created_at, id)
+  ON public.comments(updated_at, id)
   WHERE moderation_status = 'blocked' AND body_redacted_at IS NULL;
 
 CREATE TABLE public.comment_mutation_events (
