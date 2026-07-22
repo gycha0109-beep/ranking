@@ -30,6 +30,7 @@ export type CommentPage = {
   comments: CommentListRow[]
   nextCursor: CommentCursor | null
   authenticated: boolean
+  totalCount: number
 }
 
 type MutationResult = {
@@ -124,7 +125,7 @@ async function validateTarget(input: {
   return !error && Boolean(data)
 }
 
-function parseCommentPage(data: unknown): CommentPage {
+function parseCommentPage(data: unknown, totalCount: number): CommentPage {
   const value = (data || {}) as {
     comments?: unknown
     next_cursor?: unknown
@@ -171,6 +172,7 @@ function parseCommentPage(data: unknown): CommentPage {
     comments,
     nextCursor,
     authenticated: value.authenticated === true,
+    totalCount,
   }
 }
 
@@ -180,21 +182,34 @@ export async function listComments(input: {
   cursor?: CommentCursor | null
   limit?: number
 }): Promise<{ data: CommentPage; error?: string }> {
-  const empty: CommentPage = { comments: [], nextCursor: null, authenticated: false }
+  const empty: CommentPage = { comments: [], nextCursor: null, authenticated: false, totalCount: 0 }
 
   try {
     const supabase = await createClient()
-    const rpcName = input.targetType === 'ranking' ? 'list_ranking_comments' : 'list_item_comments'
+    const listRpcName = input.targetType === 'ranking' ? 'list_ranking_comments' : 'list_item_comments'
+    const countRpcName = input.targetType === 'ranking'
+      ? 'get_ranking_public_comment_count'
+      : 'get_item_public_comment_count'
     const idParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
-    const { data, error } = await supabase.rpc(rpcName, {
-      [idParam]: input.targetId,
-      p_cursor_created_at: input.cursor?.createdAt || null,
-      p_cursor_id: input.cursor?.id || null,
-      p_limit: Math.min(Math.max(input.limit || 20, 1), 50),
-    })
 
-    if (error) return { data: empty, error: error.message }
-    return { data: parseCommentPage(data) }
+    const [listResult, countResult] = await Promise.all([
+      supabase.rpc(listRpcName, {
+        [idParam]: input.targetId,
+        p_cursor_created_at: input.cursor?.createdAt || null,
+        p_cursor_id: input.cursor?.id || null,
+        p_limit: Math.min(Math.max(input.limit || 20, 1), 50),
+      }),
+      supabase.rpc(countRpcName, {
+        [idParam]: input.targetId,
+      }),
+    ])
+
+    if (listResult.error) return { data: empty, error: listResult.error.message }
+    if (countResult.error) return { data: empty, error: countResult.error.message }
+
+    const parsedCount = Number(countResult.data)
+    const totalCount = Number.isFinite(parsedCount) && parsedCount >= 0 ? parsedCount : 0
+    return { data: parseCommentPage(listResult.data, totalCount) }
   } catch (error) {
     return {
       data: empty,
