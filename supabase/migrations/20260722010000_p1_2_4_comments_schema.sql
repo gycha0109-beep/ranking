@@ -36,16 +36,13 @@ CREATE INDEX IF NOT EXISTS idx_comments_blocked_redaction
 CREATE TABLE public.comment_mutation_events (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  comment_id UUID REFERENCES public.comments(id) ON DELETE CASCADE,
+  comment_id UUID NOT NULL REFERENCES public.comments(id) ON DELETE CASCADE,
   ranking_id UUID REFERENCES public.rankings(id) ON DELETE CASCADE,
   item_id UUID REFERENCES public.items(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL CHECK (event_type IN ('create', 'update', 'delete')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT comment_mutation_events_target_shape
-    CHECK (
-      (event_type = 'create' AND num_nonnulls(ranking_id, item_id) = 1)
-      OR (event_type IN ('update', 'delete') AND comment_id IS NOT NULL)
-    )
+  CONSTRAINT comment_mutation_events_exactly_one_target
+    CHECK (num_nonnulls(ranking_id, item_id) = 1)
 );
 
 CREATE INDEX idx_comment_mutation_events_rate
@@ -74,8 +71,13 @@ SET search_path = public, private, pg_temp
 AS $$
 BEGIN
   IF NEW.status = 'deleted' THEN
+    IF NEW.deleted_at IS NULL THEN
+      NEW.deleted_at := NOW();
+    END IF;
     RETURN NEW;
   END IF;
+
+  NEW.deleted_at := NULL;
 
   IF NEW.moderation_status IN ('clean', 'suggestive') THEN
     NEW.status := 'visible';
