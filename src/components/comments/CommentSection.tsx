@@ -6,6 +6,7 @@ import {
   AlertCircle,
   ChevronDown,
   Edit3,
+  Flag,
   Loader2,
   Lock,
   MessageCircle,
@@ -25,6 +26,7 @@ import {
   type CommentListRow,
   type CommentTargetType,
 } from '@/lib/actions/comments'
+import CommentReportForm from '@/components/comments/CommentReportForm'
 
 type Props = {
   targetType: CommentTargetType
@@ -71,6 +73,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
   const [replyBody, setReplyBody] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editBody, setEditBody] = useState('')
+  const [reportingId, setReportingId] = useState<string | null>(null)
 
   const loadFirstPage = useCallback(async () => {
     setLoading(true)
@@ -229,6 +232,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     setMessage('댓글을 삭제했습니다.')
     setEditingId(null)
     setReplyTo(null)
+    setReportingId(null)
     await loadFirstPage()
     setSubmitting(false)
   }
@@ -237,6 +241,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
     const label = statusLabel(comment.status)
     const canMutate = comment.isMine && comment.status !== 'deleted'
     const canReply = depth === 0 && comment.status === 'visible'
+    const canReport = !comment.isMine && comment.status === 'visible'
     const authorName = comment.author.displayName
       || (comment.status === 'deleted' ? '삭제된 사용자' : '익명 사용자')
 
@@ -328,6 +333,8 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                       }
                       setReplyTo((current) => current === comment.id ? null : comment.id)
                       setReplyBody('')
+                      setEditingId(null)
+                      setReportingId(null)
                     }}
                     className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-indigo-300"
                   >
@@ -335,6 +342,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                     답글
                   </button>
                 )}
+
                 {canMutate && (
                   <>
                     <button
@@ -343,6 +351,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                         setEditingId(comment.id)
                         setEditBody(comment.body)
                         setReplyTo(null)
+                        setReportingId(null)
                       }}
                       className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-indigo-300"
                     >
@@ -359,6 +368,30 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
                       삭제
                     </button>
                   </>
+                )}
+
+                {canReport && (
+                  <button
+                    type="button"
+                    disabled={comment.reportedByMe}
+                    onClick={() => {
+                      if (!authenticated) {
+                        requireLogin()
+                        return
+                      }
+                      setReportingId((current) => current === comment.id ? null : comment.id)
+                      setReplyTo(null)
+                      setEditingId(null)
+                    }}
+                    className={`inline-flex items-center gap-1 text-[10px] font-bold disabled:cursor-default ${
+                      comment.reportedByMe
+                        ? 'text-rose-400/60'
+                        : 'text-slate-500 hover:text-rose-300'
+                    }`}
+                  >
+                    <Flag className="h-3 w-3" />
+                    {comment.reportedByMe ? '신고됨' : '신고'}
+                  </button>
                 )}
               </div>
             )}
@@ -402,6 +435,22 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
             </div>
           </div>
         )}
+
+        {reportingId === comment.id && !comment.reportedByMe && (
+          <CommentReportForm
+            commentId={comment.id}
+            targetType={targetType}
+            targetId={targetId}
+            pathname={pathname}
+            onCancel={() => setReportingId(null)}
+            onRequireLogin={requireLogin}
+            onReported={async (successMessage) => {
+              setMessage(successMessage)
+              setReportingId(null)
+              await loadFirstPage()
+            }}
+          />
+        )}
       </article>
     )
   }
@@ -418,7 +467,7 @@ export default function CommentSection({ targetType, targetId, pathname }: Props
         </div>
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600">
           <Lock className="h-3 w-3" />
-          댓글은 자동·수동 Moderation 대상입니다.
+          댓글은 자동·수동 Moderation과 사용자 신고 대상입니다.
         </span>
       </div>
 
