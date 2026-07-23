@@ -15,6 +15,7 @@ export type CommentListRow = {
   updatedAt: string
   edited: boolean
   isMine: boolean
+  reportedByMe: boolean
   author: {
     displayName: string | null
     avatarUrl: string | null
@@ -154,6 +155,7 @@ function parseCommentPage(data: unknown, totalCount: number): CommentPage {
       updatedAt: typeof row.updated_at === 'string' ? row.updated_at : new Date(0).toISOString(),
       edited: row.edited === true,
       isMine: row.is_mine === true,
+      reportedByMe: false,
       author: {
         displayName: typeof rawAuthor.display_name === 'string' ? rawAuthor.display_name : null,
         avatarUrl: typeof rawAuthor.avatar_url === 'string' ? rawAuthor.avatar_url : null,
@@ -209,7 +211,35 @@ export async function listComments(input: {
 
     const parsedCount = Number(countResult.data)
     const totalCount = Number.isFinite(parsedCount) && parsedCount >= 0 ? parsedCount : 0
-    return { data: parseCommentPage(listResult.data, totalCount) }
+    const page = parseCommentPage(listResult.data, totalCount)
+
+    if (!page.authenticated || page.comments.length === 0) {
+      return { data: page }
+    }
+
+    const reportStateResult = await supabase.rpc('get_my_reported_comment_ids', {
+      p_comment_ids: page.comments.map((comment) => comment.id),
+    })
+
+    if (reportStateResult.error) {
+      return { data: page, error: '댓글 신고 상태를 불러오지 못했습니다.' }
+    }
+
+    const reportedIds = new Set(
+      (Array.isArray(reportStateResult.data) ? reportStateResult.data : [])
+        .map((row) => (row as { comment_id?: unknown }).comment_id)
+        .filter((id): id is string => typeof id === 'string'),
+    )
+
+    return {
+      data: {
+        ...page,
+        comments: page.comments.map((comment) => ({
+          ...comment,
+          reportedByMe: reportedIds.has(comment.id),
+        })),
+      },
+    }
   } catch (error) {
     return {
       data: empty,
