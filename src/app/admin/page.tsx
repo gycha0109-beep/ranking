@@ -12,6 +12,7 @@ import {
   Eye,
   FileEdit,
   MessageSquare,
+  Flag,
 } from 'lucide-react'
 
 export default async function AdminDashboardPage() {
@@ -23,6 +24,7 @@ export default async function AdminDashboardPage() {
     { count: itemCount },
     { count: facetCount },
     { count: pendingCommentCount },
+    { data: pendingReportCaseCountData },
     { data: rankingsData },
   ] = await Promise.all([
     supabase.from('categories').select('*', { count: 'exact', head: true }),
@@ -34,6 +36,7 @@ export default async function AdminDashboardPage() {
       .select('id', { count: 'exact', head: true })
       .in('moderation_status', ['needs_review', 'blocked'])
       .neq('status', 'deleted'),
+    supabase.rpc('get_pending_comment_report_case_count'),
     supabase.from('rankings').select('status'),
   ])
 
@@ -41,6 +44,10 @@ export default async function AdminDashboardPage() {
   const totalRankings = rankings.length
   const draftRankings = rankings.filter((ranking) => ranking.status === 'draft').length
   const publishedRankings = rankings.filter((ranking) => ranking.status === 'published').length
+  const parsedReportCaseCount = Number(pendingReportCaseCountData)
+  const pendingReportCaseCount = Number.isFinite(parsedReportCaseCount) && parsedReportCaseCount >= 0
+    ? parsedReportCaseCount
+    : 0
 
   const stats = [
     { name: '카테고리', count: categoryCount || 0, icon: FolderKanban, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
@@ -99,6 +106,15 @@ export default async function AdminDashboardPage() {
       count: pendingCommentCount || 0,
       color: 'from-rose-600 to-orange-500',
       badge: `${pendingCommentCount || 0}개 검토 대기`,
+    },
+    {
+      title: '댓글 신고·운영 제재',
+      description: '사용자 신고를 댓글 단위 사건으로 검토하고 유지, 기각, 숨김, 차단 및 작성자 경고 기록을 결정합니다.',
+      href: '/admin/comment-reports',
+      icon: Flag,
+      count: pendingReportCaseCount,
+      color: 'from-fuchsia-600 to-rose-500',
+      badge: `${pendingReportCaseCount}개 신고 사건`,
     },
   ]
 
