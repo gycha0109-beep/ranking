@@ -65,13 +65,11 @@ BEGIN
       WHEN n.ranking_id IS NOT NULL
            AND r.slug IS NOT NULL
            AND private.is_public_ranking(n.ranking_id)
-        THEN '/rankings/' || r.slug
-             || CASE WHEN n.comment_id IS NOT NULL THEN '#comment-' || n.comment_id::TEXT ELSE '' END
+        THEN '/rankings/' || r.slug || '#comments-heading'
       WHEN n.item_id IS NOT NULL
            AND i.slug IS NOT NULL
            AND private.is_public_item(n.item_id)
-        THEN '/items/' || i.slug
-             || CASE WHEN n.comment_id IS NOT NULL THEN '#comment-' || n.comment_id::TEXT ELSE '' END
+        THEN '/items/' || i.slug || '#comments-heading'
       ELSE NULL
     END,
     CASE WHEN n.event_type = 'comment_reply' THEN actor.display_name ELSE NULL END,
