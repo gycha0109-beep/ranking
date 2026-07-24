@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminCapability } from '@/lib/actions/admin-access'
 import {
   reviewModerationTarget,
   type ModerationDecisionReason,
@@ -36,28 +36,12 @@ export type CommentModerationQueueItem = {
   reviews: CommentModerationReview[]
 }
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user) throw new Error('로그인이 필요합니다.')
-
-  const { data: role, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .eq('role', 'admin')
-    .maybeSingle()
-
-  if (roleError || !role) throw new Error('관리자 권한이 없습니다.')
-  return supabase
-}
-
 export async function loadCommentModerationQueue(): Promise<{
   data: CommentModerationQueueItem[]
   error?: string
 }> {
   try {
-    const supabase = await requireAdmin()
+    const supabase = await requireAdminCapability('moderation_review')
     const { data: queueData, error: queueError } = await supabase.rpc('list_comment_moderation_queue', {
       p_limit: 100,
       p_offset: 0,

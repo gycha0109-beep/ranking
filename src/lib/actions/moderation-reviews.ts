@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminCapability } from '@/lib/actions/admin-access'
 
 export type ModerationEntityType =
   | 'ranking'
@@ -43,22 +43,6 @@ const ID_PARAM_BY_ENTITY: Record<ModerationEntityType, string> = {
   comment: 'p_comment_id',
 }
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user) throw new Error('로그인이 필요합니다.')
-
-  const { data: role, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .eq('role', 'admin')
-    .maybeSingle()
-
-  if (roleError || !role) throw new Error('관리자 권한이 없습니다.')
-  return supabase
-}
-
 export async function reviewModerationTarget(input: {
   entityType: ModerationEntityType
   entityId: string
@@ -68,7 +52,7 @@ export async function reviewModerationTarget(input: {
   rankingId?: string
 }) {
   try {
-    const supabase = await requireAdmin()
+    const supabase = await requireAdminCapability('moderation_review')
     const rpcName = RPC_BY_ENTITY[input.entityType]
     const idParam = ID_PARAM_BY_ENTITY[input.entityType]
     const { error } = await supabase.rpc(rpcName, {
@@ -90,7 +74,7 @@ export async function reviewModerationTarget(input: {
 
 export async function listModerationReviews(entityIds: string[]) {
   try {
-    const supabase = await requireAdmin()
+    const supabase = await requireAdminCapability('moderation_review')
     if (entityIds.length === 0) return { data: [] }
 
     const { data, error } = await supabase
