@@ -2,7 +2,13 @@
 
 import { requireAdminCapability } from '@/lib/actions/admin-access'
 
-export async function loadMaintenanceAdminData() {
+type MaintenanceAdminData = {
+  jobs: Array<Record<string, unknown>>
+  runs: Array<Record<string, unknown>>
+  error?: string
+}
+
+export async function loadMaintenanceAdminData(): Promise<MaintenanceAdminData> {
   try {
     const supabase = await requireAdminCapability('audit_view')
     const [statusResult, runsResult] = await Promise.all([
@@ -14,8 +20,8 @@ export async function loadMaintenanceAdminData() {
     if (runsResult.error) throw new Error(runsResult.error.message)
 
     return {
-      jobs: Array.isArray(statusResult.data) ? statusResult.data : [],
-      runs: Array.isArray(runsResult.data) ? runsResult.data : [],
+      jobs: Array.isArray(statusResult.data) ? statusResult.data as Array<Record<string, unknown>> : [],
+      runs: Array.isArray(runsResult.data) ? runsResult.data as Array<Record<string, unknown>> : [],
     }
   } catch (error) {
     return {
