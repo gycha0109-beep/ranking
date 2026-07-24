@@ -10,7 +10,7 @@ export type AdminAccess = {
   capabilities: string[]
 }
 
-export const ADMIN_AUDIT_EVENT_KINDS = [
+const ADMIN_AUDIT_EVENT_KINDS = [
   'role_change',
   'moderation_review',
   'comment_report_decision',
