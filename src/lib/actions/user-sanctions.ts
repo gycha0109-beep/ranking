@@ -56,23 +56,22 @@ export async function listMyUserSanctions(): Promise<{ data: UserSanction[]; err
   }
 }
 
-export async function submitUserSanctionAppeal(formData: FormData) {
+export async function submitUserSanctionAppeal(formData: FormData): Promise<void> {
   const sanctionId = String(formData.get('sanctionId') || '')
   const statement = String(formData.get('statement') || '').normalize('NFKC').trim().replace(/\s+/gu, ' ')
   if (!sanctionId || statement.length < 20 || statement.length > 2000) {
-    return { error: '이의제기 내용은 20자 이상 2,000자 이하로 입력해 주세요.' }
+    throw new Error('이의제기 내용은 20자 이상 2,000자 이하로 입력해 주세요.')
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: '로그인이 필요합니다.' }
+  if (!user) throw new Error('로그인이 필요합니다.')
 
   const { error } = await supabase.rpc('submit_user_sanction_appeal', {
     p_sanction_id: sanctionId,
     p_statement: statement,
   })
-  if (error) return { error: error.message }
+  if (error) throw new Error(error.message)
   revalidatePath('/me/sanctions')
   revalidatePath('/admin/user-sanctions')
-  return { success: true }
 }
