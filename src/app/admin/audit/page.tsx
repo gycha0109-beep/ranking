@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { ClipboardList, Filter, Search } from 'lucide-react'
+import { listAdminAuditEventsV2 } from '@/lib/actions/admin-access'
 import {
   ADMIN_AUDIT_EVENT_KINDS,
-  listAdminAuditEventsV2,
   type AdminAuditEventKind,
-} from '@/lib/actions/admin-access'
+} from '@/lib/admin-audit'
 
 export const dynamic = 'force-dynamic'
 
