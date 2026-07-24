@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminCapability } from '@/lib/actions/admin-access'
 import type { ModerationDecisionReason } from '@/lib/actions/moderation-reviews'
 
 export type CommentReportResolution = 'dismissed' | 'kept' | 'hidden' | 'blocked'
@@ -41,22 +41,6 @@ type ReviewResult = {
   code?: 'AUTH_REQUIRED' | 'INVALID_INPUT' | 'INVALID_TARGET' | 'CONFLICT' | 'UNKNOWN'
 }
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user) throw new Error('로그인이 필요합니다.')
-
-  const { data: role, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .eq('role', 'admin')
-    .maybeSingle()
-
-  if (roleError || !role) throw new Error('관리자 권한이 없습니다.')
-  return supabase
-}
-
 function parseNumber(value: unknown) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
@@ -91,7 +75,7 @@ export async function loadCommentReportQueue(): Promise<{
   error?: string
 }> {
   try {
-    const supabase = await requireAdmin()
+    const supabase = await requireAdminCapability('report_review')
     const { data, error } = await supabase.rpc('list_comment_report_queue', {
       p_limit: 100,
       p_offset: 0,
@@ -148,7 +132,7 @@ export async function reviewCommentReportCase(input: {
   note?: string
 }): Promise<ReviewResult> {
   try {
-    const supabase = await requireAdmin()
+    const supabase = await requireAdminCapability('report_review')
     const note = input.note?.normalize('NFKC').trim().replace(/\s+/gu, ' ') || null
 
     if (note && note.length > 2000) {
@@ -165,26 +149,14 @@ export async function reviewCommentReportCase(input: {
     })
 
     if (error) {
-      if (error.code === '40001') {
-        return { error: '신고 사건이 다른 화면에서 변경되었습니다. 대기열을 새로 불러와 주세요.', code: 'CONFLICT' }
-      }
-      if (error.code === '42501') {
-        return { error: error.message, code: 'AUTH_REQUIRED' }
-      }
-      if (error.code === '22023') {
-        return { error: error.message, code: 'INVALID_INPUT' }
-      }
-      if (error.code === 'P0002') {
-        return { error: error.message, code: 'INVALID_TARGET' }
-      }
+      if (error.code === '40001') return { error: '신고 사건이 다른 화면에서 변경되었습니다. 대기열을 새로 불러와 주세요.', code: 'CONFLICT' }
+      if (error.code === '42501') return { error: error.message, code: 'AUTH_REQUIRED' }
+      if (error.code === '22023') return { error: error.message, code: 'INVALID_INPUT' }
+      if (error.code === 'P0002') return { error: error.message, code: 'INVALID_TARGET' }
       return { error: error.message, code: 'UNKNOWN' }
     }
 
-    const value = (data || {}) as {
-      decision_id?: unknown
-      processed_count?: unknown
-    }
-
+    const value = (data || {}) as { decision_id?: unknown; processed_count?: unknown }
     revalidatePath('/admin/comment-reports')
     revalidatePath('/admin')
     revalidatePath('/', 'layout')
