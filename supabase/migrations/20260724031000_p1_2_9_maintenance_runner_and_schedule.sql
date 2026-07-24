@@ -99,24 +99,10 @@ BEGIN
   END IF;
 
   INSERT INTO public.maintenance_job_runs(
-    job_key,
-    trigger_source,
-    status,
-    started_at,
-    finished_at,
-    batch_count,
-    affected_rows,
-    error_code,
-    error_message,
-    details
+    job_key, trigger_source, status, started_at, finished_at, batch_count, affected_rows,
+    error_code, error_message, details
   ) VALUES (
-    v_job.job_key,
-    v_source,
-    v_status,
-    v_started_at,
-    v_finished_at,
-    v_batch_count,
-    v_affected_rows,
+    v_job.job_key, v_source, v_status, v_started_at, v_finished_at, v_batch_count, v_affected_rows,
     v_error_code,
     CASE WHEN v_error_message IS NULL THEN NULL ELSE LEFT(v_error_message, 1000) END,
     jsonb_build_object('batch_size', v_job.batch_size, 'max_batches', v_job.max_batches, 'timeout_ms', v_job.timeout_ms)
@@ -301,7 +287,7 @@ GRANT EXECUTE ON FUNCTION public.list_maintenance_job_status() TO authenticated;
 REVOKE ALL ON FUNCTION public.list_maintenance_job_runs(INTEGER, INTEGER) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.list_maintenance_job_runs(INTEGER, INTEGER) TO authenticated;
 
-DO $$
+DO $do$
 DECLARE
   v_job RECORD;
 BEGIN
@@ -310,13 +296,13 @@ BEGIN
     PERFORM cron.unschedule(v_job.jobid);
   END LOOP;
 
-  PERFORM cron.schedule('ranking-maint-expire-user-sanctions', '*/15 * * * *', $$SELECT private.run_maintenance_job('expire_user_sanctions', 'cron');$$);
-  PERFORM cron.schedule('ranking-maint-prune-notifications', '10 3 * * *', $$SELECT private.run_maintenance_job('prune_notifications', 'cron');$$);
-  PERFORM cron.schedule('ranking-maint-purge-daily-views', '20 3 * * *', $$SELECT private.run_maintenance_job('purge_daily_views', 'cron');$$);
-  PERFORM cron.schedule('ranking-maint-redact-blocked-comments', '30 3 * * *', $$SELECT private.run_maintenance_job('redact_blocked_comments', 'cron');$$);
-  PERFORM cron.schedule('ranking-maint-redact-resolved-report-details', '40 3 * * *', $$SELECT private.run_maintenance_job('redact_resolved_report_details', 'cron');$$);
-  PERFORM cron.schedule('ranking-maint-prune-cron-history', '50 3 * * *', $$SELECT private.run_maintenance_job('prune_cron_history', 'cron');$$);
+  PERFORM cron.schedule('ranking-maint-expire-user-sanctions', '*/15 * * * *', $cmd$SELECT private.run_maintenance_job('expire_user_sanctions', 'cron');$cmd$);
+  PERFORM cron.schedule('ranking-maint-prune-notifications', '10 3 * * *', $cmd$SELECT private.run_maintenance_job('prune_notifications', 'cron');$cmd$);
+  PERFORM cron.schedule('ranking-maint-purge-daily-views', '20 3 * * *', $cmd$SELECT private.run_maintenance_job('purge_daily_views', 'cron');$cmd$);
+  PERFORM cron.schedule('ranking-maint-redact-blocked-comments', '30 3 * * *', $cmd$SELECT private.run_maintenance_job('redact_blocked_comments', 'cron');$cmd$);
+  PERFORM cron.schedule('ranking-maint-redact-resolved-report-details', '40 3 * * *', $cmd$SELECT private.run_maintenance_job('redact_resolved_report_details', 'cron');$cmd$);
+  PERFORM cron.schedule('ranking-maint-prune-cron-history', '50 3 * * *', $cmd$SELECT private.run_maintenance_job('prune_cron_history', 'cron');$cmd$);
 END;
-$$;
+$do$;
 
 COMMIT;
