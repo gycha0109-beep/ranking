@@ -84,9 +84,13 @@ CREATE UNIQUE INDEX uq_user_sanction_events_imposed
   ON public.user_sanction_events(sanction_id)
   WHERE event_type = 'imposed';
 
-CREATE UNIQUE INDEX uq_user_sanction_events_terminal
+CREATE UNIQUE INDEX uq_user_sanction_events_expired
   ON public.user_sanction_events(sanction_id)
-  WHERE event_type IN ('revoked', 'expired', 'overturned');
+  WHERE event_type = 'expired';
+
+CREATE UNIQUE INDEX uq_user_sanction_events_decisive_end
+  ON public.user_sanction_events(sanction_id)
+  WHERE event_type IN ('revoked', 'overturned');
 
 CREATE INDEX idx_user_sanction_events_sanction
   ON public.user_sanction_events(sanction_id, created_at, id);
