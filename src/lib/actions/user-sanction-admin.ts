@@ -29,9 +29,13 @@ export async function imposeUserSanction(formData: FormData) {
   const type = String(formData.get('sanctionType') || '')
   const durationRaw = String(formData.get('durationHours') || '')
   const duration = type === 'warning' ? null : Number(durationRaw)
+  const isLongSuspension = type === 'account_suspension'
+    && typeof duration === 'number'
+    && Number.isFinite(duration)
+    && duration > 168
   const requiredCapability = type === 'warning'
     ? 'sanction_impose_warning'
-    : type === 'account_suspension' && Number.isFinite(duration) && duration > 168
+    : isLongSuspension
       ? 'sanction_impose_long_suspension'
       : 'sanction_impose_restriction'
   const supabase = await requireAdminCapability(requiredCapability)
