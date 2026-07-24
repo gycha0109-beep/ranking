@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ClipboardList, DatabaseZap, FileSpreadsheet, Flag, FolderKanban, MessageSquare, Package, ShieldAlert, Tag, UserCog } from 'lucide-react'
+import { ClipboardList, Database, FileSpreadsheet, Flag, FolderKanban, MessageSquare, Package, ShieldAlert, Tag, UserCog } from 'lucide-react'
 import { getMyAdminAccess } from '@/lib/actions/admin-access'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +13,7 @@ export default async function AdminDashboardPage() {
     { title: '댓글 신고 운영', description: '신고 사건을 검토하고 댓글·작성자 조치를 결정합니다.', href: '/admin/comment-reports', icon: Flag, capability: 'report_review' },
     { title: '사용자 제재·이의제기', description: '계정 제재와 이의제기 결정을 감사 원장으로 관리합니다.', href: '/admin/user-sanctions', icon: ShieldAlert, capability: 'sanction_view' },
     { title: '운영 감사 기록', description: '역할, Moderation, 신고, 제재 및 유지보수 결정을 통합 조회합니다.', href: '/admin/audit', icon: ClipboardList, capability: 'audit_view' },
-    { title: '유지보수 자동화', description: 'Cron 등록과 보존정책 작업의 최근 실행 상태를 조회합니다.', href: '/admin/maintenance', icon: DatabaseZap, capability: 'audit_view' },
+    { title: '유지보수 자동화', description: 'Cron 등록과 보존정책 작업의 최근 실행 상태를 조회합니다.', href: '/admin/maintenance', icon: Database, capability: 'audit_view' },
     { title: '운영 역할 관리', description: '모더레이터·관리자·최고 관리자 역할을 관리합니다.', href: '/admin/access-control', icon: UserCog, capability: 'role_manage' },
     { title: '카테고리 관리', description: '대분류 카테고리와 노출 순서를 관리합니다.', href: '/admin/categories', icon: FolderKanban, capability: 'content_manage' },
     { title: '서브카테고리 관리', description: '카테고리 종속 분류를 관리합니다.', href: '/admin/subcategories', icon: FolderKanban, capability: 'content_manage' },
