@@ -29,6 +29,8 @@ export default async function MaintenanceAdminPage() {
           {data.jobs.map((row) => {
             const registered = row.cron_registered === true
             const active = row.cron_active === true
+            const lastFinishedAt = typeof row.last_finished_at === 'string' ? row.last_finished_at : null
+            const lastErrorMessage = typeof row.last_error_message === 'string' ? row.last_error_message : null
             return (
               <article key={String(row.job_key)} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -45,8 +47,8 @@ export default async function MaintenanceAdminPage() {
                   <div><dt className="text-slate-600">최근 상태</dt><dd className="mt-1 font-bold text-slate-300">{statusLabels[String(row.last_status)] || String(row.last_status || '미실행')}</dd></div>
                   <div><dt className="text-slate-600">처리 건수</dt><dd className="mt-1 font-bold text-slate-300">{Number(row.last_affected_rows || 0).toLocaleString('ko-KR')}</dd></div>
                 </dl>
-                {row.last_finished_at && <p className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-600"><Clock3 className="h-3.5 w-3.5" />{new Date(String(row.last_finished_at)).toLocaleString('ko-KR')}</p>}
-                {row.last_error_message && <p className="mt-3 rounded-xl border border-rose-500/15 bg-rose-500/[0.07] p-3 text-xs text-rose-200">{String(row.last_error_code)} · {String(row.last_error_message)}</p>}
+                {lastFinishedAt && <p className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-600"><Clock3 className="h-3.5 w-3.5" />{new Date(lastFinishedAt).toLocaleString('ko-KR')}</p>}
+                {lastErrorMessage && <p className="mt-3 rounded-xl border border-rose-500/15 bg-rose-500/[0.07] p-3 text-xs text-rose-200">{String(row.last_error_code)} · {lastErrorMessage}</p>}
               </article>
             )
           })}
@@ -54,15 +56,18 @@ export default async function MaintenanceAdminPage() {
 
         <section className="space-y-3">
           <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300" /><h2 className="font-black text-white">최근 실행 원장</h2></div>
-          {data.runs.map((row) => (
-            <article key={String(row.id)} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><p className="font-black text-white">{String(row.job_key)} · {statusLabels[String(row.status)] || String(row.status)}</p><p className="mt-1 text-xs text-slate-500">{String(row.trigger_source)} · batch {String(row.batch_count)} · {Number(row.affected_rows || 0).toLocaleString('ko-KR')}건</p></div>
-                <time className="text-xs text-slate-600">{new Date(String(row.finished_at)).toLocaleString('ko-KR')}</time>
-              </div>
-              {row.error_message && <p className="mt-3 rounded-xl bg-black/25 p-3 text-xs text-rose-200">{String(row.error_code)} · {String(row.error_message)}</p>}
-            </article>
-          ))}
+          {data.runs.map((row) => {
+            const errorMessage = typeof row.error_message === 'string' ? row.error_message : null
+            return (
+              <article key={String(row.id)} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div><p className="font-black text-white">{String(row.job_key)} · {statusLabels[String(row.status)] || String(row.status)}</p><p className="mt-1 text-xs text-slate-500">{String(row.trigger_source)} · batch {String(row.batch_count)} · {Number(row.affected_rows || 0).toLocaleString('ko-KR')}건</p></div>
+                  <time className="text-xs text-slate-600">{new Date(String(row.finished_at)).toLocaleString('ko-KR')}</time>
+                </div>
+                {errorMessage && <p className="mt-3 rounded-xl bg-black/25 p-3 text-xs text-rose-200">{String(row.error_code)} · {errorMessage}</p>}
+              </article>
+            )
+          })}
           {data.runs.length === 0 && !data.error && <p className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-8 text-center text-sm text-slate-500">실행 기록이 없습니다.</p>}
         </section>
       </div>
