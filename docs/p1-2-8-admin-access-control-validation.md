@@ -7,6 +7,7 @@
 - `p1_2_8_role_management_reconciliation`
 - `p1_2_8_high_risk_operator_enforcement`
 - `p1_2_8_moderator_queue_access`
+- `p1_2_8_role_change_concurrency_hardening`
 
 최초 schema migration 검증 중 bootstrap INSERT의 `NULL` 타입 추론 오류를 발견했다. `NULL::UUID`와 TEXT 명시 캐스트로 수정한 뒤 Hosted 적용에 성공했다.
 
@@ -55,6 +56,18 @@
 
 공개 RPC의 EXECUTE 권한은 호출 가능 여부만 의미하며, 내부 capability 검사가 최고 관리자 외 호출을 거부한다.
 
+## 동시성 보완
+
+구현 리뷰에서 대상별 advisory lock만으로는 서로 다른 최고 관리자를 동시에 강등할 때 마지막 최고 관리자 조건이 경쟁 상태에 놓일 수 있음을 확인했다. 최종 Hosted 함수는 다음 순서로 잠근다.
+
+1. 전역 `admin-role-global` advisory transaction lock
+2. 대상 사용자별 advisory transaction lock
+3. 현재 역할 재조회
+4. 최고 관리자 수 재계산
+5. 역할 행 재구성과 감사 이벤트 기록
+
+따라서 모든 운영 역할 변경이 직렬화된다.
+
 ## 최종 데이터 상태
 
 - 운영 주 계정: `super_admin`
@@ -64,4 +77,4 @@
 
 ## 검증 결론
 
-역할 계층, 최소 capability, 직접 쓰기 차단, private helper 차단, 감사 기록 및 테스트 데이터 복원까지 확인했다.
+역할 계층, 최소 capability, 직접 쓰기 차단, private helper 차단, 전역 동시성 보호, 감사 기록 및 테스트 데이터 복원까지 확인했다.
