@@ -1,13 +1,12 @@
 import Link from 'next/link'
 import { AlertTriangle, Filter, Search, ShieldAlert } from 'lucide-react'
+import { getAdminSecurityEventOverview, listAdminSecurityEvents } from '@/lib/actions/admin-security-events'
 import {
   ADMIN_SECURITY_EVENT_KINDS,
   ADMIN_SECURITY_RISK_LEVELS,
-  getAdminSecurityEventOverview,
-  listAdminSecurityEvents,
   type AdminSecurityEventKind,
   type AdminSecurityRiskLevel,
-} from '@/lib/actions/admin-security-events'
+} from '@/lib/admin-security-events'
 
 export const dynamic = 'force-dynamic'
 
