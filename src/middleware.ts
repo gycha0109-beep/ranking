@@ -7,6 +7,8 @@ function requiredCapability(pathname: string) {
   if (pathname.startsWith('/admin/comment-reports')) return 'report_review'
   if (pathname.startsWith('/admin/user-sanctions')) return 'sanction_view'
   if (pathname.startsWith('/admin/access-control')) return 'role_manage'
+  if (pathname.startsWith('/admin/security-incidents')) return 'security_incident_view'
+  if (pathname.startsWith('/admin/security-events')) return 'security_event_view'
   if (pathname.startsWith('/admin/audit')) return 'audit_view'
   if (pathname.startsWith('/admin/maintenance')) return 'audit_view'
   return 'content_manage'
