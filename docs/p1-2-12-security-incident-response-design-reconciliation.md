@@ -30,9 +30,20 @@
 
 자동 signal update와 alert update는 workflow version을 변경하지 않는다.
 
-## 3. 최종 event 원장
+## 3. source linkage와 event 원장
 
-`public.admin_security_incident_events`
+### `public.admin_security_incident_sources`
+
+incident별 source bucket 관측값을 추적한다.
+
+- primary key: `(incident_id, bucket_id)`
+- bucket FK는 `ON DELETE CASCADE`
+- `first_observed_count`, `last_observed_count`
+- `linked_at`, `updated_at`
+
+같은 bucket이 재집계될 때 lifetime count에는 `current_count - last_observed_count` delta만 더한다. P1-2.11의 90일 prune으로 bucket이 삭제되면 linkage row만 삭제되며 incident snapshot과 lifetime count는 유지된다.
+
+### `public.admin_security_incident_events`
 
 - BIGINT identity
 - incident UUID FK
@@ -88,7 +99,7 @@ update/delete는 trigger로 거부한다.
 1. bucket을 읽고 fingerprint와 rolling count를 계산한다.
 2. fingerprint advisory lock을 획득한다.
 3. active incident가 없으면 생성한다.
-4. 있으면 latest source, subject snapshot, rolling/lifetime count, last detected를 갱신한다.
+4. 있으면 source linkage delta를 계산하고 latest source, subject snapshot, rolling/lifetime count, last detected를 갱신한다.
 5. severity는 상승만 허용한다.
 6. 조건에 따라 `signal_updated`, `severity_escalated`를 기록한다.
 7. 생성 즉시 `created`, `alerted`를 기록한다.
@@ -178,7 +189,7 @@ list/count/detail/assignee candidates는 view capability, mutation은 manage cap
 
 - current incident
 - first/latest source bucket, 존재할 때만
-- same fingerprint recent buckets 최대 50
+- incident source linkage가 남아 있는 최근 buckets 최대 50
 - incident events 최대 100
 - note 포함
 - audit correlation ID
@@ -241,12 +252,14 @@ list/count/detail/assignee candidates는 view capability, mutation은 manage cap
 
 - P1-2.11 source bucket 90일 정책 유지
 - incident snapshot은 source bucket 삭제 후에도 해석 가능
+- source linkage는 bucket prune에 따라 제거
 - incident와 event는 최소 1년 보존 대상으로 유지
 - incident prune job은 이번 범위에서 제외
 
 ## 16. 구현·검증 게이트
 
 - rolling window threshold
+- source linkage delta와 lifetime count
 - active fingerprint dedupe
 - severity escalation/no downgrade
 - cooldown
