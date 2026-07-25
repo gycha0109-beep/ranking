@@ -5,6 +5,7 @@ export const ADMIN_AUDIT_EVENT_KINDS = [
   'sanction_event',
   'appeal_decision',
   'maintenance_job',
+  'security_incident_event',
 ] as const
 
 export type AdminAuditEventKind = typeof ADMIN_AUDIT_EVENT_KINDS[number]
