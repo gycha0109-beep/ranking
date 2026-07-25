@@ -2,66 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdminCapability } from '@/lib/actions/admin-access'
-
-export const ADMIN_SECURITY_EVENT_KINDS = [
-  'permission_denied',
-  'validation_failed',
-  'conflict',
-  'command_failed',
-  'suspicious_query',
-] as const
-
-export const ADMIN_SECURITY_RISK_LEVELS = ['low', 'medium', 'high'] as const
-
-export type AdminSecurityEventKind = typeof ADMIN_SECURITY_EVENT_KINDS[number]
-export type AdminSecurityRiskLevel = typeof ADMIN_SECURITY_RISK_LEVELS[number]
-
-export type AdminSecurityEvent = {
-  id: number
-  bucketStartedAt: string
-  actorId: string
-  actorLabel: string
-  actorRoleLevel: string
-  eventKind: AdminSecurityEventKind
-  actionKey: string
-  resourceKey: string
-  failureCode: string
-  routeKey: string
-  subjectType: string
-  sampleSubjectRef: string
-  lastSubjectRef: string
-  sourceTrust: string
-  firstSeenAt: string
-  lastSeenAt: string
-  occurrenceCount: number
-  riskLevel: AdminSecurityRiskLevel
-  isRepeated: boolean
-}
-
-export type AdminSecurityEventCursor = { lastSeenAt: string; id: number }
-
-export type AdminSecurityEventFilters = {
-  eventKinds?: string[]
-  riskLevels?: string[]
-  actorId?: string | null
-  actionKey?: string | null
-  from?: string | null
-  to?: string | null
-  minOccurrence?: number
-  cursor?: AdminSecurityEventCursor | null
-  limit?: number
-}
-
-export type AdminSecurityOverview = {
-  hours: number
-  totalOccurrences: number
-  totalBuckets: number
-  highBuckets: number
-  mediumBuckets: number
-  lowBuckets: number
-  repeatedBuckets: number
-  byEventKind: Record<string, number>
-}
+import {
+  ADMIN_SECURITY_EVENT_KINDS,
+  ADMIN_SECURITY_RISK_LEVELS,
+  type AdminSecurityEvent,
+  type AdminSecurityEventCursor,
+  type AdminSecurityEventFilters,
+  type AdminSecurityEventKind,
+  type AdminSecurityOverview,
+  type AdminSecurityRiskLevel,
+} from '@/lib/admin-security-events'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const KEY_PATTERN = /^[a-z0-9_.-]{1,80}$/
@@ -179,7 +129,11 @@ export async function listAdminSecurityEvents(filters: AdminSecurityEventFilters
     }
     if (from && to && from >= to) return { data: [], nextCursor: null, error: '조회 시작 시각은 종료 시각보다 빨라야 합니다.' }
 
-    const supabase = await requireAdminCapability('security_event_view')
+    const supabase = await requireAdminCapability('security_event_view', {
+      actionKey: 'security_event_list',
+      resourceKey: 'admin_security_events',
+      routeKey: '/admin/security-events',
+    })
     const { data, error } = await supabase.rpc('list_admin_security_events', {
       p_event_kinds: eventKinds.length ? eventKinds : null,
       p_risk_levels: riskLevels.length ? riskLevels : null,
@@ -214,7 +168,11 @@ export async function getAdminSecurityEventOverview(hours = 24): Promise<{
 }> {
   try {
     const safeHours = Math.min(Math.max(Math.trunc(hours), 1), 168)
-    const supabase = await requireAdminCapability('security_event_view')
+    const supabase = await requireAdminCapability('security_event_view', {
+      actionKey: 'security_event_overview',
+      resourceKey: 'admin_security_events',
+      routeKey: '/admin/security-events',
+    })
     const { data, error } = await supabase.rpc('get_admin_security_event_overview', { p_hours: safeHours })
     if (error || !data || typeof data !== 'object' || Array.isArray(data)) {
       return { data: null, error: error?.message || '보안 이벤트 요약 응답이 올바르지 않습니다.' }
