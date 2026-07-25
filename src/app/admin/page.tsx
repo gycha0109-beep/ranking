@@ -1,19 +1,33 @@
 import Link from 'next/link'
-import { AlertTriangle, ClipboardList, Database, FileSpreadsheet, Flag, FolderKanban, MessageSquare, Package, ShieldAlert, Tag, UserCog } from 'lucide-react'
+import { AlertTriangle, ClipboardList, Database, FileSpreadsheet, Flag, FolderKanban, MessageSquare, Package, ShieldAlert, Siren, Tag, UserCog, type LucideIcon } from 'lucide-react'
 import { getMyAdminAccess } from '@/lib/actions/admin-access'
+import { getAdminSecurityIncidentSummary } from '@/lib/actions/admin-security-incidents'
 
 export const dynamic = 'force-dynamic'
+
+type MenuItem = {
+  title: string
+  description: string
+  href: string
+  icon: LucideIcon
+  capability: string
+  badge?: number
+}
 
 export default async function AdminDashboardPage() {
   const access = await getMyAdminAccess()
   const capabilities = new Set(access.capabilities)
+  const incidentSummary = capabilities.has('security_incident_view')
+    ? await getAdminSecurityIncidentSummary()
+    : null
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { title: '댓글 Moderation', description: '보류·차단 댓글을 검토하고 공개 상태를 결정합니다.', href: '/admin/comments', icon: MessageSquare, capability: 'moderation_review' },
     { title: '댓글 신고 운영', description: '신고 사건을 검토하고 댓글·작성자 조치를 결정합니다.', href: '/admin/comment-reports', icon: Flag, capability: 'report_review' },
     { title: '사용자 제재·이의제기', description: '계정 제재와 이의제기 결정을 감사 원장으로 관리합니다.', href: '/admin/user-sanctions', icon: ShieldAlert, capability: 'sanction_view' },
-    { title: '운영 감사 기록', description: '역할, Moderation, 신고, 제재 및 유지보수 결정을 통합 조회합니다.', href: '/admin/audit', icon: ClipboardList, capability: 'audit_view' },
+    { title: '운영 감사 기록', description: '역할, Moderation, 신고, 제재, 보안 대응 및 유지보수 결정을 통합 조회합니다.', href: '/admin/audit', icon: ClipboardList, capability: 'audit_view' },
     { title: '운영 보안 이벤트', description: '권한 거부, 검증 실패, 충돌 및 비정상 조회의 반복 패턴을 확인합니다.', href: '/admin/security-events', icon: AlertTriangle, capability: 'security_event_view' },
+    { title: '보안 사건 대응', description: '반복·고위험 신호를 확인하고 담당자 지정과 종결 이력을 관리합니다.', href: '/admin/security-incidents', icon: Siren, capability: 'security_incident_view', badge: incidentSummary?.data?.highCriticalActiveCount || 0 },
     { title: '유지보수 자동화', description: 'Cron 등록과 보존정책 작업의 최근 실행 상태를 조회합니다.', href: '/admin/maintenance', icon: Database, capability: 'audit_view' },
     { title: '운영 역할 관리', description: '모더레이터·관리자·최고 관리자 역할을 관리합니다.', href: '/admin/access-control', icon: UserCog, capability: 'role_manage' },
     { title: '카테고리 관리', description: '대분류 카테고리와 노출 순서를 관리합니다.', href: '/admin/categories', icon: FolderKanban, capability: 'content_manage' },
@@ -43,14 +57,19 @@ export default async function AdminDashboardPage() {
           <p className="mt-2 max-w-3xl text-sm text-slate-500">현재 역할에 부여된 capability만 표시됩니다. 화면 접근과 실제 변경 권한은 데이터베이스 RPC에서도 다시 검증됩니다.</p>
         </header>
 
+        {incidentSummary?.error && <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">{incidentSummary.error}</div>}
+
         <section className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {menuItems.map((item) => {
             const Icon = item.icon
             return (
               <Link key={item.href} href={item.href} className="group rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6 transition hover:border-indigo-500/25 hover:bg-indigo-500/[0.06]">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 p-3 text-indigo-300"><Icon className="h-5 w-5" /></div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">{item.capability}</span>
+                  <div className="flex items-center gap-2">
+                    {typeof item.badge === 'number' && item.badge > 0 && <span className="rounded-full border border-rose-500/30 bg-rose-500/15 px-2 py-1 text-[10px] font-black text-rose-200">고위험 {item.badge}</span>}
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">{item.capability}</span>
+                  </div>
                 </div>
                 <h2 className="mt-5 font-black text-white transition group-hover:text-indigo-200">{item.title}</h2>
                 <p className="mt-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
