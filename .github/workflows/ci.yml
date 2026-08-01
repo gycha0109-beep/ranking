@@ -20,6 +20,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run verify:p1-2
       - run: npm run lint
       - name: Build
         id: build
