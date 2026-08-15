@@ -50,9 +50,7 @@ function matchLabel(reason: string) {
 }
 
 function resultHref(result: SearchResult) {
-  return result.content_kind === 'ranking'
-    ? `/rankings/${result.slug}`
-    : `/items/${result.slug}`
+  return result.content_kind === 'ranking' ? `/rankings/${result.slug}` : `/items/${result.slug}`
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
@@ -101,154 +99,114 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   })()
 
   return (
-    <main className="min-h-screen bg-[#07070a] px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <header className="space-y-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-indigo-400">
-            <Search className="h-4 w-4" />
-            Public Archive Search
-          </div>
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">랭킹위키 통합 검색</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
-              공개된 랭킹 문서와 아이템을 제목, 설명, 브랜드, 카테고리와 태그 기준으로 탐색합니다.
-            </p>
-          </div>
+    <div className="rw-page pb-20">
+      <header className="border-b border-[#e3e7ec] bg-white">
+        <div className="rw-container py-10 sm:py-12">
+          <p className="rw-kicker flex items-center gap-2"><Search className="h-4 w-4" /> Search</p>
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#171a1f] sm:text-4xl">통합 검색</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b7280]">공개 랭킹과 아이템을 제목, 브랜드, 카테고리, Facet 기준으로 찾습니다.</p>
           <SearchForm
             defaultQuery={rawQuery}
             defaultKind={kind}
             defaultSort={sort}
             facetIds={facetIds}
             showFilters
-            className="rounded-2xl border border-white/[0.06] bg-white/[0.015] p-4"
+            className="mt-6 max-w-4xl rounded-2xl border border-[#dde2e8] bg-[#f8f9fb] p-4"
           />
-        </header>
+        </div>
+      </header>
 
+      <div className="rw-container pt-8">
         {!hasQuery && (
-          <section className="rounded-3xl border border-dashed border-white/10 bg-white/[0.01] px-6 py-14 text-center">
-            <Sparkles className="mx-auto h-8 w-8 text-indigo-400" />
-            <h2 className="mt-4 text-base font-bold text-slate-200">검색어를 입력해 주세요</h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-500">
-              2자 이상의 제목, 아이템명, 브랜드, 카테고리 또는 태그로 검색할 수 있습니다.
-            </p>
+          <section className="rw-surface rw-card px-6 py-16 text-center">
+            <Sparkles className="mx-auto h-7 w-7 text-[#3457c8]" />
+            <h2 className="mt-4 text-base font-extrabold text-[#20242a]">검색어를 입력해 주세요</h2>
+            <p className="mt-2 text-xs leading-6 text-[#8a94a3]">2자 이상의 제목, 아이템명, 브랜드, 카테고리 또는 태그로 검색할 수 있습니다.</p>
           </section>
         )}
 
         {hasQuery && !validQuery && (
-          <section className="rounded-3xl border border-amber-500/15 bg-amber-500/[0.04] px-6 py-10 text-center">
-            <h2 className="text-sm font-bold text-amber-200">검색어 길이를 확인해 주세요</h2>
-            <p className="mt-2 text-xs text-slate-400">
-              정규화된 검색어는 2자 이상 {SEARCH_QUERY_MAX_LENGTH}자 이하여야 합니다.
-            </p>
+          <section className="rounded-2xl border border-[#ead9a7] bg-[#fffbeb] px-6 py-10 text-center">
+            <h2 className="text-sm font-extrabold text-[#8a5a08]">검색어 길이를 확인해 주세요</h2>
+            <p className="mt-2 text-xs text-[#7a6c4e]">정규화된 검색어는 2자 이상 {SEARCH_QUERY_MAX_LENGTH}자 이하여야 합니다.</p>
           </section>
         )}
 
         {validQuery && loadError && (
-          <section className="rounded-3xl border border-rose-500/15 bg-rose-500/[0.04] px-6 py-10 text-center">
-            <h2 className="text-sm font-bold text-rose-200">검색 결과를 불러오지 못했습니다</h2>
-            <p className="mt-2 text-xs text-slate-400">검색 조건을 유지한 채 다시 시도해 주세요.</p>
+          <section className="rounded-2xl border border-[#efc2ca] bg-[#fff1f2] px-6 py-10 text-center">
+            <h2 className="text-sm font-extrabold text-[#a93449]">검색 결과를 불러오지 못했습니다</h2>
+            <p className="mt-2 text-xs text-[#7e6168]">검색 조건을 유지한 채 다시 시도해 주세요.</p>
           </section>
         )}
 
         {validQuery && !loadError && (
-          <>
-            <FacetFilterPanel
-              action="/search"
-              groups={facetGroups}
-              selectedIds={facetIds}
-              hiddenParams={{ q: query, type: kind, sort }}
-            />
+          <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+            <FacetFilterPanel action="/search" groups={facetGroups} selectedIds={facetIds} hiddenParams={{ q: query, type: kind, sort }} />
 
-            <section className="space-y-5">
-              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.06] pb-3">
+            <section className="min-w-0">
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#dde2e8] pb-4">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500">검색어</p>
-                  <h2 className="mt-1 text-lg font-black text-white">“{query}”</h2>
+                  <p className="text-xs font-semibold text-[#8a94a3]">검색 결과</p>
+                  <h2 className="mt-1 text-xl font-black tracking-[-0.025em] text-[#171a1f]">“{query}”</h2>
                 </div>
-                <div className="text-right text-[11px] font-semibold text-slate-500">
+                <div className="text-right text-[11px] font-semibold text-[#8a94a3]">
                   <span>현재 페이지 {items.length}건</span>
-                  {!cursorAccepted && <span className="ml-2 text-amber-400">유효하지 않은 페이지 위치를 초기화했습니다.</span>}
+                  {!cursorAccepted && <span className="ml-2 text-[#a16207]">페이지 위치를 초기화했습니다.</span>}
                 </div>
               </div>
 
               {!facetStateAccepted && (
-                <p className="rounded-xl border border-amber-500/10 bg-amber-500/[0.04] px-3 py-2 text-[11px] text-amber-300">
-                  존재하지 않거나 현재 검색 대상과 맞지 않는 Facet 필터를 제거했습니다.
-                </p>
+                <p className="mt-4 rounded-xl border border-[#ead9a7] bg-[#fffbeb] px-3 py-2 text-[11px] text-[#8a5a08]">현재 검색 대상에 맞지 않는 Facet 필터를 제거했습니다.</p>
               )}
 
               {items.length > 0 ? (
-                <div className="grid gap-4">
-                  {items.map((result) => (
+                <div className="mt-4 overflow-hidden rounded-2xl border border-[#dde2e8] bg-white">
+                  {items.map((result, index) => (
                     <Link
                       key={`${result.content_kind}:${result.id}`}
                       href={resultHref(result)}
-                      className="group rounded-2xl border border-white/[0.06] bg-white/[0.015] p-5 transition hover:border-indigo-500/25 hover:bg-white/[0.03]"
+                      className={`group grid gap-4 p-5 transition hover:bg-[#f8f9fb] sm:grid-cols-[44px_1fr_auto] sm:items-start ${index > 0 ? 'border-t border-[#edf0f3]' : ''}`}
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="mt-0.5 rounded-xl border border-white/[0.06] bg-slate-950/60 p-2.5 text-indigo-300">
-                          {result.content_kind === 'ranking'
-                            ? <FileText className="h-5 w-5" />
-                            : <Database className="h-5 w-5" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
-                            <span className={result.content_kind === 'ranking' ? 'text-indigo-400' : 'text-emerald-400'}>
-                              {result.content_kind === 'ranking' ? '랭킹 문서' : '아이템'}
-                            </span>
-                            {result.category_name && <span className="text-slate-600">{result.category_name}</span>}
-                            {result.subcategory_name && <span className="text-slate-600">/ {result.subcategory_name}</span>}
-                            {result.brand_or_creator && <span className="text-slate-600">{result.brand_or_creator}</span>}
-                          </div>
-                          <h3 className="mt-2 truncate text-base font-extrabold text-slate-100 transition group-hover:text-indigo-300">
-                            {result.title}
-                          </h3>
-                          {result.description && (
-                            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-400">{result.description}</p>
-                          )}
-                          <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
-                            <span className="rounded-lg border border-indigo-500/15 bg-indigo-500/[0.06] px-2 py-1 text-indigo-300">
-                              {matchLabel(result.match_reason)}
-                            </span>
-                            <span>고유 조회 {result.unique_view_count.toLocaleString()}</span>
-                            <span>좋아요 {result.like_count.toLocaleString()}</span>
-                          </div>
-                        </div>
-                        <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-indigo-400" />
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${result.content_kind === 'ranking' ? 'bg-[#eef2ff] text-[#3457c8]' : 'bg-[#eef8f4] text-[#087a54]'}`}>
+                        {result.content_kind === 'ranking' ? <FileText className="h-4.5 w-4.5" /> : <Database className="h-4.5 w-4.5" />}
                       </div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-[#8a94a3]">
+                          <span className={result.content_kind === 'ranking' ? 'text-[#3457c8]' : 'text-[#087a54]'}>{result.content_kind === 'ranking' ? '랭킹' : '아이템'}</span>
+                          {result.category_name && <span>{result.category_name}</span>}
+                          {result.subcategory_name && <span>· {result.subcategory_name}</span>}
+                          {result.brand_or_creator && <span>· {result.brand_or_creator}</span>}
+                        </div>
+                        <h3 className="mt-1.5 truncate text-base font-extrabold text-[#20242a] transition group-hover:text-[#2445ad]">{result.title}</h3>
+                        {result.description && <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-[#6b7280]">{result.description}</p>}
+                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-[#8a94a3]">
+                          <span className="rounded-md bg-[#f0f2f5] px-2 py-1 text-[#5f6875]">{matchLabel(result.match_reason)}</span>
+                          <span>조회 {result.unique_view_count.toLocaleString('ko-KR')}</span>
+                          <span>좋아요 {result.like_count.toLocaleString('ko-KR')}</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="hidden h-4 w-4 text-[#b1b8c2] transition group-hover:translate-x-0.5 group-hover:text-[#3457c8] sm:block" />
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.01] px-6 py-14 text-center">
-                  <Inbox className="mx-auto h-8 w-8 text-slate-600" />
-                  <h3 className="mt-4 text-sm font-bold text-slate-300">검색 결과가 없습니다</h3>
-                  <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
-                    검색어나 Facet 조건을 줄이거나 카테고리 디렉터리에서 직접 탐색해 보세요.
-                  </p>
-                  <Link
-                    href="/categories"
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:text-indigo-200"
-                  >
-                    <Layers className="h-4 w-4" />카테고리 탐색
-                  </Link>
+                <div className="mt-4 rw-surface rw-card px-6 py-14 text-center">
+                  <Inbox className="mx-auto h-7 w-7 text-[#a4acb7]" />
+                  <h3 className="mt-4 text-sm font-extrabold text-[#3f4752]">검색 결과가 없습니다</h3>
+                  <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-[#8a94a3]">검색어나 Facet 조건을 줄이거나 카테고리에서 직접 탐색해 보세요.</p>
+                  <Link href="/categories" className="rw-button-secondary mt-5 px-4 text-xs"><Layers className="h-4 w-4" />카테고리 탐색</Link>
                 </div>
               )}
 
               {nextHref && (
-                <div className="flex justify-center pt-2">
-                  <Link
-                    href={nextHref}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200"
-                  >
-                    다음 결과 보기
-                  </Link>
+                <div className="flex justify-center pt-6">
+                  <Link href={nextHref} className="rw-button-secondary px-5 text-xs">다음 결과 보기</Link>
                 </div>
               )}
             </section>
-          </>
+          </div>
         )}
       </div>
-    </main>
+    </div>
   )
 }
