@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { BarChart3, CheckCircle2, Lock, RotateCcw, ShieldCheck, Vote } from 'lucide-react'
 import { castRankingVote, clearRankingVote, setRankingVotingState } from '@/lib/actions/voting'
@@ -41,12 +41,7 @@ export default function RankingVotingPanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  useEffect(() => setVotingState(initialVotingState), [initialVotingState])
-  useEffect(() => setMyVoteItemId(initialMyVoteItemId), [initialMyVoteItemId])
-
-  const totalVotes = candidates[0]?.voteCount === undefined
-    ? 0
-    : candidates.reduce((sum, candidate) => sum + candidate.voteCount, 0)
+  const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.voteCount, 0)
 
   const requireLogin = () => {
     router.push(`/login?next=${encodeURIComponent(pathname)}`)
