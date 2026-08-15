@@ -116,7 +116,7 @@ export default function RankingVotingPanel({ rankingId, pathname, candidates, in
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Vote className="h-4.5 w-4.5 text-[#3457c8]" />
-            <h2 className="text-base font-black text-[#20242a]">사용자 투표</h2>
+            <h2 className="text-base font-black text-[#20242a]">사용자 투표 순위</h2>
             <span className={`rounded-lg px-2 py-1 text-[9px] font-black uppercase ${votingState === 'open' ? 'bg-[#ecfdf5] text-[#087a54]' : 'bg-[#f0f2f5] text-[#6b7280]'}`}>{votingState}</span>
           </div>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-[#7b8491]">현재 라운드의 실시간 결과입니다. 공식 순위는 관리자가 닫힌 라운드를 확정할 때만 변경됩니다.</p>
