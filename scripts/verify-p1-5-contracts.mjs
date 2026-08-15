@@ -8,7 +8,9 @@ function requireText(path, text, label = `${path}: ${text}`) {
   checks.push(label)
 }
 
-requireText('src/app/robots.ts', "disallow: ['/admin/', '/me/', '/login', '/search']", 'robots excludes private/search surfaces')
+requireText('src/app/robots.ts', "disallow: ['/admin', '/me', '/login']", 'robots excludes private surfaces')
+if (read('src/app/robots.ts').includes("'/search'")) throw new Error('P1-5 contract failed: search must remain crawlable so noindex can be observed')
+checks.push('search is not robots-disallowed')
 requireText('src/app/sitemap.ts', "export const dynamic = 'force-dynamic'", 'sitemap is runtime-generated')
 requireText('src/app/sitemap.ts', 'getPublicSitemapRows', 'sitemap uses public-safe rows')
 requireText('src/lib/seo.ts', ".eq('status', 'published')", 'sitemap/ranking SEO requires published rankings')
@@ -21,6 +23,7 @@ requireText('src/app/me/layout.tsx', 'index: false, follow: false', 'account are
 requireText('src/app/login/layout.tsx', 'index: false, follow: false', 'login is noindex nofollow')
 requireText('src/middleware.ts', "['sort', 'cursor', 'facet']", 'category query variants are detected')
 requireText('src/middleware.ts', "'X-Robots-Tag', 'noindex, follow'", 'query variants receive noindex header')
+requireText('src/middleware.ts', 'robots.txt|sitemap.xml', 'middleware excludes metadata routes')
 requireText('src/app/rankings/[rankingSlug]/layout.tsx', "'@type': 'ItemList'", 'ranking emits ItemList JSON-LD')
 requireText('src/app/rankings/[rankingSlug]/layout.tsx', "'@type': 'BreadcrumbList'", 'ranking emits breadcrumb JSON-LD')
 requireText('src/app/items/[itemSlug]/layout.tsx', "'@type': 'Thing'", 'generic item schema remains Thing')
