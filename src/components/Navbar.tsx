@@ -2,7 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/actions/auth'
-import { Bell, Bookmark, Shield, Scale, LogIn, LogOut, LayoutDashboard, Compass } from 'lucide-react'
+import SearchForm from '@/components/SearchForm'
+import { Bell, Bookmark, Shield, Scale, LogIn, LogOut, LayoutDashboard, Compass, Search } from 'lucide-react'
 
 export default async function Navbar() {
   const supabase = await createClient()
@@ -25,9 +26,9 @@ export default async function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#07070a]/75 border-b border-white/[0.06] shadow-lg shadow-black/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 group">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-6 min-w-0">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
             <div className="p-2 rounded-xl bg-indigo-600/10 border border-indigo-500/20 group-hover:bg-indigo-600/20 group-hover:border-indigo-500/35 transition-all">
               <Shield className="w-5 h-5 text-indigo-400" />
             </div>
@@ -51,7 +52,19 @@ export default async function Navbar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="hidden xl:block w-64">
+            <SearchForm compact />
+          </div>
+          <Link
+            href="/search"
+            className="xl:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-slate-400 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200"
+            title="통합 검색"
+            aria-label="통합 검색"
+          >
+            <Search className="h-4 w-4" />
+          </Link>
+
           {user ? (
             <>
               <Link href="/me/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-slate-400 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200" title="내 알림" aria-label={`내 알림${unreadNotificationCount > 0 ? `, 읽지 않음 ${unreadNotificationCount}개` : ''}`}>
@@ -63,13 +76,13 @@ export default async function Navbar() {
                   <LayoutDashboard className="w-3.5 h-3.5" />운영 콘솔
                 </Link>
               )}
-              <span className="hidden md:inline text-xs font-semibold text-slate-400 bg-white/[0.02] border border-white/5 px-3 py-1.5 rounded-xl">{user.email}</span>
+              <span className="hidden md:inline text-xs font-semibold text-slate-400 bg-white/[0.02] border border-white/5 px-3 py-1.5 rounded-xl truncate max-w-48">{user.email}</span>
               <form action={async () => { 'use server'; await signOut() }}>
                 <button type="submit" className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10 transition-all flex items-center justify-center" title="로그아웃"><LogOut className="w-4 h-4" /></button>
               </form>
             </>
           ) : (
-            <Link href="/login" className="px-4 py-2 rounded-xl text-xs font-bold text-slate-200 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all flex items-center gap-1.5"><LogIn className="w-3.5 h-3.5" />에디터 로그인</Link>
+            <Link href="/login" className="px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-slate-200 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all flex items-center gap-1.5"><LogIn className="w-3.5 h-3.5" /><span className="hidden sm:inline">에디터 로그인</span></Link>
           )}
         </div>
       </div>

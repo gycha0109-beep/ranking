@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { getHomeData } from '@/lib/queries/public'
 import { createPublicClient } from '@/lib/supabase/public'
+import SearchForm from '@/components/SearchForm'
 import { 
   Award, 
   Layers, 
@@ -11,42 +12,48 @@ import {
   Calendar, 
   Flame, 
   Database, 
-  Search, 
   FileText, 
   Bookmark,
   ShieldCheck
 } from 'lucide-react'
 
-export const revalidate = 0 // 실시간 상태 확인을 위해 캐싱 비활성화
+export const revalidate = 0
+
+const PUBLIC_MODERATION_STATUSES = ['clean', 'suggestive']
 
 export default async function HomePage() {
   const { featuredRanking, recentRankings, categories } = await getHomeData()
 
-  // 랭킹위키 아카이브 실시간 통계 조회 (Wiki 감성 강화)
   let totalRankingsCount = 0
   let totalItemsCount = 0
   
   try {
     const supabase = createPublicClient()
     const [rankingsRes, itemsRes] = await Promise.all([
-      supabase.from('rankings').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-      supabase.from('items').select('id', { count: 'exact', head: true }).eq('status', 'active')
+      supabase
+        .from('rankings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'published')
+        .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('image_moderation_status', PUBLIC_MODERATION_STATUSES),
+      supabase
+        .from('items')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('image_moderation_status', PUBLIC_MODERATION_STATUSES),
     ])
     totalRankingsCount = rankingsRes.count || 0
     totalItemsCount = itemsRes.count || 0
-  } catch (e) {
-    // Fail-safe
+  } catch {
+    // 공개 통계는 페이지 본문을 막지 않는다.
   }
 
   return (
     <div className="relative min-h-screen pb-20 overflow-hidden bg-[#07070a]">
-      {/* 백그라운드 오로라 빛 */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[400px] bg-gradient-to-b from-indigo-900/10 via-purple-900/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
 
-      {/* 전체 페이지 간격 조정 (space-y-16 -> space-y-10 으로 단축하여 랭킹 및 카테고리가 더 빨리 보이게 유도) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 relative z-10 space-y-10">
-        
-        {/* 1. 히어로 영역 (Wiki 아카이브 지향적인 문구 및 간결한 구성) */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
             <Database className="w-3.5 h-3.5" />
@@ -62,23 +69,11 @@ export default async function HomePage() {
             광고와 주관적 주장에서 벗어난 투명한 지식 저장소. 랭킹위키는 검증된 후보 범위(Scope)와 명확한 평가 기준(Criteria), 상세한 선정 이유를 기록하여 모든 순위를 체계적으로 분류하는 개방형 위키입니다.
           </p>
 
-          {/* 1-1. 아카이브 통합 검색 바 장식 (P0 스펙에 영향이 없도록 스타일만 구성) */}
-          <div className="max-w-md mx-auto pt-2 relative group">
-            <div className="relative">
-              <input
-                type="text"
-                disabled
-                placeholder="아카이브 문서 제목, 아이템, 태그 검색... (P1 준비중)"
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-white/[0.02] border border-white/10 rounded-2xl focus:outline-none text-slate-400 cursor-not-allowed group-hover:border-white/20 transition-all"
-              />
-              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-            </div>
-            <div className="absolute left-1/2 -translate-x-1/2 -top-8 bg-slate-900 border border-white/10 text-[10px] text-slate-300 px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 shadow-2xl">
-              검색 및 복잡 필터링은 P1 단계에서 활성화됩니다.
-            </div>
+          <div className="max-w-md mx-auto pt-2">
+            <SearchForm />
+            <p className="mt-2 text-[10px] text-slate-600">2자 이상의 제목, 아이템, 브랜드, 카테고리 또는 태그를 검색할 수 있습니다.</p>
           </div>
 
-          {/* 1-2. 위키 아카이브 실시간 통계 보드 */}
           <div className="flex justify-center items-center gap-3 sm:gap-6 pt-4 max-w-lg mx-auto">
             <div className="flex-1 py-2 px-3 rounded-2xl bg-white/[0.01] border border-white/[0.04] text-center">
               <span className="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">아카이브 문서</span>
@@ -104,7 +99,6 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* 2. 대표 랭킹 (Featured Ranking) */}
         {featuredRanking && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 border-b border-white/[0.04] pb-2">
@@ -113,10 +107,8 @@ export default async function HomePage() {
             </div>
             
             <div className="glass-card rounded-3xl overflow-hidden p-6 sm:p-8 flex flex-col lg:flex-row gap-6 relative group hover:border-indigo-500/20 transition-all duration-300">
-              {/* 반사 라인 이펙트 */}
               <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:via-indigo-500/30 transition-all duration-300" />
               
-              {/* 내용 */}
               <div className="flex-1 space-y-4 flex flex-col justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -160,7 +152,6 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* 3. 카테고리 그리드 (디렉토리 인덱스 형태로 변형) */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b border-white/[0.04] pb-2">
             <Layers className="w-4 h-4 text-indigo-400" />
@@ -189,11 +180,10 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 4. 최신 랭킹 (최신 아카이브 문서로 표현 변경) */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b border-white/[0.04] pb-2">
             <Award className="w-4 h-4 text-purple-400" />
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-300">최근 업데이트 아카이브 문서</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-300">최근 발행 아카이브 문서</h2>
           </div>
 
           {recentRankings.length > 0 ? (
@@ -252,7 +242,6 @@ export default async function HomePage() {
             </div>
           )}
         </section>
-
       </div>
     </div>
   )
