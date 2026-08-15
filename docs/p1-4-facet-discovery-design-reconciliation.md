@@ -38,16 +38,23 @@ Add `public.list_public_facet_options` as a public-safe, SECURITY DEFINER, fixed
 
 It returns only options linked to at least one publicly eligible row in the requested scope/context. No dynamic counts.
 
-## 6. Existing RPC names
+## 6. Existing RPC names and P1-3 preservation
 
-Extend the original names with a final optional `UUID[]` parameter:
+The public API keeps the original names and adds a final optional `UUID[]` parameter:
 
 ```txt
 search_public_content(..., p_facet_ids UUID[] DEFAULT '{}')
 list_public_rankings(..., p_facet_ids UUID[] DEFAULT '{}')
 ```
 
-Use transactional rename/recreate/drop to avoid overloaded PostgREST ambiguity and preserve old callers through the default argument.
+Implementation moves the exact P1-3 functions into the `private` schema as non-public execution bases and recreates Facet-aware wrappers under the original public names.
+
+- anon/authenticated execution is revoked from the private bases.
+- the public wrappers are SECURITY DEFINER with fixed search path.
+- empty Facet selection delegates directly to the untouched P1-3 base.
+- filtered selection walks the same P1-3 keyset sequence and applies Facet constraints without recomputing relevance/popularity.
+
+Keeping the private bases is preferred over copying the full P1-3 scoring SQL or dropping the temporary implementation because it prevents score/order drift and removes PostgREST overload ambiguity while preserving old callers through the default argument.
 
 ## 7. DB Facet validation
 
