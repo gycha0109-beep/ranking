@@ -28,6 +28,7 @@ jobs:
       - run: npm run verify:p1-5
       - run: npm run verify:p2-1
       - run: npm run verify:p2-2
+      - run: npm run verify:ui-1
       - run: npm run lint
       - name: Build
         id: build
