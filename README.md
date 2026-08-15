@@ -1,12 +1,12 @@
 # 랭킹위키
 
-랭킹위키는 다양한 주제의 순위를 축적하고, 각 랭킹의 범위·선정 기준·선정 이유를 공개하며, 검색·Facet 탐색·반응·댓글을 결합하는 위키형 랭킹 아카이브입니다.
+랭킹위키는 다양한 주제의 순위를 축적하고, 각 랭킹의 범위·선정 기준·선정 이유를 공개하며, 검색·Facet 탐색·반응·댓글·사용자 투표를 결합하는 위키형 랭킹 아카이브입니다.
 
 ## Current lifecycle
 
-**P1 COMPLETE** — P1-2 engagement/moderation, P1-3 global search/discovery, P1-4 Facet advanced discovery, P1-5 technical SEO/integration closure까지 구현·검증하는 단계입니다.
+**P1 COMPLETE / P2 ACTIVE** — P2-1 User Voting을 구현·Hosted 검증하고 있습니다.
 
-다음 제품 단계는 P2이며, 우선 후보는 User Voting입니다. P2의 스폰서, 변경 이력, 외부 데이터 import/crawling은 별도 설계·승인 없이 P1에 섞지 않습니다.
+P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다. 투표 finalization과 ranking change history는 P2-2 범위입니다.
 
 ## 실행
 
@@ -30,11 +30,12 @@ npm run dev
 ### 관리자/발행
 - Category/Subcategory/Facet/Item CMS
 - Ranking draft/edit/preview/publish
-- transactional ranking save
+- transactional ranking save infrastructure
 - moderation review
 - role/capability access control
 - sanctions/appeals
 - audit/security event/maintenance surfaces
+- `user_vote` poll open/close control
 
 ### 공개 탐색
 - 공개 홈/카테고리/서브카테고리
@@ -52,6 +53,22 @@ npm run dev
 - comments
 - comment reports
 - notifications
+- `user_vote` ranking account voting
+- vote change/cancel while open
+- public vote counts/percentages/current rank
+
+### User Voting V1
+- `ranking_type='user_vote'` only
+- manual `open | closed`
+- public-safe candidates minimum 2 to open
+- one selected item per authenticated account/ranking
+- deterministic order: votes DESC → seed position ASC → item UUID ASC
+- raw ballots hidden behind RPC-only access
+- account suspension enforced through existing `engagement_write`
+- first remaining ballot freezes authored ranking/candidate configuration
+- moderation/publication controls remain available and may auto-close voting
+- no destructive reset
+- no finalization into `ranking_entries.position` until P2-2
 
 ### Technical SEO
 - route-specific canonical metadata
@@ -64,6 +81,7 @@ npm run dev
 - `robots.txt`
 - Ranking `ItemList`/Breadcrumb JSON-LD
 - generic Item `WebPage`/`Thing` JSON-LD
+- `user_vote` Ranking ItemList uses current vote-derived order
 
 ## 검증
 
@@ -72,6 +90,7 @@ npm run verify:p1-2
 npm run verify:p1-3
 npm run verify:p1-4
 npm run verify:p1-5
+npm run verify:p2-1
 npm run lint
 npm run build
 ```
@@ -82,13 +101,16 @@ GitHub Actions는 위 gate를 동일 순서로 실행합니다.
 
 Persistent Hosted Supabase 변경은 repository migration으로만 관리하고 Hosted에는 migration action으로 적용합니다. 임의 persistent DDL을 SQL console에서 직접 수행하지 않습니다.
 
-P1-5 Technical SEO 자체는 DB migration을 추가하지 않습니다.
+P2-1 repository migrations:
+
+- `20260816010000_p2_1_user_voting.sql`
+- `20260816011000_p2_1_vote_fk_indexes.sql`
 
 ## P2 후보 범위
 
-- User Voting
-- Ranking Change History
-- Sponsor transparency/management
-- External data import / crawling
+1. User Voting — P2-1
+2. Ranking Change History / vote finalization — P2-2 candidate
+3. Sponsor transparency/management
+4. External data import / crawling
 
-P2 구현은 별도 design/review/final-contract lifecycle 이후 시작합니다.
+각 P2 stage는 별도 design/review/final-contract lifecycle을 거칩니다.

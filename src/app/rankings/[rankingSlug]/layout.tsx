@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import CommentSection from '@/components/comments/CommentSection'
+import RankingVotingPanel from '@/components/voting/RankingVotingPanel'
 import { absoluteUrl, getRankingSeoSnapshot, serializeJsonLd, SITE_NAME } from '@/lib/seo'
+import { getPublicRankingVoteSummary, getViewerRankingVoteContext } from '@/lib/queries/voting'
 
 type Props = {
   children: ReactNode
@@ -70,9 +72,47 @@ export default async function RankingDetailLayout({ children, params }: Props) {
     },
   ] : null
 
+  let votingPanel = null
+  if (ranking?.ranking_type === 'user_vote') {
+    const [summary, viewer] = await Promise.all([
+      getPublicRankingVoteSummary(ranking.id),
+      getViewerRankingVoteContext(ranking.id),
+    ])
+    const byItem = new Map(summary.map((row) => [row.item_id, row]))
+    const candidates = ranking.entries.map((entry: any) => {
+      const row = byItem.get(entry.item.id)
+      return {
+        itemId: entry.item.id,
+        title: entry.item.title,
+        slug: entry.item.slug,
+        seedPosition: Number(entry.seed_position ?? row?.seed_position ?? entry.position),
+        voteCount: Number(row?.vote_count ?? 0),
+        voteShare: Number(row?.vote_share ?? 0),
+        currentRank: Number(row?.current_rank ?? entry.position),
+      }
+    }).sort((a: any, b: any) => a.currentRank - b.currentRank || a.itemId.localeCompare(b.itemId))
+
+    votingPanel = (
+      <div className="bg-[#07070a] px-4 pt-8 text-slate-100 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <RankingVotingPanel
+            rankingId={ranking.id}
+            pathname={`/rankings/${ranking.slug}`}
+            candidates={candidates}
+            initialVotingState={summary[0]?.voting_state || 'closed'}
+            initialMyVoteItemId={viewer.myVoteItemId}
+            isAuthenticated={viewer.isAuthenticated}
+            canManageVoting={viewer.canManageVoting}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />}
+      {votingPanel}
       {children}
       {ranking && (
         <div className="bg-[#07070a] px-4 pb-24 text-slate-100 sm:px-6 lg:px-8">

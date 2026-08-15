@@ -76,7 +76,7 @@ export const getRankingSeoSnapshot = cache(async (slug: string) => {
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('rankings')
-    .select('id, title, slug, summary, seo_title, seo_description, cover_image_url, published_at, created_at, updated_at, categories(name, slug), subcategories(name, slug)')
+    .select('id, title, slug, summary, ranking_type, seo_title, seo_description, cover_image_url, published_at, created_at, updated_at, categories(name, slug), subcategories(name, slug)')
     .eq('slug', slug)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -95,15 +95,37 @@ export const getRankingSeoSnapshot = cache(async (slug: string) => {
     .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
     .order('position', { ascending: true })
 
+  const mappedEntries = (entries || []).map((entry: any) => ({
+    position: Number(entry.position),
+    seed_position: Number(entry.position),
+    reason: entry.reason,
+    item: one(entry.items),
+  })).filter((entry: any) => entry.item)
+
+  if (ranking.ranking_type === 'user_vote') {
+    const { data: voteRows, error: voteError } = await supabase.rpc('get_ranking_vote_summary', {
+      p_ranking_id: ranking.id,
+    })
+
+    if (!voteError && voteRows) {
+      const voteByItem = new Map((voteRows as any[]).map((row) => [String(row.item_id), row]))
+      mappedEntries.forEach((entry: any) => {
+        const vote = voteByItem.get(String(entry.item.id))
+        if (vote) {
+          entry.position = Number(vote.current_rank)
+          entry.vote_count = Number(vote.vote_count)
+          entry.vote_share = Number(vote.vote_share)
+        }
+      })
+      mappedEntries.sort((a: any, b: any) => a.position - b.position || a.seed_position - b.seed_position || String(a.item.id).localeCompare(String(b.item.id)))
+    }
+  }
+
   return {
     ...ranking,
     category: one(ranking.categories),
     subcategory: one(ranking.subcategories),
-    entries: (entries || []).map((entry: any) => ({
-      position: entry.position,
-      reason: entry.reason,
-      item: one(entry.items),
-    })).filter((entry: any) => entry.item),
+    entries: mappedEntries,
   }
 })
 
