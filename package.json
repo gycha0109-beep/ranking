@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "verify:p1-2": "node scripts/verify-p1-2-contracts.mjs",
-    "verify:p1-3": "node scripts/verify-p1-3-contracts.mjs"
+    "verify:p1-3": "node scripts/verify-p1-3-contracts.mjs",
+    "verify:p1-4": "node scripts/verify-p1-4-contracts.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

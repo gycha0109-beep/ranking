@@ -58,8 +58,15 @@ function isNonNegativeSafeInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 }
 
-export function createSearchFingerprint(query: string, kind: SearchKind, sort: SearchSort) {
-  return fingerprint(['p1-3-search-v1', query, kind, sort])
+export function createSearchFingerprint(
+  query: string,
+  kind: SearchKind,
+  sort: SearchSort,
+  facetIds: string[] = []
+) {
+  const parts: unknown[] = ['p1-3-search-v1', query, kind, sort]
+  if (facetIds.length > 0) parts.push('p1-4-facets-v1', facetIds)
+  return fingerprint(parts)
 }
 
 export function encodeSearchCursor(args: {
@@ -121,9 +128,12 @@ export function decodeSearchCursor(
 export function createRankingBrowseFingerprint(
   categorySlug: string,
   subcategorySlug: string | null,
-  sort: RankingBrowseSort
+  sort: RankingBrowseSort,
+  facetIds: string[] = []
 ) {
-  return fingerprint(['p1-3-ranking-browse-v1', categorySlug, subcategorySlug, sort])
+  const parts: unknown[] = ['p1-3-ranking-browse-v1', categorySlug, subcategorySlug, sort]
+  if (facetIds.length > 0) parts.push('p1-4-facets-v1', facetIds)
+  return fingerprint(parts)
 }
 
 export function encodeRankingBrowseCursor(args: {
