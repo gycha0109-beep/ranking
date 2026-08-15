@@ -4,11 +4,17 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2 ACTIVE** — P2-1 User Voting은 `SUCCESS / CLOSED`, P2-2 Ranking Change History & Vote Finalization을 진행 중입니다.
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / UI-1 ACTIVE**
+
+- P2-1 User Voting: `SUCCESS / CLOSED`
+- P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
+- UI-1 Public Experience Redesign & Launch Surface Consolidation: implementation/verification in progress
 
 P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다.
 
-P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고, 변경 전/후 순위와 투표 스냅샷을 immutable revision으로 보존하며, 확정 불가능한 라운드를 사유와 함께 감사 가능한 방식으로 폐기하는 계약을 추가합니다.
+P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고, 변경 전/후 순위와 투표 스냅샷을 immutable revision으로 보존하며, 확정 불가능한 라운드를 사유와 함께 감사 가능한 방식으로 폐기합니다.
+
+UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계합니다.
 
 ## 실행
 
@@ -43,7 +49,7 @@ npm run dev
 ### 공개 탐색
 - 공개 홈/카테고리/서브카테고리
 - ranking/item detail
-- related rankings
+- related rankings/items
 - global `/search`
 - relevance/latest/popular ordering
 - Facet 다중 조합: 동일 그룹 OR, 다른 그룹 AND
@@ -53,7 +59,7 @@ npm run dev
 - likes
 - bookmarks
 - daily unique views
-- comments
+- comments/replies/edit/delete
 - comment reports
 - notifications
 - `user_vote` ranking account voting
@@ -85,6 +91,18 @@ npm run dev
 - public detail shows recent official ranking-order history
 - physical ranking deletion is blocked after revision history exists; archive remains available
 
+### UI-1 public experience
+- semantic light design tokens and shared public surfaces
+- responsive public navigation with mobile menu
+- content-first home
+- desktop Facet/sidebar + mobile collapsible filters
+- ranking detail prioritizes the ranking table before methodology
+- item detail prioritizes ranking footprint
+- compact engagement action bar
+- voting presentation aligned to the public design system while preserving vote/finalization semantics
+- ranking history timeline
+- existing comment interaction logic preserved under the UI-1 public shell
+
 ### Technical SEO
 - route-specific canonical metadata
 - public ranking/item Open Graph/Twitter metadata
@@ -107,6 +125,7 @@ npm run verify:p1-4
 npm run verify:p1-5
 npm run verify:p2-1
 npm run verify:p2-2
+npm run verify:ui-1
 npm run lint
 npm run build
 ```
@@ -118,21 +137,22 @@ GitHub Actions는 위 gate를 동일 순서로 실행합니다.
 Persistent Hosted Supabase 변경은 repository migration으로만 관리하고 Hosted에는 migration action으로 적용합니다. 임의 persistent DDL을 SQL console에서 직접 수행하지 않습니다.
 
 P2-1 repository migrations:
-
 - `20260816010000_p2_1_user_voting.sql`
 - `20260816011000_p2_1_vote_fk_indexes.sql`
 
-P2-2 repository migration:
-
+P2-2 repository migrations:
 - `20260816020000_p2_2_ranking_history_vote_finalization.sql`
+- `20260816021000_p2_2_public_history_moderation_filter.sql`
 
-## P2 확정/보류 범위
+UI-1은 DB schema/RPC migration을 추가하지 않습니다.
+
+## 다음 로드맵
 
 1. User Voting — P2-1 `SUCCESS / CLOSED`
-2. Ranking Change History / Vote Finalization — P2-2 active
-3. Sponsor transparency/management — P2-3 planned
-4. Launch Hardening — planned after P2-3
-5. UI overhaul + deploy — planned after P2 closure
-6. External data import / crawling — deferred until after deployment/operational need is confirmed
+2. Ranking Change History / Vote Finalization — P2-2 `SUCCESS / CLOSED`
+3. Public Experience Redesign — UI-1 active
+4. Production Deployment & Launch Hardening — UI-1 closure 후 진행
+5. External data import / crawling — 배포 후 실제 운영 필요를 확인한 뒤 설계
+6. Sponsor transparency/management — 현재 backlog/deferred
 
-각 P2 stage는 별도 design/review/final-contract lifecycle을 거칩니다.
+각 stage는 별도 design/review/final-contract/CI lifecycle을 거칩니다.
