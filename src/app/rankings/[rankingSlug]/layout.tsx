@@ -7,10 +7,7 @@ import { absoluteUrl, getRankingSeoSnapshot, serializeJsonLd, SITE_NAME } from '
 import { getPublicRankingHistory } from '@/lib/queries/ranking-history'
 import { getPublicRankingVoteSummary, getViewerRankingVoteContext } from '@/lib/queries/voting'
 
-type Props = {
-  children: ReactNode
-  params: Promise<{ rankingSlug: string }>
-}
+type Props = { children: ReactNode; params: Promise<{ rankingSlug: string }> }
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
   const { rankingSlug } = await params
@@ -27,16 +24,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
     description,
     alternates: { canonical },
     robots: { index: true, follow: true },
-    openGraph: {
-      type: 'article',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url: canonical,
-      publishedTime: ranking.published_at || undefined,
-      modifiedTime: ranking.updated_at || undefined,
-      images,
-    },
+    openGraph: { type: 'article', siteName: SITE_NAME, title, description, url: canonical, publishedTime: ranking.published_at || undefined, modifiedTime: ranking.updated_at || undefined, images },
     twitter: { card: images ? 'summary_large_image' : 'summary', title, description, images },
   }
 }
@@ -55,13 +43,7 @@ export default async function RankingDetailLayout({ children, params }: Props) {
       description: ranking.summary,
       url: absoluteUrl(`/rankings/${ranking.slug}`),
       numberOfItems: ranking.entries.length,
-      itemListElement: ranking.entries.map((entry: any) => ({
-        '@type': 'ListItem',
-        position: entry.position,
-        name: entry.item.title,
-        url: absoluteUrl(`/items/${entry.item.slug}`),
-        description: entry.reason,
-      })),
+      itemListElement: ranking.entries.map((entry: any) => ({ '@type': 'ListItem', position: entry.position, name: entry.item.title, url: absoluteUrl(`/items/${entry.item.slug}`), description: entry.reason })),
     },
     {
       '@context': 'https://schema.org',
@@ -77,10 +59,7 @@ export default async function RankingDetailLayout({ children, params }: Props) {
 
   let votingPanel = null
   if (ranking?.ranking_type === 'user_vote') {
-    const [summary, viewer] = await Promise.all([
-      getPublicRankingVoteSummary(ranking.id),
-      getViewerRankingVoteContext(ranking.id),
-    ])
+    const [summary, viewer] = await Promise.all([getPublicRankingVoteSummary(ranking.id), getViewerRankingVoteContext(ranking.id)])
     const byItem = new Map(summary.map((row) => [row.item_id, row]))
     const candidates = ranking.entries.map((entry: any) => {
       const row = byItem.get(entry.item.id)
@@ -96,8 +75,8 @@ export default async function RankingDetailLayout({ children, params }: Props) {
     }).sort((a: any, b: any) => a.currentRank - b.currentRank || a.itemId.localeCompare(b.itemId))
 
     votingPanel = (
-      <div className="bg-[#07070a] px-4 pt-8 text-slate-100 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
+      <div className="bg-[#f6f7f9] px-3 pt-6 sm:px-4 sm:pt-8">
+        <div className="mx-auto max-w-[860px]">
           <RankingVotingPanel
             rankingId={ranking.id}
             pathname={`/rankings/${ranking.slug}`}
@@ -118,17 +97,13 @@ export default async function RankingDetailLayout({ children, params }: Props) {
       {votingPanel}
       {children}
       {history.length > 0 && (
-        <div className="bg-[#07070a] px-4 pb-10 text-slate-100 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">
-            <RankingHistoryPanel revisions={history} />
-          </div>
+        <div className="bg-[#f6f7f9] px-3 pb-10 sm:px-4">
+          <div className="mx-auto max-w-[860px]"><RankingHistoryPanel revisions={history} /></div>
         </div>
       )}
       {ranking && (
-        <div className="bg-[#07070a] px-4 pb-24 text-slate-100 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">
-            <CommentSection targetType="ranking" targetId={ranking.id} pathname={`/rankings/${ranking.slug}`} />
-          </div>
+        <div className="rw-comment-shell bg-[#f6f7f9] px-3 pb-24 sm:px-4">
+          <div className="mx-auto max-w-[860px]"><CommentSection targetType="ranking" targetId={ranking.id} pathname={`/rankings/${ranking.slug}`} /></div>
         </div>
       )}
     </>
