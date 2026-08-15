@@ -3,7 +3,23 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/actions/auth'
 import SearchForm from '@/components/SearchForm'
-import { Bell, Bookmark, Shield, Scale, LogIn, LogOut, LayoutDashboard, Compass, Search } from 'lucide-react'
+import {
+  Bell,
+  Bookmark,
+  ChevronDown,
+  Compass,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Menu,
+  Scale,
+  Search,
+  Trophy,
+  UserRound,
+} from 'lucide-react'
+
+const navLink = 'inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-[#4b5563] transition hover:bg-[#f1f3f5] hover:text-[#171a1f]'
+const iconButton = 'relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#dde2e8] bg-white text-[#5f6875] transition hover:border-[#bcc7dc] hover:bg-[#f6f8fb] hover:text-[#2445ad]'
 
 export default async function Navbar() {
   const supabase = await createClient()
@@ -25,65 +41,119 @@ export default async function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-[#07070a]/75 border-b border-white/[0.06] shadow-lg shadow-black/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6 min-w-0">
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="p-2 rounded-xl bg-indigo-600/10 border border-indigo-500/20 group-hover:bg-indigo-600/20 group-hover:border-indigo-500/35 transition-all">
-              <Shield className="w-5 h-5 text-indigo-400" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-200 group-hover:to-indigo-200 transition-all">랭킹위키</span>
+    <header className="sticky top-0 z-50 border-b border-[#dde2e8]/90 bg-white/95 backdrop-blur-xl">
+      <div className="rw-container flex h-16 items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-6">
+          <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="랭킹위키 홈">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#171a1f] text-white transition group-hover:bg-[#2445ad]">
+              <Trophy className="h-4.5 w-4.5" />
+            </span>
+            <span className="text-lg font-black tracking-[-0.03em] text-[#171a1f]">랭킹위키</span>
           </Link>
 
-          <nav className="hidden sm:flex items-center gap-1">
-            <Link href="/categories" className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-all flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5" />카테고리 탐색
+          <nav className="hidden items-center md:flex" aria-label="주요 메뉴">
+            <Link href="/categories" className={navLink}>
+              <Compass className="h-4 w-4" />카테고리
+            </Link>
+            <Link href="/search?sort=latest&q=%EB%9E%AD%ED%82%B9" className={navLink}>
+              최신 랭킹
             </Link>
             {user && (
-              <>
-                <Link href="/me/bookmarks" className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-all flex items-center gap-1.5">
-                  <Bookmark className="w-3.5 h-3.5" />내 북마크
-                </Link>
-                <Link href="/me/sanctions" className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-all flex items-center gap-1.5">
-                  <Scale className="w-3.5 h-3.5" />제재·이의제기
-                </Link>
-              </>
+              <Link href="/me/bookmarks" className={navLink}>
+                <Bookmark className="h-4 w-4" />저장됨
+              </Link>
             )}
           </nav>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="hidden xl:block w-64">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="hidden w-72 xl:block">
             <SearchForm compact />
           </div>
-          <Link
-            href="/search"
-            className="xl:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-slate-400 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200"
-            title="통합 검색"
-            aria-label="통합 검색"
-          >
+          <Link href="/search" className={`${iconButton} xl:hidden`} title="통합 검색" aria-label="통합 검색">
             <Search className="h-4 w-4" />
           </Link>
 
           {user ? (
             <>
-              <Link href="/me/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-slate-400 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200" title="내 알림" aria-label={`내 알림${unreadNotificationCount > 0 ? `, 읽지 않음 ${unreadNotificationCount}개` : ''}`}>
+              <Link href="/me/notifications" className={iconButton} title="내 알림" aria-label={`내 알림${unreadNotificationCount > 0 ? `, 읽지 않음 ${unreadNotificationCount}개` : ''}`}>
                 <Bell className="h-4 w-4" />
-                {unreadNotificationCount > 0 && <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full border-2 border-[#07070a] bg-indigo-400 px-1 text-center text-[8px] font-black leading-4 text-indigo-950">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -right-1 -top-1 min-w-5 rounded-full border-2 border-white bg-[#3457c8] px-1 text-center text-[9px] font-black leading-4 text-white">
+                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                  </span>
+                )}
               </Link>
-              {isOperator && (
-                <Link href="/admin" className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 hover:border-indigo-500/35 text-indigo-300 transition-all flex items-center gap-1.5">
-                  <LayoutDashboard className="w-3.5 h-3.5" />운영 콘솔
-                </Link>
-              )}
-              <span className="hidden md:inline text-xs font-semibold text-slate-400 bg-white/[0.02] border border-white/5 px-3 py-1.5 rounded-xl truncate max-w-48">{user.email}</span>
-              <form action={async () => { 'use server'; await signOut() }}>
-                <button type="submit" className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10 transition-all flex items-center justify-center" title="로그아웃"><LogOut className="w-4 h-4" /></button>
-              </form>
+
+              <details className="relative hidden md:block">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl border border-[#dde2e8] bg-white px-3 py-2 text-xs font-bold text-[#3f4752] transition hover:bg-[#f6f8fb]">
+                  <UserRound className="h-4 w-4 text-[#3457c8]" />
+                  <span className="max-w-36 truncate">{user.email}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-[#8a94a3]" />
+                </summary>
+                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-[#dde2e8] bg-white p-2 shadow-[0_18px_45px_rgba(20,30,50,0.14)]">
+                  <Link href="/me/bookmarks" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#4b5563] hover:bg-[#f4f6f8] hover:text-[#171a1f]">
+                    <Bookmark className="h-4 w-4" />저장한 콘텐츠
+                  </Link>
+                  <Link href="/me/sanctions" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#4b5563] hover:bg-[#f4f6f8] hover:text-[#171a1f]">
+                    <Scale className="h-4 w-4" />제재·이의제기
+                  </Link>
+                  {isOperator && (
+                    <Link href="/admin" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#2445ad] hover:bg-[#eef2ff]">
+                      <LayoutDashboard className="h-4 w-4" />운영 콘솔
+                    </Link>
+                  )}
+                  <form action={async () => { 'use server'; await signOut() }} className="mt-1 border-t border-[#edf0f3] pt-1">
+                    <button type="submit" className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-[#be4057] hover:bg-[#fff1f2]">
+                      <LogOut className="h-4 w-4" />로그아웃
+                    </button>
+                  </form>
+                </div>
+              </details>
             </>
           ) : (
-            <Link href="/login" className="px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-slate-200 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all flex items-center gap-1.5"><LogIn className="w-3.5 h-3.5" /><span className="hidden sm:inline">에디터 로그인</span></Link>
+            <Link href="/login" className="rw-button-primary h-10 px-4 text-xs">
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">로그인</span>
+            </Link>
           )}
+
+          <details className="relative md:hidden">
+            <summary className={`${iconButton} cursor-pointer list-none`} aria-label="메뉴 열기">
+              <Menu className="h-4 w-4" />
+            </summary>
+            <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-[#dde2e8] bg-white p-2 shadow-[0_18px_45px_rgba(20,30,50,0.14)]">
+              <Link href="/categories" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#3f4752] hover:bg-[#f4f6f8]">
+                <Compass className="h-4 w-4" />카테고리 탐색
+              </Link>
+              <Link href="/search" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#3f4752] hover:bg-[#f4f6f8]">
+                <Search className="h-4 w-4" />통합 검색
+              </Link>
+              {user && (
+                <>
+                  <Link href="/me/bookmarks" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#3f4752] hover:bg-[#f4f6f8]">
+                    <Bookmark className="h-4 w-4" />저장한 콘텐츠
+                  </Link>
+                  <Link href="/me/notifications" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#3f4752] hover:bg-[#f4f6f8]">
+                    <Bell className="h-4 w-4" />알림 {unreadNotificationCount > 0 ? `(${unreadNotificationCount})` : ''}
+                  </Link>
+                  <Link href="/me/sanctions" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#3f4752] hover:bg-[#f4f6f8]">
+                    <Scale className="h-4 w-4" />제재·이의제기
+                  </Link>
+                  {isOperator && (
+                    <Link href="/admin" className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold text-[#2445ad] hover:bg-[#eef2ff]">
+                      <LayoutDashboard className="h-4 w-4" />운영 콘솔
+                    </Link>
+                  )}
+                  <form action={async () => { 'use server'; await signOut() }} className="mt-1 border-t border-[#edf0f3] pt-1">
+                    <button type="submit" className="flex w-full items-center gap-2 rounded-xl px-3 py-3 text-left text-sm font-semibold text-[#be4057] hover:bg-[#fff1f2]">
+                      <LogOut className="h-4 w-4" />로그아웃
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </details>
         </div>
       </div>
     </header>
