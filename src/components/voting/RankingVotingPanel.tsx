@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { BarChart3, CheckCircle2, Lock, RotateCcw, ShieldCheck, Vote } from 'lucide-react'
+import { BarChart3, CheckCircle2, Lock, RotateCcw, ShieldCheck, Trash2, Trophy, Vote } from 'lucide-react'
 import { castRankingVote, clearRankingVote, setRankingVotingState } from '@/lib/actions/voting'
+import { finalizeRankingVote, voidRankingVoteRound } from '@/lib/actions/ranking-history'
 
 type Candidate = {
   itemId: string
@@ -38,10 +39,12 @@ export default function RankingVotingPanel({
   const [isPending, startTransition] = useTransition()
   const [votingState, setVotingState] = useState<'open' | 'closed'>(initialVotingState)
   const [myVoteItemId, setMyVoteItemId] = useState<string | null>(initialMyVoteItemId)
+  const [terminalReason, setTerminalReason] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.voteCount, 0)
+  const hasValidReason = terminalReason.trim().length >= 5 && terminalReason.trim().length <= 1000
 
   const requireLogin = () => {
     router.push(`/login?next=${encodeURIComponent(pathname)}`)
@@ -101,7 +104,45 @@ export default function RankingVotingPanel({
         return
       }
       setVotingState(nextState)
+      setTerminalReason('')
       setSuccessMessage(nextState === 'open' ? '사용자 투표를 열었습니다.' : '사용자 투표를 닫았습니다.')
+      router.refresh()
+    })
+  }
+
+  const finalizeVote = () => {
+    if (!canManageVoting || votingState !== 'closed' || isPending || totalVotes < 1 || !hasValidReason) return
+
+    setErrorMessage(null)
+    setSuccessMessage(null)
+    startTransition(async () => {
+      const result = await finalizeRankingVote(rankingId, terminalReason, pathname)
+      if (result.error) {
+        setErrorMessage(result.error)
+        return
+      }
+      setMyVoteItemId(null)
+      setTerminalReason('')
+      setSuccessMessage(`투표 결과를 공식 순위로 확정했습니다. Revision #${result.revisionNumber}`)
+      router.refresh()
+    })
+  }
+
+  const voidVoteRound = () => {
+    if (!canManageVoting || votingState !== 'closed' || isPending || !hasValidReason) return
+    if (!window.confirm('현재 투표 라운드를 공식 순위에 반영하지 않고 폐기하시겠습니까? 이 작업은 변경 이력에 영구 기록됩니다.')) return
+
+    setErrorMessage(null)
+    setSuccessMessage(null)
+    startTransition(async () => {
+      const result = await voidRankingVoteRound(rankingId, terminalReason, pathname)
+      if (result.error) {
+        setErrorMessage(result.error)
+        return
+      }
+      setMyVoteItemId(null)
+      setTerminalReason('')
+      setSuccessMessage(`투표 라운드를 폐기하고 이력에 기록했습니다. Revision #${result.revisionNumber}`)
       router.refresh()
     })
   }
@@ -118,7 +159,7 @@ export default function RankingVotingPanel({
             </span>
           </div>
           <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-400">
-            이 패널의 순서가 현재 사용자 투표 결과입니다. 아래 랭킹 본문의 기존 순번은 후보를 설명하기 위한 seed 순서이며, 투표 결과가 `ranking_entries.position`을 직접 덮어쓰지는 않습니다.
+            이 패널은 현재 투표 라운드의 실시간 결과입니다. 확정 전에는 기존 공식 순위를 바꾸지 않으며, 관리자가 닫힌 라운드를 확정하면 결과가 공식 순위와 변경 이력에 원자적으로 반영됩니다.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-xs text-slate-300">
@@ -185,7 +226,7 @@ export default function RankingVotingPanel({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-xs font-black text-indigo-200"><ShieldCheck className="h-4 w-4" /> 관리자 투표 제어</div>
-              <p className="mt-1 text-[11px] text-slate-400">첫 표가 생성된 이후에는 랭킹 문서와 후보 구성이 잠깁니다. P2-1에서는 destructive reset을 제공하지 않습니다.</p>
+              <p className="mt-1 text-[11px] text-slate-400">투표 중에는 후보 구성이 잠깁니다. 닫힌 라운드는 사유와 함께 공식 확정하거나, 확정할 수 없는 경우 이력을 남기고 폐기할 수 있습니다.</p>
             </div>
             <button
               type="button"
@@ -196,6 +237,42 @@ export default function RankingVotingPanel({
               {votingState === 'open' ? '투표 닫기' : '투표 열기'}
             </button>
           </div>
+
+          {votingState === 'closed' && (
+            <div className="mt-4 border-t border-indigo-500/15 pt-4">
+              <label htmlFor={`vote-terminal-reason-${rankingId}`} className="text-[11px] font-black text-slate-300">라운드 종료 사유</label>
+              <textarea
+                id={`vote-terminal-reason-${rankingId}`}
+                value={terminalReason}
+                onChange={(event) => setTerminalReason(event.target.value)}
+                maxLength={1000}
+                rows={3}
+                placeholder="예: 2026년 8월 사용자 투표 결과를 공식 순위에 반영"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-xs text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-indigo-400/40"
+              />
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-[10px] text-slate-500">5~1000자 · 확정/폐기 기록은 삭제할 수 없습니다.</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={isPending || totalVotes < 1 || !hasValidReason}
+                    onClick={finalizeVote}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-500"
+                  >
+                    <Trophy className="h-3.5 w-3.5" /> 투표 결과 확정
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending || !hasValidReason}
+                    onClick={voidVoteRound}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-200 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-slate-900 disabled:text-slate-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> 라운드 폐기
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
