@@ -7,7 +7,7 @@ on:
     branches:
       - main
       - fix/p1-1-5-security-hotfix
-      - feat/p1-3-search-discovery-quality
+      - 'ci/exact-head/**'
 
 permissions:
   contents: read
