@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import CommentSection from '@/components/comments/CommentSection'
+import RankingHistoryPanel from '@/components/ranking-history/RankingHistoryPanel'
 import RankingVotingPanel from '@/components/voting/RankingVotingPanel'
 import { absoluteUrl, getRankingSeoSnapshot, serializeJsonLd, SITE_NAME } from '@/lib/seo'
+import { getPublicRankingHistory } from '@/lib/queries/ranking-history'
 import { getPublicRankingVoteSummary, getViewerRankingVoteContext } from '@/lib/queries/voting'
 
 type Props = {
@@ -42,6 +44,7 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
 export default async function RankingDetailLayout({ children, params }: Props) {
   const { rankingSlug } = await params
   const ranking = await getRankingSeoSnapshot(rankingSlug)
+  const history = ranking ? await getPublicRankingHistory(ranking.id, 10) : []
 
   const jsonLd = ranking ? [
     {
@@ -114,6 +117,13 @@ export default async function RankingDetailLayout({ children, params }: Props) {
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />}
       {votingPanel}
       {children}
+      {history.length > 0 && (
+        <div className="bg-[#07070a] px-4 pb-10 text-slate-100 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl">
+            <RankingHistoryPanel revisions={history} />
+          </div>
+        </div>
+      )}
       {ranking && (
         <div className="bg-[#07070a] px-4 pb-24 text-slate-100 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
