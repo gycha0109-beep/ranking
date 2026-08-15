@@ -1,8 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07070a;
-  --foreground: #f1f5f9;
+  --background: #f6f7f9;
+  --foreground: #171a1f;
+  --rw-canvas: #f6f7f9;
+  --rw-surface: #ffffff;
+  --rw-surface-muted: #f0f2f5;
+  --rw-surface-strong: #e9edf2;
+  --rw-border: #dde2e8;
+  --rw-border-strong: #c9d0d9;
+  --rw-text: #171a1f;
+  --rw-text-soft: #3f4752;
+  --rw-text-muted: #6b7280;
+  --rw-brand: #3457c8;
+  --rw-brand-strong: #2445ad;
+  --rw-brand-soft: #eef2ff;
+  --rw-positive: #087a54;
+  --rw-positive-soft: #ecfdf5;
+  --rw-warning: #a16207;
+  --rw-warning-soft: #fffbeb;
+  --rw-danger: #be4057;
+  --rw-danger-soft: #fff1f2;
+  --rw-radius: 18px;
+  --rw-shadow: 0 8px 30px rgba(20, 30, 50, 0.06);
 }
 
 @theme inline {
@@ -10,45 +30,164 @@
   --color-foreground: var(--foreground);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--rw-canvas);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: var(--rw-canvas);
+  color: var(--rw-text);
   overflow-x: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
-/* 프리미엄 글래스모피즘 클래스 */
+a,
+button,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(52, 87, 200, 0.24);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #dfe7ff;
+  color: #172554;
+}
+
+.rw-page {
+  min-height: 100vh;
+  background: var(--rw-canvas);
+  color: var(--rw-text);
+}
+
+.rw-container {
+  width: min(1180px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.rw-reading {
+  width: min(860px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.rw-surface,
 .glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  box-shadow: var(--rw-shadow);
 }
 
+.rw-card,
+.glass-card {
+  border-radius: var(--rw-radius);
+}
+
+.rw-card-interactive,
 .glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
+.rw-card-interactive:hover,
 .glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
-  transform: translateY(-2px);
+  border-color: #bcc7dc;
+  box-shadow: 0 12px 34px rgba(20, 30, 50, 0.1);
+  transform: translateY(-1px);
 }
 
-/* 세련된 스크롤바 커스텀 */
+.rw-kicker {
+  color: var(--rw-brand);
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rw-muted {
+  color: var(--rw-text-muted);
+}
+
+.rw-divider {
+  border-color: var(--rw-border);
+}
+
+.rw-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  border-radius: 12px;
+  background: var(--rw-brand);
+  color: #fff;
+  font-weight: 750;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.rw-button-primary:hover {
+  background: var(--rw-brand-strong);
+}
+
+.rw-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  border: 1px solid var(--rw-border-strong);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--rw-text-soft);
+  font-weight: 700;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.rw-button-secondary:hover {
+  border-color: #aeb7c4;
+  background: #f8fafc;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #07070a;
+  background: #eef1f4;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #1e1b4b;
+  background: #c7ced8;
+  border: 2px solid #eef1f4;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #312e81;
+  background: #aeb8c5;
+}
+
+@media (max-width: 640px) {
+  .rw-container,
+  .rw-reading {
+    width: min(100% - 24px, 1180px);
+  }
 }
