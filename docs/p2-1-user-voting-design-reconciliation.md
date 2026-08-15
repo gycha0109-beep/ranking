@@ -24,8 +24,8 @@ Authority baseline: `cba0f5bea765b850a83ad97f8441ce42233f5f55`
 
 ## Required implementation surfaces
 
-- repository migration `20260816010000_p2_1_user_voting.sql`
-- public/auth/admin RPC contract
+- `20260816010000_p2_1_user_voting.sql` — voting storage/RPCs/triggers
+- `20260816011000_p2_1_vote_fk_indexes.sql` — P2-1 FK reverse-index remediation
 - server vote actions
 - public voting panel
 - ranking layout integration
@@ -34,3 +34,7 @@ Authority baseline: `cba0f5bea765b850a83ad97f8441ce42233f5f55`
 - CI gate
 - Hosted migration and rollback-fixture validation
 - exact-head CI and PR lifecycle
+
+## Final review disposition
+
+Implementation review and Hosted validation found no remaining P2-1 blocker. Security advisor findings are intentional RPC-boundary findings; P2-1-specific performance FK findings were remediated and rechecked.
