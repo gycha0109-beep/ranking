@@ -1,5 +1,3 @@
-import 'server-only'
-
 import { createHash } from 'node:crypto'
 import type { RankingBrowseSort, SearchKind, SearchSort } from './contracts'
 
