@@ -1,9 +1,15 @@
 import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import FacetFilterPanel from '@/components/FacetFilterPanel'
 import { getSubcategoryBySlug } from '@/lib/queries/public'
-import { listPublicRankings } from '@/lib/queries/search'
-import { resolveRankingBrowseSort } from '@/lib/search/contracts'
+import { getPublicFacetOptions, listPublicRankings } from '@/lib/queries/search'
+import {
+  appendFacetParams,
+  canonicalizeFacetIds,
+  resolveFacetIds,
+  resolveRankingBrowseSort,
+} from '@/lib/search/contracts'
 import { Layers, ChevronRight, Inbox, Calendar, Award, Flame } from 'lucide-react'
 
 export const revalidate = 0
@@ -16,11 +22,19 @@ interface Props {
   searchParams: Promise<{
     sort?: string | string[]
     cursor?: string | string[]
+    facet?: string | string[]
   }>
 }
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
+}
+
+function browseHref(path: string, sort: string, facetIds: string[], cursor?: string | null) {
+  const params = new URLSearchParams({ sort })
+  if (cursor) params.set('cursor', cursor)
+  appendFacetParams(params, facetIds)
+  return `${path}?${params.toString()}`
 }
 
 export default async function SubcategoryPage({ params, searchParams }: Props) {
@@ -31,16 +45,22 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
   }
 
   const sort = resolveRankingBrowseSort(first(query.sort))
+  const requestedFacets = resolveFacetIds(query.facet)
+  const options = await getPublicFacetOptions({ kind: 'ranking', categorySlug, subcategorySlug })
+  const canonicalFacets = canonicalizeFacetIds(requestedFacets.ids, options.rows)
+  const facetIds = canonicalFacets.ids
+  const facetStateAccepted = requestedFacets.accepted && canonicalFacets.accepted
+
   const page = await listPublicRankings({
     categorySlug,
     subcategorySlug,
     sort,
     cursor: first(query.cursor),
+    facetIds,
   })
   const rankings = page.items
-  const nextHref = page.nextCursor
-    ? `/categories/${categorySlug}/${subcategorySlug}?${new URLSearchParams({ sort, cursor: page.nextCursor }).toString()}`
-    : null
+  const path = `/categories/${categorySlug}/${subcategorySlug}`
+  const nextHref = page.nextCursor ? browseHref(path, sort, facetIds, page.nextCursor) : null
 
   return (
     <div className="relative min-h-screen pb-20 bg-[#07070a] font-sans">
@@ -75,6 +95,13 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
           </div>
         </div>
 
+        <FacetFilterPanel
+          action={path}
+          groups={options.groups}
+          selectedIds={facetIds}
+          hiddenParams={{ sort }}
+        />
+
         <div className="space-y-6 pt-6 border-t border-white/[0.04]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -84,13 +111,13 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
             </div>
             <div className="flex items-center gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1">
               <Link
-                href={`/categories/${categorySlug}/${subcategorySlug}?sort=latest`}
+                href={browseHref(path, 'latest', facetIds)}
                 className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition ${sort === 'latest' ? 'bg-indigo-500/15 text-indigo-300' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 최신순
               </Link>
               <Link
-                href={`/categories/${categorySlug}/${subcategorySlug}?sort=popular`}
+                href={browseHref(path, 'popular', facetIds)}
                 className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition ${sort === 'popular' ? 'bg-amber-500/15 text-amber-300' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <span className="inline-flex items-center gap-1"><Flame className="h-3 w-3" />인기순</span>
@@ -98,9 +125,11 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
             </div>
           </div>
 
-          {!page.cursorAccepted && (
+          {(!page.cursorAccepted || !facetStateAccepted) && (
             <p className="rounded-xl border border-amber-500/10 bg-amber-500/[0.04] px-3 py-2 text-[11px] text-amber-300">
-              유효하지 않은 페이지 위치를 초기화하고 첫 페이지를 표시했습니다.
+              {!facetStateAccepted
+                ? '존재하지 않거나 이 세부 분야에 맞지 않는 Facet 필터를 제거했습니다.'
+                : '유효하지 않은 페이지 위치를 초기화하고 첫 페이지를 표시했습니다.'}
             </p>
           )}
 
@@ -108,29 +137,23 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rankings.map((ranking) => (
-                  <div 
+                  <div
                     key={ranking.id}
                     className="glass-card glass-card-hover rounded-2xl p-5 flex flex-col justify-between space-y-4"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-indigo-400 uppercase">
-                          {subcategory.categories?.name}
-                        </span>
+                        <span className="text-[10px] font-bold text-indigo-400 uppercase">{subcategory.categories?.name}</span>
                         <span className="text-slate-800 text-xs">&bull;</span>
-                        <span className="text-[10px] font-bold text-purple-400">
-                          {subcategory.name}
-                        </span>
+                        <span className="text-[10px] font-bold text-purple-400">{subcategory.name}</span>
                       </div>
-                      
+
                       <Link href={`/rankings/${ranking.slug}`}>
                         <h3 className="font-extrabold text-sm text-slate-100 hover:text-indigo-300 transition-colors line-clamp-1 leading-snug">
                           {ranking.title}
                         </h3>
                       </Link>
-                      <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
-                        {ranking.summary}
-                      </p>
+                      <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">{ranking.summary}</p>
                     </div>
 
                     <div className="space-y-2 pt-3 border-t border-white/[0.04] text-[10px] text-slate-500 font-semibold">
@@ -139,10 +162,7 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
                           <Calendar className="w-3.5 h-3.5" />
                           <span>{new Date(ranking.published_at || ranking.sort_time).toLocaleDateString('ko-KR')}</span>
                         </div>
-                        <Link 
-                          href={`/rankings/${ranking.slug}`} 
-                          className="text-indigo-400 hover:underline flex items-center gap-0.5"
-                        >
+                        <Link href={`/rankings/${ranking.slug}`} className="text-indigo-400 hover:underline flex items-center gap-0.5">
                           보기 <ChevronRight className="w-3 h-3" />
                         </Link>
                       </div>
@@ -171,9 +191,9 @@ export default async function SubcategoryPage({ params, searchParams }: Props) {
               <div className="p-4 rounded-full bg-slate-900 border border-white/5">
                 <Inbox className="w-8 h-8 text-slate-600" />
               </div>
-              <h3 className="font-bold text-slate-300">발행된 랭킹이 없습니다</h3>
+              <h3 className="font-bold text-slate-300">조건에 맞는 발행 랭킹이 없습니다</h3>
               <p className="text-slate-500 text-xs max-w-sm leading-relaxed">
-                현재 이 세부 분야에 등록되거나 공개 발행된 랭킹 문서가 존재하지 않습니다.
+                선택한 Facet 조건을 줄이거나 상위 카테고리에서 다시 탐색해 보세요.
               </p>
             </div>
           )}

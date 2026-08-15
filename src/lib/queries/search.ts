@@ -1,6 +1,8 @@
 import { createPublicClient } from '@/lib/supabase/public'
 import {
   SEARCH_PAGE_SIZE,
+  groupFacetOptions,
+  type FacetOptionRow,
   type PublicRankingListRow,
   type RankingBrowseSort,
   type SearchKind,
@@ -16,14 +18,40 @@ import {
   encodeSearchCursor,
 } from '@/lib/search/cursor'
 
+export async function getPublicFacetOptions(args: {
+  kind: SearchKind
+  categorySlug?: string | null
+  subcategorySlug?: string | null
+}) {
+  const supabase = createPublicClient()
+  const { data, error } = await supabase.rpc('list_public_facet_options', {
+    p_kind: args.kind,
+    p_category_slug: args.categorySlug || null,
+    p_subcategory_slug: args.subcategorySlug || null,
+    p_limit: 200,
+  })
+
+  if (error) {
+    throw new Error('공개 필터 옵션을 불러오지 못했습니다.')
+  }
+
+  const rows = (data || []) as FacetOptionRow[]
+  return {
+    rows,
+    groups: groupFacetOptions(rows),
+  }
+}
+
 export async function searchPublicContent(args: {
   query: string
   kind: SearchKind
   sort: SearchSort
   cursor?: string
+  facetIds?: string[]
 }) {
   const supabase = createPublicClient()
-  const fingerprint = createSearchFingerprint(args.query, args.kind, args.sort)
+  const facetIds = args.facetIds || []
+  const fingerprint = createSearchFingerprint(args.query, args.kind, args.sort, facetIds)
   const cursor = decodeSearchCursor(args.cursor, fingerprint, args.sort)
 
   const { data, error } = await supabase.rpc('search_public_content', {
@@ -37,6 +65,7 @@ export async function searchPublicContent(args: {
     p_cursor_time: cursor?.time ?? null,
     p_cursor_kind: cursor?.kind ?? null,
     p_cursor_id: cursor?.id ?? null,
+    p_facet_ids: facetIds,
   })
 
   if (error) {
@@ -62,10 +91,12 @@ export async function listPublicRankings(args: {
   subcategorySlug?: string | null
   sort: RankingBrowseSort
   cursor?: string
+  facetIds?: string[]
 }) {
   const supabase = createPublicClient()
   const subcategorySlug = args.subcategorySlug || null
-  const fingerprint = createRankingBrowseFingerprint(args.categorySlug, subcategorySlug, args.sort)
+  const facetIds = args.facetIds || []
+  const fingerprint = createRankingBrowseFingerprint(args.categorySlug, subcategorySlug, args.sort, facetIds)
   const cursor = decodeRankingBrowseCursor(args.cursor, fingerprint, args.sort)
 
   const { data, error } = await supabase.rpc('list_public_rankings', {
@@ -77,6 +108,7 @@ export async function listPublicRankings(args: {
     p_cursor_likes: cursor?.likes ?? null,
     p_cursor_time: cursor?.time ?? null,
     p_cursor_id: cursor?.id ?? null,
+    p_facet_ids: facetIds,
   })
 
   if (error) {

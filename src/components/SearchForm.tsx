@@ -6,6 +6,7 @@ interface Props {
   defaultQuery?: string
   defaultKind?: SearchKind
   defaultSort?: SearchSort
+  facetIds?: string[]
   compact?: boolean
   showFilters?: boolean
   className?: string
@@ -15,12 +16,16 @@ export default function SearchForm({
   defaultQuery = '',
   defaultKind = 'all',
   defaultSort = 'relevance',
+  facetIds = [],
   compact = false,
   showFilters = false,
   className = '',
 }: Props) {
   return (
     <form action="/search" method="get" role="search" className={className}>
+      {facetIds.map((id) => (
+        <input key={id} type="hidden" name="facet" value={id} />
+      ))}
       <div className={compact ? 'flex items-center gap-2' : 'space-y-3'}>
         <div className="relative flex-1">
           <Search className={`absolute left-3.5 ${compact ? 'top-2.5' : 'top-3'} w-4 h-4 text-slate-500 pointer-events-none`} />

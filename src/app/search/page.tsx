@@ -1,14 +1,19 @@
 import React from 'react'
 import Link from 'next/link'
 import { ArrowRight, Database, FileText, Inbox, Layers, Search, Sparkles } from 'lucide-react'
+import FacetFilterPanel from '@/components/FacetFilterPanel'
 import SearchForm from '@/components/SearchForm'
-import { searchPublicContent } from '@/lib/queries/search'
+import { getPublicFacetOptions, searchPublicContent } from '@/lib/queries/search'
 import {
+  appendFacetParams,
+  canonicalizeFacetIds,
   isSearchQueryLengthValid,
   normalizeSearchQuery,
+  resolveFacetIds,
   resolveSearchKind,
   resolveSearchSort,
   SEARCH_QUERY_MAX_LENGTH,
+  type FacetGroupOption,
   type SearchResult,
 } from '@/lib/search/contracts'
 
@@ -19,6 +24,7 @@ type SearchParams = Promise<{
   type?: string | string[]
   sort?: string | string[]
   cursor?: string | string[]
+  facet?: string | string[]
 }>
 
 function first(value: string | string[] | undefined) {
@@ -56,17 +62,29 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const kind = resolveSearchKind(first(params.type))
   const sort = resolveSearchSort(first(params.sort))
   const cursor = first(params.cursor)
+  const requestedFacets = resolveFacetIds(params.facet)
   const hasQuery = query.length > 0
   const validQuery = isSearchQueryLengthValid(query)
 
   let items: SearchResult[] = []
+  let facetGroups: FacetGroupOption[] = []
+  let facetIds: string[] = []
+  let facetStateAccepted = requestedFacets.accepted
   let nextCursor: string | null = null
   let cursorAccepted = true
   let loadError = false
 
   if (validQuery) {
     try {
-      const result = await searchPublicContent({ query, kind, sort, cursor })
+      const options = await getPublicFacetOptions({ kind })
+      facetGroups = options.groups
+      const canonicalFacets = canonicalizeFacetIds(requestedFacets.ids, options.rows)
+      facetIds = canonicalFacets.ids
+      facetStateAccepted = facetStateAccepted && canonicalFacets.accepted
+
+      const result = facetIds.length > 0
+        ? await searchPublicContent({ query, kind, sort, cursor, facetIds })
+        : await searchPublicContent({ query, kind, sort, cursor })
       items = result.items
       nextCursor = result.nextCursor
       cursorAccepted = result.cursorAccepted
@@ -78,6 +96,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const nextHref = (() => {
     if (!nextCursor) return null
     const next = new URLSearchParams({ q: query, type: kind, sort, cursor: nextCursor })
+    appendFacetParams(next, facetIds)
     return `/search?${next.toString()}`
   })()
 
@@ -99,6 +118,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             defaultQuery={rawQuery}
             defaultKind={kind}
             defaultSort={sort}
+            facetIds={facetIds}
             showFilters
             className="rounded-2xl border border-white/[0.06] bg-white/[0.015] p-4"
           />
@@ -131,87 +151,102 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         )}
 
         {validQuery && !loadError && (
-          <section className="space-y-5">
-            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.06] pb-3">
-              <div>
-                <p className="text-xs font-semibold text-slate-500">검색어</p>
-                <h2 className="mt-1 text-lg font-black text-white">“{query}”</h2>
-              </div>
-              <div className="text-right text-[11px] font-semibold text-slate-500">
-                <span>현재 페이지 {items.length}건</span>
-                {!cursorAccepted && <span className="ml-2 text-amber-400">유효하지 않은 페이지 위치를 초기화했습니다.</span>}
-              </div>
-            </div>
+          <>
+            <FacetFilterPanel
+              action="/search"
+              groups={facetGroups}
+              selectedIds={facetIds}
+              hiddenParams={{ q: query, type: kind, sort }}
+            />
 
-            {items.length > 0 ? (
-              <div className="grid gap-4">
-                {items.map((result) => (
-                  <Link
-                    key={`${result.content_kind}:${result.id}`}
-                    href={resultHref(result)}
-                    className="group rounded-2xl border border-white/[0.06] bg-white/[0.015] p-5 transition hover:border-indigo-500/25 hover:bg-white/[0.03]"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="mt-0.5 rounded-xl border border-white/[0.06] bg-slate-950/60 p-2.5 text-indigo-300">
-                        {result.content_kind === 'ranking'
-                          ? <FileText className="h-5 w-5" />
-                          : <Database className="h-5 w-5" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
-                          <span className={result.content_kind === 'ranking' ? 'text-indigo-400' : 'text-emerald-400'}>
-                            {result.content_kind === 'ranking' ? '랭킹 문서' : '아이템'}
-                          </span>
-                          {result.category_name && <span className="text-slate-600">{result.category_name}</span>}
-                          {result.subcategory_name && <span className="text-slate-600">/ {result.subcategory_name}</span>}
-                          {result.brand_or_creator && <span className="text-slate-600">{result.brand_or_creator}</span>}
-                        </div>
-                        <h3 className="mt-2 truncate text-base font-extrabold text-slate-100 transition group-hover:text-indigo-300">
-                          {result.title}
-                        </h3>
-                        {result.description && (
-                          <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-400">{result.description}</p>
-                        )}
-                        <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
-                          <span className="rounded-lg border border-indigo-500/15 bg-indigo-500/[0.06] px-2 py-1 text-indigo-300">
-                            {matchLabel(result.match_reason)}
-                          </span>
-                          <span>고유 조회 {result.unique_view_count.toLocaleString()}</span>
-                          <span>좋아요 {result.like_count.toLocaleString()}</span>
-                        </div>
-                      </div>
-                      <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-indigo-400" />
-                    </div>
-                  </Link>
-                ))}
+            <section className="space-y-5">
+              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.06] pb-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">검색어</p>
+                  <h2 className="mt-1 text-lg font-black text-white">“{query}”</h2>
+                </div>
+                <div className="text-right text-[11px] font-semibold text-slate-500">
+                  <span>현재 페이지 {items.length}건</span>
+                  {!cursorAccepted && <span className="ml-2 text-amber-400">유효하지 않은 페이지 위치를 초기화했습니다.</span>}
+                </div>
               </div>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.01] px-6 py-14 text-center">
-                <Inbox className="mx-auto h-8 w-8 text-slate-600" />
-                <h3 className="mt-4 text-sm font-bold text-slate-300">검색 결과가 없습니다</h3>
-                <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
-                  더 일반적인 표현이나 짧은 키워드로 바꿔보거나 카테고리 디렉터리에서 직접 탐색해 보세요.
+
+              {!facetStateAccepted && (
+                <p className="rounded-xl border border-amber-500/10 bg-amber-500/[0.04] px-3 py-2 text-[11px] text-amber-300">
+                  존재하지 않거나 현재 검색 대상과 맞지 않는 Facet 필터를 제거했습니다.
                 </p>
-                <Link
-                  href="/categories"
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:text-indigo-200"
-                >
-                  <Layers className="h-4 w-4" />카테고리 탐색
-                </Link>
-              </div>
-            )}
+              )}
 
-            {nextHref && (
-              <div className="flex justify-center pt-2">
-                <Link
-                  href={nextHref}
-                  className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200"
-                >
-                  다음 결과 보기
-                </Link>
-              </div>
-            )}
-          </section>
+              {items.length > 0 ? (
+                <div className="grid gap-4">
+                  {items.map((result) => (
+                    <Link
+                      key={`${result.content_kind}:${result.id}`}
+                      href={resultHref(result)}
+                      className="group rounded-2xl border border-white/[0.06] bg-white/[0.015] p-5 transition hover:border-indigo-500/25 hover:bg-white/[0.03]"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="mt-0.5 rounded-xl border border-white/[0.06] bg-slate-950/60 p-2.5 text-indigo-300">
+                          {result.content_kind === 'ranking'
+                            ? <FileText className="h-5 w-5" />
+                            : <Database className="h-5 w-5" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
+                            <span className={result.content_kind === 'ranking' ? 'text-indigo-400' : 'text-emerald-400'}>
+                              {result.content_kind === 'ranking' ? '랭킹 문서' : '아이템'}
+                            </span>
+                            {result.category_name && <span className="text-slate-600">{result.category_name}</span>}
+                            {result.subcategory_name && <span className="text-slate-600">/ {result.subcategory_name}</span>}
+                            {result.brand_or_creator && <span className="text-slate-600">{result.brand_or_creator}</span>}
+                          </div>
+                          <h3 className="mt-2 truncate text-base font-extrabold text-slate-100 transition group-hover:text-indigo-300">
+                            {result.title}
+                          </h3>
+                          {result.description && (
+                            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-400">{result.description}</p>
+                          )}
+                          <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
+                            <span className="rounded-lg border border-indigo-500/15 bg-indigo-500/[0.06] px-2 py-1 text-indigo-300">
+                              {matchLabel(result.match_reason)}
+                            </span>
+                            <span>고유 조회 {result.unique_view_count.toLocaleString()}</span>
+                            <span>좋아요 {result.like_count.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-indigo-400" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.01] px-6 py-14 text-center">
+                  <Inbox className="mx-auto h-8 w-8 text-slate-600" />
+                  <h3 className="mt-4 text-sm font-bold text-slate-300">검색 결과가 없습니다</h3>
+                  <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-slate-500">
+                    검색어나 Facet 조건을 줄이거나 카테고리 디렉터리에서 직접 탐색해 보세요.
+                  </p>
+                  <Link
+                    href="/categories"
+                    className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:text-indigo-200"
+                  >
+                    <Layers className="h-4 w-4" />카테고리 탐색
+                  </Link>
+                </div>
+              )}
+
+              {nextHref && (
+                <div className="flex justify-center pt-2">
+                  <Link
+                    href={nextHref}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-2.5 text-xs font-bold text-slate-300 transition hover:border-indigo-500/25 hover:bg-indigo-500/10 hover:text-indigo-200"
+                  >
+                    다음 결과 보기
+                  </Link>
+                </div>
+              )}
+            </section>
+          </>
         )}
       </div>
     </main>
