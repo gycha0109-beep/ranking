@@ -37,6 +37,13 @@ semantic/vector/personalized search와 query logging은 비대상이다.
 - 3~120: exact/prefix/substring/trigram
 - 121 이상: invalid
 
+pattern 의미:
+
+- 사용자 query는 wildcard 문법이 아니라 literal text다.
+- `LIKE` 비교 전에 `\\`, `%`, `_`를 escape한다.
+- 모든 prefix/contains 비교는 명시적 `ESCAPE '\\'`를 사용한다.
+- trigram similarity에는 escape된 pattern이 아니라 정규화된 query를 사용한다.
+
 URL:
 
 `/search?q=<query>&type=all|ranking|item&sort=relevance|latest|popular&cursor=<opaque>`
@@ -134,6 +141,7 @@ category/subcategory:
 - fixed/minimal search path
 - fully qualified objects
 - input allowlist + hard limit
+- literal LIKE wildcard escape
 - ranking/item public predicates 직접 강제
 - hidden row에서 파생된 match 없음
 - safe fixed output columns
@@ -203,6 +211,7 @@ Hosted validation은 transaction rollback synthetic fixture로 다음을 증명�
 
 - relevance tier
 - normalization
+- literal `%`, `_`, `\\` query
 - short query
 - fuzzy query
 - Moderation non-leakage
