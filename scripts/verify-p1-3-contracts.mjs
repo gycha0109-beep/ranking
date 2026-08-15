@@ -85,7 +85,7 @@ requireText(searchQueries, "supabase.rpc('list_public_rankings'", 'browse RPC qu
 requireText(searchQueries, 'cursorAccepted', 'invalid cursor fallback signal')
 
 const cursor = read('src/lib/search/cursor.ts')
-requireText(cursor, "import 'server-only'", 'cursor server boundary')
+requireText(cursor, "from 'node:crypto'", 'cursor server-side fingerprint primitive')
 requireText(cursor, "'p1-3-search-v1'", 'search cursor version fingerprint')
 requireText(cursor, "'p1-3-ranking-browse-v1'", 'browse cursor version fingerprint')
 requireText(cursor, 'isValidTimestamp', 'cursor timestamp validation')
@@ -121,6 +121,7 @@ if (packageJson.scripts?.['verify:p1-3'] !== 'node scripts/verify-p1-3-contracts
 }
 
 const ci = read('.github/workflows/ci.yml')
+requireText(ci, 'workflow_dispatch:', 'manual exact-head CI trigger')
 requireText(ci, 'npm run verify:p1-2', 'P1-2 CI contract')
 requireText(ci, 'npm run verify:p1-3', 'P1-3 CI contract')
 
