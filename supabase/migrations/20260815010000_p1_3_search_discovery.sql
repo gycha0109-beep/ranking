@@ -58,6 +58,48 @@ ADD COLUMN search_text TEXT GENERATED ALWAYS AS (
   )
 ) STORED;
 
+ALTER TABLE public.categories
+ADD COLUMN search_name TEXT GENERATED ALWAYS AS (
+  pg_catalog.lower(
+    pg_catalog.btrim(
+      pg_catalog.regexp_replace(
+        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
+        '[[:space:]]+',
+        ' ',
+        'g'
+      )
+    )
+  )
+) STORED;
+
+ALTER TABLE public.subcategories
+ADD COLUMN search_name TEXT GENERATED ALWAYS AS (
+  pg_catalog.lower(
+    pg_catalog.btrim(
+      pg_catalog.regexp_replace(
+        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
+        '[[:space:]]+',
+        ' ',
+        'g'
+      )
+    )
+  )
+) STORED;
+
+ALTER TABLE public.facets
+ADD COLUMN search_name TEXT GENERATED ALWAYS AS (
+  pg_catalog.lower(
+    pg_catalog.btrim(
+      pg_catalog.regexp_replace(
+        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
+        '[[:space:]]+',
+        ' ',
+        'g'
+      )
+    )
+  )
+) STORED;
+
 CREATE INDEX idx_rankings_p1_3_search_trgm
 ON public.rankings
 USING gin (search_text extensions.gin_trgm_ops)
@@ -74,50 +116,17 @@ WHERE status = 'active'
 
 CREATE INDEX idx_categories_p1_3_name_trgm
 ON public.categories
-USING gin ((
-  pg_catalog.lower(
-    pg_catalog.btrim(
-      pg_catalog.regexp_replace(
-        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
-        '[[:space:]]+',
-        ' ',
-        'g'
-      )
-    )
-  )
-) extensions.gin_trgm_ops)
+USING gin (search_name extensions.gin_trgm_ops)
 WHERE is_visible = TRUE;
 
 CREATE INDEX idx_subcategories_p1_3_name_trgm
 ON public.subcategories
-USING gin ((
-  pg_catalog.lower(
-    pg_catalog.btrim(
-      pg_catalog.regexp_replace(
-        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
-        '[[:space:]]+',
-        ' ',
-        'g'
-      )
-    )
-  )
-) extensions.gin_trgm_ops)
+USING gin (search_name extensions.gin_trgm_ops)
 WHERE is_visible = TRUE;
 
 CREATE INDEX idx_facets_p1_3_name_trgm
 ON public.facets
-USING gin ((
-  pg_catalog.lower(
-    pg_catalog.btrim(
-      pg_catalog.regexp_replace(
-        pg_catalog.normalize(COALESCE(name, ''), 'NFKC'),
-        '[[:space:]]+',
-        ' ',
-        'g'
-      )
-    )
-  )
-) extensions.gin_trgm_ops);
+USING gin (search_name extensions.gin_trgm_ops);
 
 CREATE INDEX idx_ranking_facets_p1_3_reverse
 ON public.ranking_facets(facet_id, ranking_id);
@@ -252,77 +261,77 @@ BEGIN
   WITH category_hits AS (
     SELECT
       c.id,
-      private.p1_3_normalize_search_text(c.name) = v_query AS is_exact,
-      private.p1_3_normalize_search_text(c.name) LIKE v_prefix ESCAPE E'\\' AS is_prefix,
+      c.search_name = v_query AS is_exact,
+      c.search_name LIKE v_prefix ESCAPE E'\\' AS is_prefix,
       CASE
         WHEN v_query_length >= 3 THEN
-          private.p1_3_normalize_search_text(c.name) LIKE v_contains ESCAPE E'\\'
-          OR private.p1_3_normalize_search_text(c.name) OPERATOR(extensions.%>) v_query
+          c.search_name LIKE v_contains ESCAPE E'\\'
+          OR c.search_name OPERATOR(extensions.%>) v_query
         ELSE FALSE
       END AS is_long_match,
       CASE
-        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, private.p1_3_normalize_search_text(c.name))
+        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, c.search_name)
         ELSE 0::REAL
       END AS similarity
     FROM public.categories c
     WHERE c.is_visible = TRUE
       AND (
-        (v_query_length = 2 AND private.p1_3_normalize_search_text(c.name) LIKE v_prefix ESCAPE E'\\')
+        (v_query_length = 2 AND c.search_name LIKE v_prefix ESCAPE E'\\')
         OR
         (v_query_length >= 3 AND (
-          private.p1_3_normalize_search_text(c.name) LIKE v_contains ESCAPE E'\\'
-          OR private.p1_3_normalize_search_text(c.name) OPERATOR(extensions.%>) v_query
+          c.search_name LIKE v_contains ESCAPE E'\\'
+          OR c.search_name OPERATOR(extensions.%>) v_query
         ))
       )
   ),
   subcategory_hits AS (
     SELECT
       s.id,
-      private.p1_3_normalize_search_text(s.name) = v_query AS is_exact,
-      private.p1_3_normalize_search_text(s.name) LIKE v_prefix ESCAPE E'\\' AS is_prefix,
+      s.search_name = v_query AS is_exact,
+      s.search_name LIKE v_prefix ESCAPE E'\\' AS is_prefix,
       CASE
         WHEN v_query_length >= 3 THEN
-          private.p1_3_normalize_search_text(s.name) LIKE v_contains ESCAPE E'\\'
-          OR private.p1_3_normalize_search_text(s.name) OPERATOR(extensions.%>) v_query
+          s.search_name LIKE v_contains ESCAPE E'\\'
+          OR s.search_name OPERATOR(extensions.%>) v_query
         ELSE FALSE
       END AS is_long_match,
       CASE
-        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, private.p1_3_normalize_search_text(s.name))
+        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, s.search_name)
         ELSE 0::REAL
       END AS similarity
     FROM public.subcategories s
     WHERE s.is_visible = TRUE
       AND (
-        (v_query_length = 2 AND private.p1_3_normalize_search_text(s.name) LIKE v_prefix ESCAPE E'\\')
+        (v_query_length = 2 AND s.search_name LIKE v_prefix ESCAPE E'\\')
         OR
         (v_query_length >= 3 AND (
-          private.p1_3_normalize_search_text(s.name) LIKE v_contains ESCAPE E'\\'
-          OR private.p1_3_normalize_search_text(s.name) OPERATOR(extensions.%>) v_query
+          s.search_name LIKE v_contains ESCAPE E'\\'
+          OR s.search_name OPERATOR(extensions.%>) v_query
         ))
       )
   ),
   facet_hits AS (
     SELECT
       f.id,
-      private.p1_3_normalize_search_text(f.name) = v_query AS is_exact,
-      private.p1_3_normalize_search_text(f.name) LIKE v_prefix ESCAPE E'\\' AS is_prefix,
+      f.search_name = v_query AS is_exact,
+      f.search_name LIKE v_prefix ESCAPE E'\\' AS is_prefix,
       CASE
         WHEN v_query_length >= 3 THEN
-          private.p1_3_normalize_search_text(f.name) LIKE v_contains ESCAPE E'\\'
-          OR private.p1_3_normalize_search_text(f.name) OPERATOR(extensions.%>) v_query
+          f.search_name LIKE v_contains ESCAPE E'\\'
+          OR f.search_name OPERATOR(extensions.%>) v_query
         ELSE FALSE
       END AS is_long_match,
       CASE
-        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, private.p1_3_normalize_search_text(f.name))
+        WHEN v_query_length >= 3 THEN extensions.word_similarity(v_query, f.search_name)
         ELSE 0::REAL
       END AS similarity
     FROM public.facets f
     WHERE (
-      (v_query_length = 2 AND private.p1_3_normalize_search_text(f.name) LIKE v_prefix ESCAPE E'\\')
+      (v_query_length = 2 AND f.search_name LIKE v_prefix ESCAPE E'\\')
       OR
       (v_query_length >= 3 AND (
-        private.p1_3_normalize_search_text(f.name) LIKE v_contains ESCAPE E'\\'
-        OR private.p1_3_normalize_search_text(f.name) OPERATOR(extensions.%>) v_query
+        f.search_name LIKE v_contains ESCAPE E'\\'
+        OR f.search_name OPERATOR(extensions.%>) v_query
       ))
     )
   ),
@@ -454,17 +463,17 @@ BEGIN
       rb.sort_time,
       (
         CASE
-          WHEN rb.title_norm = v_query THEN 100000
-          WHEN rb.title_norm LIKE v_prefix ESCAPE E'\\' THEN 90000
-          WHEN v_query_length >= 3 AND rb.title_norm LIKE v_contains ESCAPE E'\\' THEN 80000
-          WHEN COALESCE(rb.category_exact, FALSE) OR COALESCE(rb.subcategory_exact, FALSE) THEN 70000
-          WHEN COALESCE(rb.category_prefix, FALSE) OR COALESCE(rb.subcategory_prefix, FALSE) THEN 70000
-          WHEN rb.facet_exact OR rb.facet_prefix THEN 65000
-          WHEN rb.category_long_match OR rb.subcategory_long_match THEN 60000
+          WHEN rb.title_norm = v_query THEN 120000
+          WHEN rb.title_norm LIKE v_prefix ESCAPE E'\\' THEN 110000
+          WHEN v_query_length >= 3 AND rb.title_norm LIKE v_contains ESCAPE E'\\' THEN 100000
+          WHEN COALESCE(rb.category_exact, FALSE) OR COALESCE(rb.subcategory_exact, FALSE) THEN 90000
+          WHEN COALESCE(rb.category_prefix, FALSE) OR COALESCE(rb.subcategory_prefix, FALSE) THEN 90000
+          WHEN rb.facet_exact OR rb.facet_prefix THEN 80000
+          WHEN rb.category_long_match OR rb.subcategory_long_match THEN 70000
           WHEN rb.facet_long_match THEN 60000
           WHEN v_query_length >= 3 AND rb.summary_norm LIKE v_contains ESCAPE E'\\' THEN 50000
           WHEN v_query_length >= 3 AND rb.body_norm LIKE v_contains ESCAPE E'\\' THEN 40000
-          ELSE 20000
+          ELSE 10000
         END
         + CASE
             WHEN v_query_length >= 3 THEN LEAST(
@@ -580,15 +589,17 @@ BEGIN
       ib.sort_time,
       (
         CASE
-          WHEN ib.title_norm = v_query THEN 100000
-          WHEN ib.title_norm LIKE v_prefix ESCAPE E'\\' THEN 90000
-          WHEN v_query_length >= 3 AND ib.title_norm LIKE v_contains ESCAPE E'\\' THEN 80000
-          WHEN ib.brand_norm = v_query OR ib.brand_norm LIKE v_prefix ESCAPE E'\\' THEN 75000
+          WHEN ib.title_norm = v_query THEN 120000
+          WHEN ib.title_norm LIKE v_prefix ESCAPE E'\\' THEN 110000
+          WHEN v_query_length >= 3 AND ib.title_norm LIKE v_contains ESCAPE E'\\' THEN 100000
+          WHEN ib.brand_norm = v_query OR ib.brand_norm LIKE v_prefix ESCAPE E'\\' THEN 90000
+          WHEN v_query_length >= 3 AND ib.brand_norm LIKE v_contains ESCAPE E'\\' THEN 80000
           WHEN ib.type_norm = v_query OR ib.type_norm LIKE v_prefix ESCAPE E'\\' THEN 70000
-          WHEN ib.facet_exact OR ib.facet_prefix THEN 65000
-          WHEN ib.facet_long_match THEN 60000
-          WHEN v_query_length >= 3 AND ib.description_norm LIKE v_contains ESCAPE E'\\' THEN 45000
-          ELSE 20000
+          WHEN v_query_length >= 3 AND ib.type_norm LIKE v_contains ESCAPE E'\\' THEN 60000
+          WHEN ib.facet_exact OR ib.facet_prefix THEN 50000
+          WHEN ib.facet_long_match THEN 40000
+          WHEN v_query_length >= 3 AND ib.description_norm LIKE v_contains ESCAPE E'\\' THEN 30000
+          ELSE 10000
         END
         + CASE
             WHEN v_query_length >= 3 THEN LEAST(
@@ -605,7 +616,9 @@ BEGIN
         WHEN ib.title_norm LIKE v_prefix ESCAPE E'\\' THEN 'title_prefix'
         WHEN v_query_length >= 3 AND ib.title_norm LIKE v_contains ESCAPE E'\\' THEN 'title'
         WHEN ib.brand_norm = v_query OR ib.brand_norm LIKE v_prefix ESCAPE E'\\' THEN 'brand'
+        WHEN v_query_length >= 3 AND ib.brand_norm LIKE v_contains ESCAPE E'\\' THEN 'brand'
         WHEN ib.type_norm = v_query OR ib.type_norm LIKE v_prefix ESCAPE E'\\' THEN 'item_type'
+        WHEN v_query_length >= 3 AND ib.type_norm LIKE v_contains ESCAPE E'\\' THEN 'item_type'
         WHEN ib.facet_exact OR ib.facet_prefix OR ib.facet_long_match THEN 'facet'
         WHEN v_query_length >= 3 AND ib.description_norm LIKE v_contains ESCAPE E'\\' THEN 'description'
         ELSE 'fuzzy'
