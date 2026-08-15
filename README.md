@@ -4,9 +4,11 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2 ACTIVE** — P2-1 User Voting을 구현·Hosted 검증하고 있습니다.
+**P1 COMPLETE / P2 ACTIVE** — P2-1 User Voting은 `SUCCESS / CLOSED`, P2-2 Ranking Change History & Vote Finalization을 진행 중입니다.
 
-P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다. 투표 finalization과 ranking change history는 P2-2 범위입니다.
+P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다.
+
+P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고, 변경 전/후 순위와 투표 스냅샷을 immutable revision으로 보존하며, 확정 불가능한 라운드를 사유와 함께 감사 가능한 방식으로 폐기하는 계약을 추가합니다.
 
 ## 실행
 
@@ -36,6 +38,7 @@ npm run dev
 - sanctions/appeals
 - audit/security event/maintenance surfaces
 - `user_vote` poll open/close control
+- 닫힌 투표 라운드 결과 확정/폐기 및 revision 기록
 
 ### 공개 탐색
 - 공개 홈/카테고리/서브카테고리
@@ -56,6 +59,7 @@ npm run dev
 - `user_vote` ranking account voting
 - vote change/cancel while open
 - public vote counts/percentages/current rank
+- 공식 투표 확정 이력 조회
 
 ### User Voting V1
 - `ranking_type='user_vote'` only
@@ -67,8 +71,19 @@ npm run dev
 - account suspension enforced through existing `engagement_write`
 - first remaining ballot freezes authored ranking/candidate configuration
 - moderation/publication controls remain available and may auto-close voting
-- no destructive reset
-- no finalization into `ranking_entries.position` until P2-2
+- finalization/void consumes the completed round ballots only after immutable snapshot creation
+
+### Ranking Change History / Vote Finalization
+- immutable `ranking_revisions` / `ranking_revision_entries`
+- `vote_finalization` and `vote_void` terminal revision types
+- required operator reason and internal actor attribution
+- before/after canonical positions and item label/reason snapshots
+- finalization materializes deterministic vote order into `ranking_entries.position` atomically
+- collision-free two-phase position permutation
+- unusable moderated rounds can be audibly voided without canonical position changes
+- raw revision tables are RPC-only; public history omits actor and ballot identities
+- public detail shows recent official ranking-order history
+- physical ranking deletion is blocked after revision history exists; archive remains available
 
 ### Technical SEO
 - route-specific canonical metadata
@@ -81,7 +96,7 @@ npm run dev
 - `robots.txt`
 - Ranking `ItemList`/Breadcrumb JSON-LD
 - generic Item `WebPage`/`Thing` JSON-LD
-- `user_vote` Ranking ItemList uses current vote-derived order
+- `user_vote` Ranking ItemList uses current vote-derived order; finalized rounds naturally converge to materialized canonical order
 
 ## 검증
 
@@ -91,6 +106,7 @@ npm run verify:p1-3
 npm run verify:p1-4
 npm run verify:p1-5
 npm run verify:p2-1
+npm run verify:p2-2
 npm run lint
 npm run build
 ```
@@ -106,11 +122,17 @@ P2-1 repository migrations:
 - `20260816010000_p2_1_user_voting.sql`
 - `20260816011000_p2_1_vote_fk_indexes.sql`
 
-## P2 후보 범위
+P2-2 repository migration:
 
-1. User Voting — P2-1
-2. Ranking Change History / vote finalization — P2-2 candidate
-3. Sponsor transparency/management
-4. External data import / crawling
+- `20260816020000_p2_2_ranking_history_vote_finalization.sql`
+
+## P2 확정/보류 범위
+
+1. User Voting — P2-1 `SUCCESS / CLOSED`
+2. Ranking Change History / Vote Finalization — P2-2 active
+3. Sponsor transparency/management — P2-3 planned
+4. Launch Hardening — planned after P2-3
+5. UI overhaul + deploy — planned after P2 closure
+6. External data import / crawling — deferred until after deployment/operational need is confirmed
 
 각 P2 stage는 별도 design/review/final-contract lifecycle을 거칩니다.
