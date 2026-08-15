@@ -55,9 +55,6 @@ export default async function Navbar() {
             <Link href="/categories" className={navLink}>
               <Compass className="h-4 w-4" />카테고리
             </Link>
-            <Link href="/search?sort=latest&q=%EB%9E%AD%ED%82%B9" className={navLink}>
-              최신 랭킹
-            </Link>
             {user && (
               <Link href="/me/bookmarks" className={navLink}>
                 <Bookmark className="h-4 w-4" />저장됨
