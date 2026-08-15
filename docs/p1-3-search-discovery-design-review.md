@@ -173,6 +173,18 @@ trigram은 문자 기반 유사도이므로 언어별 형태소 의미를 이해
 - 운영 row를 수정하지 않는다.
 - fixture 잔여 0을 검증한다.
 
+### 18. LIKE wildcard 해석
+
+사용자 검색어의 `%`, `_`, `\\`가 그대로 `LIKE` pattern에 들어가면 사용자가 의도하지 않은 wildcard가 되고 broad match 범위와 query cost가 달라질 수 있다.
+
+보완:
+
+- 검색어는 wildcard 문법이 아니라 literal text로만 해석한다.
+- DB에서 `\\`, `%`, `_` 순서로 escape한 뒤 prefix/contains pattern을 만든다.
+- 모든 `LIKE` 비교에 명시적 `ESCAPE '\\'`를 사용한다.
+- trigram similarity 입력에는 escape된 pattern이 아니라 정규화된 원문 query를 사용한다.
+- Hosted fixture에서 `%`, `_`, `\\` literal 검색을 검증한다.
+
 ## 최종 구현 조건
 
 1. SECDEF 함수 내부 explicit public predicate
@@ -192,3 +204,4 @@ trigram은 문자 기반 유사도이므로 언어별 형태소 의미를 이해
 15. raw query log 금지
 16. multilingual claim 제한
 17. Hosted rollback fixture
+18. LIKE wildcard literal escape
