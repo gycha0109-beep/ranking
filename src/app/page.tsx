@@ -158,7 +158,7 @@ export default async function HomePage() {
         <section>
           <div className="mb-5">
             <p className="rw-kicker">Recently updated</p>
-            <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[#171a1f]">최근 발행 랭킹</h2>
+            <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[#171a1f]">최근 발행 아카이브 문서</h2>
           </div>
 
           {recentRankings.length > 0 ? (
