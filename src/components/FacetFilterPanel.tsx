@@ -76,6 +76,8 @@ export default function FacetFilterPanel({ action, groups, selectedIds, hiddenPa
     </div>
   )
 
+  const compositionHelp = '같은 그룹에서는 하나라도 일치하면 되고, 다른 그룹과는 모두 일치해야 합니다.'
+
   return (
     <>
       <aside className="hidden rounded-2xl border border-[#dde2e8] bg-white p-5 lg:block">
@@ -84,7 +86,7 @@ export default function FacetFilterPanel({ action, groups, selectedIds, hiddenPa
             <div className="flex items-center gap-2 text-sm font-extrabold text-[#20242a]">
               <SlidersHorizontal className="h-4 w-4 text-[#3457c8]" />필터
             </div>
-            <p className="mt-1 text-[11px] leading-5 text-[#8a94a3]">같은 그룹은 OR, 다른 그룹은 AND로 적용됩니다.</p>
+            <p className="mt-1 text-[11px] leading-5 text-[#8a94a3]">{compositionHelp}</p>
           </div>
           {selectedIds.length > 0 && <Link href={hrefFor([])} className="text-[10px] font-bold text-[#8a94a3] hover:text-[#be4057]">전체 해제</Link>}
         </div>
@@ -99,7 +101,7 @@ export default function FacetFilterPanel({ action, groups, selectedIds, hiddenPa
         </summary>
         <div className="border-t border-[#edf0f3] p-4">
           <div className="mb-4 flex items-start justify-between gap-3">
-            <p className="text-[11px] leading-5 text-[#8a94a3]">같은 그룹은 OR, 다른 그룹은 AND로 적용됩니다.</p>
+            <p className="text-[11px] leading-5 text-[#8a94a3]">{compositionHelp}</p>
             {selectedIds.length > 0 && <Link href={hrefFor([])} className="shrink-0 text-[10px] font-bold text-[#8a94a3] hover:text-[#be4057]">전체 해제</Link>}
           </div>
           {selectedChips && <div className="mb-5">{selectedChips}</div>}
