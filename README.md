@@ -1,74 +1,94 @@
-# 랭킹위키 MVP (P0-Core)
+# 랭킹위키
 
-이 프로젝트는 랭킹위키의 핵심 가치인 **관리자 랭킹 문서 발행 루프(P0-Core)**를 실제로 작동하고 검증하기 위한 Next.js 기반 MVP 애플리케이션입니다.
+랭킹위키는 다양한 주제의 순위를 축적하고, 각 랭킹의 범위·선정 기준·선정 이유를 공개하며, 검색·Facet 탐색·반응·댓글을 결합하는 위키형 랭킹 아카이브입니다.
 
----
+## Current lifecycle
 
-## 🚀 시작하기
+**P1 COMPLETE** — P1-2 engagement/moderation, P1-3 global search/discovery, P1-4 Facet advanced discovery, P1-5 technical SEO/integration closure까지 구현·검증하는 단계입니다.
 
-### 1. 환경 변수 설정
-프로젝트 루트 디렉터리에 `.env.local` 파일을 생성하고 아래 내용을 입력해 주세요.
+다음 제품 단계는 P2이며, 우선 후보는 User Voting입니다. P2의 스폰서, 변경 이력, 외부 데이터 import/crawling은 별도 설계·승인 없이 P1에 섞지 않습니다.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+## 실행
 
-# 개발 환경 전용 첫 관리자 자동 승격용 이메일
-ADMIN_BOOTSTRAP_EMAIL=admin@rankingwiki.com
-```
-
-> [!WARNING]
-> `ADMIN_BOOTSTRAP_EMAIL`을 사용한 임의 자동 승격은 개발(development) 환경에서만 허용됩니다. 운영(production) 환경에서는 외부 침입을 예방하기 위해 이 기능이 완벽히 차단됩니다.
-
-### 2. 데이터베이스 스키마 적용
-[supabase/migrations/20260520000000_p0_core_schema.sql](file:///D:/Ji_hwan/Ranking_wiki/supabase/migrations/20260520000000_p0_core_schema.sql) 파일의 전체 내용을 Supabase Console의 **SQL Editor**에 복사-붙여넣기하여 실행해 주시면 데이터베이스 테이블, 제약조건, 트리거 및 RLS 보안 정책이 일괄 적용됩니다.
-
-### 3. 패키지 설치 및 실행
 ```bash
-# 의존성 설치
-npm install
-
-# 로컬 개발 서버 시작
+npm ci
 npm run dev
 ```
 
-브라우저에서 `http://localhost:3000`으로 접속할 수 있습니다.
+필수 환경변수는 `.env.example`을 기준으로 설정합니다.
 
----
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` — 서버 전용
+- `ADMIN_BOOTSTRAP_EMAIL` — 개발 환경의 첫 관리자 bootstrap 용도
+- `NEXT_PUBLIC_SITE_URL` — canonical/robots/sitemap 절대 URL의 production origin
 
-## 🔐 첫 관리자(Admin) 권한 지정 방법
+`NEXT_PUBLIC_SITE_URL`이 없으면 Vercel의 `VERCEL_PROJECT_PRODUCTION_URL`을 사용하고, 둘 다 없을 때만 local/CI를 위해 `http://localhost:3000`을 사용합니다.
 
-어플리케이션은 관리자 권한(`user_roles` 테이블의 `role = 'admin'`)을 검증하여 `/admin` 경로를 강력하게 보호합니다. 첫 관리자를 지정하는 방법은 두 가지가 있습니다.
+## 현재 기능
 
-### 방법 A: Supabase SQL Editor를 통한 수동 추가 (운영 권한 확보 시)
-계정을 생성(가입)한 후, Supabase SQL Editor에서 해당 사용자의 `id` 값을 찾아 아래의 SQL 쿼리를 실행해 주십시오.
+### 관리자/발행
+- Category/Subcategory/Facet/Item CMS
+- Ranking draft/edit/preview/publish
+- transactional ranking save
+- moderation review
+- role/capability access control
+- sanctions/appeals
+- audit/security event/maintenance surfaces
 
-```sql
--- 1. display_name 등으로 가입된 사용자의 id 조회
-SELECT id, email, display_name FROM public.profiles;
+### 공개 탐색
+- 공개 홈/카테고리/서브카테고리
+- ranking/item detail
+- related rankings
+- global `/search`
+- relevance/latest/popular ordering
+- Facet 다중 조합: 동일 그룹 OR, 다른 그룹 AND
+- keyset pagination
 
--- 2. 해당 id를 가진 사용자를 admin으로 승격
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('조회된_사용자_UUID_값', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
+### 참여
+- likes
+- bookmarks
+- daily unique views
+- comments
+- comment reports
+- notifications
+
+### Technical SEO
+- route-specific canonical metadata
+- public ranking/item Open Graph/Twitter metadata
+- category/subcategory canonical policy
+- `/search` noindex
+- Facet/sort/cursor browse variants noindex
+- private/admin/account/login noindex
+- public-safe `sitemap.xml`
+- `robots.txt`
+- Ranking `ItemList`/Breadcrumb JSON-LD
+- generic Item `WebPage`/`Thing` JSON-LD
+
+## 검증
+
+```bash
+npm run verify:p1-2
+npm run verify:p1-3
+npm run verify:p1-4
+npm run verify:p1-5
+npm run lint
+npm run build
 ```
 
-### 방법 B: `ADMIN_BOOTSTRAP_EMAIL` 자동 부트스트랩 (로컬 개발 환경 전용)
-1. `.env.local` 파일에 `ADMIN_BOOTSTRAP_EMAIL=admin@rankingwiki.com`을 등록합니다.
-2. 개발 환경(`npm run dev`)에서 `/login` 페이지를 통해 해당 이메일로 회원가입 및 로그인을 수행합니다.
-3. 로그인 서버 액션 실행 시, 시스템이 개발 환경임을 식별하고 `user_roles` 테이블에 `admin` 역할을 우회 트리거(Service Role)를 사용해 자동으로 주입합니다.
+GitHub Actions는 위 gate를 동일 순서로 실행합니다.
 
----
+## DB 변경 원칙
 
-## 📂 구현 범위 (P0-Core)
+Persistent Hosted Supabase 변경은 repository migration으로만 관리하고 Hosted에는 migration action으로 적용합니다. 임의 persistent DDL을 SQL console에서 직접 수행하지 않습니다.
 
-### 포함된 핵심 기능
-- **관리자 랭킹 작성 CMS**: 카테고리, 서브카테고리, Facet, 아이템의 CRUD를 통제하며 드래프트 랭킹 생성.
-- **선정 기준 & Scope 에어리어**: 랭킹에 대상 후보군(Scope) 및 명확한 선정 기준(weight 포함)을 유연하게 등록.
-- **랭킹 엔트리 구성**: 순위별 아이템 등록, 순위 중복 및 아이템 중복 방지 제약조건 하에서의 선정 이유 기술.
-- **E2E 발행 루프**: `/admin/rankings/[id]/preview`에서 필수값 및 카테고리-서브카테고리 정합성을 서버 측에서 최종 검사 후 `published` 상태로 발행.
-- **프리미엄 HSL 다크모드/글래스모피즘**: 사용자에게 하모니어스 다크 디자인을 선사하는 시각적 완성도 제공.
+P1-5 Technical SEO 자체는 DB migration을 추가하지 않습니다.
 
-### 제외된 기능 (P1/P2 범위 - TODO 주석 처리)
-- 검색 페이지, 반응 버튼, 댓글 작성/관리, 유저 투표, 스폰서 광고 판매 관리, 크롤러 및 자동 수집 파이프라인, 변경 이력 UI, 결제
+## P2 후보 범위
+
+- User Voting
+- Ranking Change History
+- Sponsor transparency/management
+- External data import / crawling
+
+P2 구현은 별도 design/review/final-contract lifecycle 이후 시작합니다.

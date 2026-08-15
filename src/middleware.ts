@@ -12,6 +12,17 @@ function requiredCapability(pathname: string) {
   return 'content_manage'
 }
 
+function applyRobotsHeader(response: NextResponse, request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+  const privateSurface = pathname.startsWith('/admin') || pathname.startsWith('/me') || pathname === '/login'
+  const searchSurface = pathname === '/search'
+  const categoryVariant = pathname.startsWith('/categories/') && ['sort', 'cursor', 'facet'].some((key) => request.nextUrl.searchParams.has(key))
+
+  if (privateSurface) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  else if (searchSurface || categoryVariant) response.headers.set('X-Robots-Tag', 'noindex, follow')
+  return response
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -40,7 +51,9 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.searchParams.set('next', pathname)
-      return NextResponse.redirect(url)
+      const response = NextResponse.redirect(url)
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+      return response
     }
 
     const { data: allowed, error } = await supabase.rpc('has_admin_capability', {
@@ -51,13 +64,15 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.searchParams.set('error', 'not_authorized')
-      return NextResponse.redirect(url)
+      const response = NextResponse.redirect(url)
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+      return response
     }
   }
 
-  return supabaseResponse
+  return applyRobotsHeader(supabaseResponse, request)
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

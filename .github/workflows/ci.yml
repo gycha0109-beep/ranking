@@ -25,6 +25,7 @@ jobs:
       - run: npm run verify:p1-2
       - run: npm run verify:p1-3
       - run: npm run verify:p1-4
+      - run: npm run verify:p1-5
       - run: npm run lint
       - name: Build
         id: build
@@ -39,6 +40,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
           SUPABASE_SERVICE_ROLE_KEY: placeholder
+          NEXT_PUBLIC_SITE_URL: https://rankingwiki.example
       - name: Upload build failure log
         if: failure() && steps.build.outcome == 'failure'
         uses: actions/upload-artifact@v4
