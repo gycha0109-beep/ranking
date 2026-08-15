@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 const read = (path) => fs.readFileSync(path, 'utf8')
 const migration = 'supabase/migrations/20260816020000_p2_2_ranking_history_vote_finalization.sql'
+const moderationMigration = 'supabase/migrations/20260816021000_p2_2_public_history_moderation_filter.sql'
 const checks = []
 
 function requireText(path, text, label = `${path}: ${text}`) {
@@ -30,6 +31,12 @@ requireText(migration, 'v_safe_entry_count <> v_entry_count', 'finalization requ
 requireText(migration, "ORDER BY COALESCE(counts.vote_count, 0) DESC, re.position ASC, re.item_id ASC", 'finalization preserves P2-1 deterministic ordering')
 requireText(migration, 'CREATE OR REPLACE FUNCTION public.void_ranking_vote_round', 'auditable vote void RPC exists')
 requireText(migration, "'vote_void'", 'void terminal revision is persisted')
+
+requireText(moderationMigration, 'JOIN public.items current_item', 'history snapshots re-check current item safety')
+requireText(moderationMigration, "current_item.status = 'active'", 'hidden/archived items are excluded from public history')
+requireText(moderationMigration, "current_item.moderation_status IN ('clean', 'suggestive')", 'blocked item text is excluded from public history')
+requireText(moderationMigration, "current_entry.moderation_status IN ('clean', 'suggestive')", 'blocked current ranking entries are excluded from public history')
+requireText(moderationMigration, "selected.change_type <> 'vote_finalization' THEN '[]'::JSONB", 'void history remains candidate-detail-free after remediation')
 
 const sql = read(migration)
 const finalizeStart = sql.indexOf('CREATE OR REPLACE FUNCTION public.finalize_ranking_vote')
