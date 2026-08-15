@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { createHash } from 'node:crypto'
 import type { RankingBrowseSort, SearchKind, SearchSort } from './contracts'
 
@@ -21,6 +23,8 @@ type RankingCursorPayload = {
   id: string
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 function fingerprint(parts: unknown[]) {
   return createHash('sha256').update(JSON.stringify(parts)).digest('base64url').slice(0, 24)
 }
@@ -29,15 +33,31 @@ function encode(payload: SearchCursorPayload | RankingCursorPayload) {
   return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url')
 }
 
-function decode<T>(value: string | undefined): T | null {
+function decode<T extends object>(value: string | undefined): T | null {
   if (!value || value.length > 2048) return null
 
   try {
-    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as T
-    return parsed
+    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    return parsed as T
   } catch {
     return null
   }
+}
+
+function isValidTimestamp(value: unknown): value is string {
+  return typeof value === 'string'
+    && value.length > 0
+    && value.length <= 64
+    && Number.isFinite(Date.parse(value))
+}
+
+function isValidUuid(value: unknown): value is string {
+  return typeof value === 'string' && UUID_PATTERN.test(value)
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 }
 
 export function createSearchFingerprint(query: string, kind: SearchKind, sort: SearchSort) {
@@ -84,15 +104,18 @@ export function decodeSearchCursor(
     !payload
     || payload.v !== 1
     || payload.fp !== expectedFingerprint
-    || !payload.time
-    || !payload.id
+    || !isValidTimestamp(payload.time)
+    || !isValidUuid(payload.id)
     || !['ranking', 'item'].includes(payload.kind)
   ) {
     return null
   }
 
-  if (sort === 'relevance' && !Number.isInteger(payload.relevance)) return null
-  if (sort === 'popular' && (!Number.isFinite(payload.views) || !Number.isFinite(payload.likes))) return null
+  if (sort === 'relevance' && !isNonNegativeSafeInteger(payload.relevance)) return null
+  if (sort === 'popular' && (
+    !isNonNegativeSafeInteger(payload.views)
+    || !isNonNegativeSafeInteger(payload.likes)
+  )) return null
 
   return payload
 }
@@ -137,11 +160,20 @@ export function decodeRankingBrowseCursor(
 ): RankingCursorPayload | null {
   const payload = decode<RankingCursorPayload>(value)
 
-  if (!payload || payload.v !== 1 || payload.fp !== expectedFingerprint || !payload.time || !payload.id) {
+  if (
+    !payload
+    || payload.v !== 1
+    || payload.fp !== expectedFingerprint
+    || !isValidTimestamp(payload.time)
+    || !isValidUuid(payload.id)
+  ) {
     return null
   }
 
-  if (sort === 'popular' && (!Number.isFinite(payload.views) || !Number.isFinite(payload.likes))) return null
+  if (sort === 'popular' && (
+    !isNonNegativeSafeInteger(payload.views)
+    || !isNonNegativeSafeInteger(payload.likes)
+  )) return null
 
   return payload
 }
