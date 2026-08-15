@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 const read = (path) => fs.readFileSync(path, 'utf8')
 const migration = 'supabase/migrations/20260816010000_p2_1_user_voting.sql'
+const indexMigration = 'supabase/migrations/20260816011000_p2_1_vote_fk_indexes.sql'
 const checks = []
 
 function requireText(path, text, label = `${path}: ${text}`) {
@@ -24,6 +25,9 @@ requireText(migration, "private.has_admin_capability(v_user_id, 'content_manage'
 requireText(migration, 'trg_p2_1_freeze_voted_ranking', 'voted ranking freeze trigger exists')
 requireText(migration, 'trg_p2_1_freeze_voted_entries', 'voted candidate freeze trigger exists')
 requireText(migration, 'trg_p2_1_reconcile_item', 'candidate visibility changes reconcile open voting')
+requireText(indexMigration, 'idx_ranking_votes_item', 'vote item FK has reverse index')
+requireText(indexMigration, 'idx_ranking_votes_user', 'vote user FK has reverse index')
+requireText(indexMigration, 'idx_ranking_vote_settings_updated_by', 'vote settings updater FK has reverse index')
 requireText('src/components/voting/RankingVotingPanel.tsx', '사용자 투표 순위', 'public voting panel exists')
 requireText('src/components/voting/RankingVotingPanel.tsx', '투표 취소', 'open vote cancellation exists')
 requireText('src/components/voting/RankingVotingPanel.tsx', '관리자 투표 제어', 'admin open/close control exists')
