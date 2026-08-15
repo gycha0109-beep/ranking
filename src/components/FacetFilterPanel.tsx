@@ -10,12 +10,7 @@ type Props = {
   hiddenParams?: Record<string, string>
 }
 
-export default function FacetFilterPanel({
-  action,
-  groups,
-  selectedIds,
-  hiddenParams = {},
-}: Props) {
+export default function FacetFilterPanel({ action, groups, selectedIds, hiddenParams = {} }: Props) {
   if (groups.length === 0) return null
 
   const selected = new Set(selectedIds)
@@ -37,84 +32,82 @@ export default function FacetFilterPanel({
     return query ? `${action}?${query}` : action
   }
 
-  return (
-    <section className="rounded-2xl border border-white/[0.06] bg-white/[0.015] p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-black text-slate-200">
-            <SlidersHorizontal className="h-4 w-4 text-indigo-400" />
-            Facet 필터
+  const filterForm = (suffix: string) => (
+    <form action={action} method="get" className="space-y-5">
+      {Object.entries(hiddenParams).map(([key, value]) => (
+        value ? <input key={`${suffix}-${key}`} type="hidden" name={key} value={value} /> : null
+      ))}
+
+      {groups.map((group) => (
+        <fieldset key={`${suffix}-${group.id}`} className="border-t border-[#edf0f3] pt-4 first:border-t-0 first:pt-0">
+          <legend className="text-xs font-extrabold text-[#3f4752]">{group.name}</legend>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {group.facets.map((facet) => (
+              <label
+                key={`${suffix}-${facet.id}`}
+                className={`cursor-pointer rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition ${selected.has(facet.id) ? 'border-[#9caee9] bg-[#eef2ff] text-[#2445ad]' : 'border-[#dfe4ea] bg-white text-[#6b7280] hover:border-[#bcc7dc] hover:text-[#3f4752]'}`}
+              >
+                <input type="checkbox" name="facet" value={facet.id} defaultChecked={selected.has(facet.id)} className="sr-only" />
+                {facet.name}
+              </label>
+            ))}
           </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-            같은 그룹에서는 하나라도 일치하면 포함되고, 서로 다른 그룹은 모두 만족해야 합니다.
-          </p>
-        </div>
-        {selectedIds.length > 0 && (
-          <Link
-            href={hrefFor([])}
-            className="rounded-lg border border-white/10 px-2.5 py-1.5 text-[10px] font-bold text-slate-500 transition hover:border-rose-500/20 hover:text-rose-300"
-          >
-            전체 해제
-          </Link>
-        )}
-      </div>
+        </fieldset>
+      ))}
 
-      {selectedEntries.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {selectedEntries.map(({ id, group, facet }) => (
-            <Link
-              key={id}
-              href={hrefFor(selectedIds.filter((selectedId) => selectedId !== id))}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/[0.08] px-2.5 py-1 text-[10px] font-bold text-indigo-200 transition hover:border-rose-500/25 hover:bg-rose-500/[0.06] hover:text-rose-200"
-              aria-label={`${group.name} ${facet.name} 필터 해제`}
-            >
-              <span className="text-indigo-400/70">{group.name}</span>
-              {facet.name}
-              <X className="h-3 w-3" />
-            </Link>
-          ))}
-        </div>
-      )}
+      <button type="submit" className="rw-button-primary w-full px-4 text-xs">필터 적용</button>
+    </form>
+  )
 
-      <form action={action} method="get" className="mt-5 space-y-5">
-        {Object.entries(hiddenParams).map(([key, value]) => (
-          value ? <input key={key} type="hidden" name={key} value={value} /> : null
-        ))}
+  const selectedChips = selectedEntries.length > 0 && (
+    <div className="flex flex-wrap gap-2">
+      {selectedEntries.map(({ id, group, facet }) => (
+        <Link
+          key={id}
+          href={hrefFor(selectedIds.filter((selectedId) => selectedId !== id))}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#c9d3f4] bg-[#eef2ff] px-2.5 py-1.5 text-[10px] font-bold text-[#3457c8] hover:border-[#e5aab5] hover:bg-[#fff1f2] hover:text-[#be4057]"
+          aria-label={`${group.name} ${facet.name} 필터 해제`}
+        >
+          <span className="text-[#7185c8]">{group.name}</span>
+          {facet.name}
+          <X className="h-3 w-3" />
+        </Link>
+      ))}
+    </div>
+  )
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {groups.map((group) => (
-            <fieldset key={group.id} className="rounded-xl border border-white/[0.05] bg-slate-950/30 p-3.5">
-              <legend className="px-1 text-[11px] font-black text-slate-300">{group.name}</legend>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {group.facets.map((facet) => (
-                  <label
-                    key={facet.id}
-                    className={`cursor-pointer rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition ${selected.has(facet.id) ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-200' : 'border-white/[0.07] bg-white/[0.02] text-slate-500 hover:border-white/15 hover:text-slate-300'}`}
-                  >
-                    <input
-                      type="checkbox"
-                      name="facet"
-                      value={facet.id}
-                      defaultChecked={selected.has(facet.id)}
-                      className="sr-only"
-                    />
-                    {facet.name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
-        </div>
+  const compositionHelp = '같은 그룹에서는 하나라도 일치하면 되고, 다른 그룹과는 모두 일치해야 합니다.'
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="rounded-xl bg-indigo-500 px-4 py-2 text-xs font-black text-white transition hover:bg-indigo-400"
-          >
-            필터 적용
-          </button>
+  return (
+    <>
+      <aside className="hidden rounded-2xl border border-[#dde2e8] bg-white p-5 lg:block">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-extrabold text-[#20242a]">
+              <SlidersHorizontal className="h-4 w-4 text-[#3457c8]" />필터
+            </div>
+            <p className="mt-1 text-[11px] leading-5 text-[#8a94a3]">{compositionHelp}</p>
+          </div>
+          {selectedIds.length > 0 && <Link href={hrefFor([])} className="text-[10px] font-bold text-[#8a94a3] hover:text-[#be4057]">전체 해제</Link>}
         </div>
-      </form>
-    </section>
+        {selectedChips && <div className="mt-4">{selectedChips}</div>}
+        <div className="mt-5">{filterForm('desktop')}</div>
+      </aside>
+
+      <details className="rounded-2xl border border-[#dde2e8] bg-white lg:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-extrabold text-[#20242a]">
+          <span className="inline-flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-[#3457c8]" />필터 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
+          <span className="text-[10px] font-bold text-[#8a94a3]">열기</span>
+        </summary>
+        <div className="border-t border-[#edf0f3] p-4">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <p className="text-[11px] leading-5 text-[#8a94a3]">{compositionHelp}</p>
+            {selectedIds.length > 0 && <Link href={hrefFor([])} className="shrink-0 text-[10px] font-bold text-[#8a94a3] hover:text-[#be4057]">전체 해제</Link>}
+          </div>
+          {selectedChips && <div className="mb-5">{selectedChips}</div>}
+          {filterForm('mobile')}
+        </div>
+      </details>
+    </>
   )
 }

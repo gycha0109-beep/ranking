@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { getVisibleCategories } from '@/lib/queries/public'
-import { Layers, ChevronRight, Inbox, Compass } from 'lucide-react'
+import { ChevronRight, Compass, FolderOpen, Inbox } from 'lucide-react'
 
 export const revalidate = 0
 
@@ -9,91 +9,61 @@ export default async function CategoriesPage() {
   const categories = await getVisibleCategories()
 
   return (
-    <div className="relative min-h-screen pb-20 bg-[#07070a] font-sans">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[300px] bg-gradient-to-b from-indigo-950/10 via-transparent to-transparent rounded-full blur-[80px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 relative z-10 space-y-12">
-        {/* 헤더 */}
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold tracking-wider">
-            <Compass className="w-3.5 h-3.5" />
-            카테고리 탐색 허브
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            전체 주제별 카테고리
-          </h1>
-          <p className="text-slate-400 text-sm max-w-2xl leading-relaxed">
-            관심 있는 대분류를 탐색하고, 서브카테고리로 더욱 좁혀 구체적이고 엄선된 랭킹 문서들을 탐험해 보세요.
-          </p>
+    <div className="rw-page pb-20">
+      <header className="border-b border-[#e3e7ec] bg-white">
+        <div className="rw-container py-10 sm:py-12">
+          <p className="rw-kicker flex items-center gap-2"><Compass className="h-4 w-4" /> Topics</p>
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#171a1f] sm:text-4xl">카테고리</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-[#6b7280]">대분류에서 시작해 세부 주제로 좁히고, 해당 분야의 공개 랭킹을 확인합니다.</p>
         </div>
+      </header>
 
-        {/* 카테고리 목록 그리드 */}
+      <div className="rw-container pt-8 sm:pt-10">
         {categories.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid gap-4 md:grid-cols-2">
             {categories.map((cat) => (
-              <div 
-                key={cat.id}
-                className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-indigo-500/20 transition-all duration-300 relative group"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400">
-                      <Layers className="w-5 h-5" />
+              <article key={cat.id} className="rw-surface rw-card p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f0f2f5] text-[#667085]">
+                      <FolderOpen className="h-4.5 w-4.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <Link href={`/categories/${cat.slug}`} className="group inline-flex items-center gap-1.5">
+                        <h2 className="text-lg font-black tracking-[-0.025em] text-[#20242a] transition group-hover:text-[#2445ad]">{cat.name}</h2>
+                        <ChevronRight className="h-4 w-4 text-[#a4acb7] transition group-hover:translate-x-0.5 group-hover:text-[#3457c8]" />
+                      </Link>
+                      <p className="mt-2 text-xs leading-6 text-[#6b7280]">{cat.description || '이 카테고리의 공개 랭킹과 세부 주제를 확인합니다.'}</p>
                     </div>
-                    <Link href={`/categories/${cat.slug}`}>
-                      <h2 className="text-xl font-bold text-white hover:text-indigo-400 transition-colors">
-                        {cat.name}
-                      </h2>
-                    </Link>
                   </div>
-                  
-                  <p className="text-slate-400 text-xs leading-relaxed">
-                    {cat.description || '이 카테고리 하위의 다양한 전문 랭킹 정보와 아이템들을 확인하세요.'}
-                  </p>
                 </div>
 
-                {/* 서브카테고리 매핑 리스트 */}
-                <div className="space-y-3 pt-4 border-t border-white/[0.04]">
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">하위 서브카테고리</h3>
+                <div className="mt-5 border-t border-[#edf0f3] pt-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#9aa3af]">세부 카테고리</p>
                   {cat.subcategories && cat.subcategories.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {cat.subcategories.map((sub: any) => (
                         <Link
                           key={sub.id}
                           href={`/categories/${cat.slug}/${sub.slug}`}
-                          className="px-3 py-1.5 rounded-lg bg-white/[0.02] hover:bg-indigo-600/10 border border-white/5 hover:border-indigo-500/20 text-xs font-semibold text-slate-300 hover:text-indigo-300 transition-all"
+                          className="rounded-lg border border-[#dfe4ea] bg-[#fafbfc] px-3 py-1.5 text-xs font-bold text-[#5f6875] transition hover:border-[#b9c5dc] hover:bg-[#eef2ff] hover:text-[#2445ad]"
                         >
                           {sub.name}
                         </Link>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-xs text-slate-600 italic">등록된 하위 서브카테고리가 없습니다.</span>
+                    <p className="mt-3 text-xs text-[#a0a8b3]">등록된 세부 카테고리가 없습니다.</p>
                   )}
                 </div>
-
-                {/* 이동 링크 */}
-                <div className="flex justify-end pt-2">
-                  <Link 
-                    href={`/categories/${cat.slug}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 group/link"
-                  >
-                    카테고리 전체보기
-                    <ChevronRight className="w-4 h-4 transition-transform group-hover/link:translate-x-0.5" />
-                  </Link>
-                </div>
-              </div>
+              </article>
             ))}
           </div>
         ) : (
-          <div className="glass-card rounded-2xl p-16 text-center flex flex-col items-center justify-center space-y-4">
-            <div className="p-4 rounded-full bg-slate-900 border border-white/5">
-              <Inbox className="w-8 h-8 text-slate-600" />
-            </div>
-            <h3 className="font-bold text-slate-300">카테고리가 비어 있습니다</h3>
-            <p className="text-slate-500 text-xs max-w-sm leading-relaxed">
-              등록된 공개 대분류 카테고리가 존재하지 않습니다. 어드민에서 카테고리를 먼저 구성해 주십시오.
-            </p>
+          <div className="rw-surface rw-card flex flex-col items-center justify-center px-6 py-16 text-center">
+            <Inbox className="h-7 w-7 text-[#a4acb7]" />
+            <h3 className="mt-4 text-sm font-extrabold text-[#3f4752]">카테고리가 비어 있습니다</h3>
+            <p className="mt-2 text-xs text-[#8a94a3]">공개 카테고리가 등록되면 이곳에 표시됩니다.</p>
           </div>
         )}
       </div>

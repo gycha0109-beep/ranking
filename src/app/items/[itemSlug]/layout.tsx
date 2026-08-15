@@ -3,10 +3,7 @@ import type { ReactNode } from 'react'
 import CommentSection from '@/components/comments/CommentSection'
 import { absoluteUrl, getItemSeoSnapshot, serializeJsonLd, SITE_NAME } from '@/lib/seo'
 
-type Props = {
-  children: ReactNode
-  params: Promise<{ itemSlug: string }>
-}
+type Props = { children: ReactNode; params: Promise<{ itemSlug: string }> }
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
   const { itemSlug } = await params
@@ -40,13 +37,7 @@ export default async function ItemDetailLayout({ children, params }: Props) {
       url,
       name: item.title,
       description: item.description || undefined,
-      mainEntity: {
-        '@type': 'Thing',
-        '@id': `${url}#item`,
-        name: item.title,
-        description: item.description || undefined,
-        image: item.image_url || undefined,
-      },
+      mainEntity: { '@type': 'Thing', '@id': `${url}#item`, name: item.title, description: item.description || undefined, image: item.image_url || undefined },
     },
     {
       '@context': 'https://schema.org',
@@ -63,10 +54,8 @@ export default async function ItemDetailLayout({ children, params }: Props) {
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />}
       {children}
       {item && (
-        <div className="bg-[#07070a] px-4 pb-24 text-slate-100 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">
-            <CommentSection targetType="item" targetId={item.id} pathname={`/items/${item.slug}`} />
-          </div>
+        <div className="rw-comment-shell bg-[#f6f7f9] px-3 pb-24 sm:px-4">
+          <div className="mx-auto max-w-[860px]"><CommentSection targetType="item" targetId={item.id} pathname={`/items/${item.slug}`} /></div>
         </div>
       )}
     </>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import LikeDock from '@/components/engagement/LikeDock'
-import { Shield } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo'
 
 export const metadata: Metadata = {
@@ -31,18 +31,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" className="h-full antialiased dark">
-      <body className="min-h-full flex flex-col bg-[#07070a] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+    <html lang="ko" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">
         <Navbar />
         <main className="flex-grow flex flex-col relative">{children}</main>
         <LikeDock />
-        <footer className="bg-[#050508] border-t border-white/[0.04] py-8 text-center text-xs text-slate-500 relative z-10">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-indigo-500/60" />
-              <span className="font-bold text-slate-400">랭킹위키</span>
+        <footer className="relative z-10 border-t border-[#dde2e8] bg-white py-8 text-xs text-[#6b7280]">
+          <div className="rw-container flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 text-[#3f4752]">
+              <ShieldCheck className="h-4 w-4 text-[#3457c8]" />
+              <span className="font-extrabold text-[#171a1f]">랭킹위키</span>
+              <span className="hidden sm:inline">기준과 변경 이력을 공개하는 랭킹 아카이브</span>
             </div>
-            <p className="leading-relaxed">&copy; {new Date().getFullYear()} Ranking Wiki. All rights reserved. (P1 Discovery & Engagement Active)</p>
+            <p className="leading-relaxed">&copy; {new Date().getFullYear()} Ranking Wiki</p>
           </div>
         </footer>
       </body>
