@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -21,6 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify:p1-2
+      - run: npm run verify:p1-3
       - run: npm run lint
       - name: Build
         id: build
