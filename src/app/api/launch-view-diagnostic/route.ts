@@ -5,6 +5,14 @@ export const dynamic = 'force-dynamic'
 
 const INVALID_TARGET_ID = '00000000-0000-4000-8000-000000000000'
 
+function classifyFailure(error: unknown) {
+  if (!(error instanceof Error)) return 'unknown'
+  const message = error.message.toLowerCase()
+  if (message.includes('supabaseurl') || message.includes('url is required')) return 'missing-url'
+  if (message.includes('supabasekey') || message.includes('key is required')) return 'missing-key'
+  return error.name || 'unknown'
+}
+
 export async function GET() {
   if (process.env.VERCEL_ENV === 'production') {
     return new NextResponse(null, { status: 404 })
@@ -29,7 +37,11 @@ export async function GET() {
       rpcReachedDatabase: rpcProbe.error?.code === 'P0002',
       rpcCode: rpcProbe.error?.code || null,
     })
-  } catch {
-    return NextResponse.json({ restrictedReadOk: false, rpcReachedDatabase: false }, { status: 503 })
+  } catch (error) {
+    return NextResponse.json({
+      restrictedReadOk: false,
+      rpcReachedDatabase: false,
+      failure: classifyFailure(error),
+    }, { status: 503 })
   }
 }
