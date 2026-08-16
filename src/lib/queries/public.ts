@@ -1,3 +1,4 @@
+import { normalizeRouteSlug } from '@/lib/routing'
 import { createPublicClient } from '@/lib/supabase/public'
 
 const PUBLIC_MODERATION_STATUSES = ['clean', 'suggestive']
@@ -92,35 +93,39 @@ export async function getVisibleCategories() {
 }
 
 export async function getCategoryBySlug(slug: string) {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('*, subcategories(*)')
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('is_visible', true)
     .maybeSingle()
   return data || null
 }
 
 export async function getSubcategoryBySlug(categorySlug: string, subcategorySlug: string) {
+  const normalizedCategorySlug = normalizeRouteSlug(categorySlug)
+  const normalizedSubcategorySlug = normalizeRouteSlug(subcategorySlug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('subcategories')
     .select('*, categories!inner(id, name, slug)')
-    .eq('slug', subcategorySlug)
-    .eq('categories.slug', categorySlug)
+    .eq('slug', normalizedSubcategorySlug)
+    .eq('categories.slug', normalizedCategorySlug)
     .eq('is_visible', true)
     .maybeSingle()
   return (data as any) || null
 }
 
 export async function getPublishedRankingBySlug(slug: string) {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
 
   const { data: ranking } = await supabase
     .from('rankings')
     .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -168,12 +173,13 @@ export async function getPublishedRankingBySlug(slug: string) {
 }
 
 export async function getItemBySlug(slug: string) {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
 
   const { data: item } = await supabase
     .from('items')
     .select(PUBLIC_ITEM_COLUMNS)
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('status', 'active')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)

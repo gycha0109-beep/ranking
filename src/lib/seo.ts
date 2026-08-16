@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { normalizeRouteSlug } from '@/lib/routing'
 import { createPublicClient } from '@/lib/supabase/public'
 
 export const SITE_NAME = '랭킹위키'
@@ -46,24 +47,27 @@ function one(value: any) {
 }
 
 export const getCategorySeoSnapshot = cache(async (slug: string) => {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('id, name, slug, description, created_at, updated_at')
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('is_visible', true)
     .maybeSingle()
   return (data as any) || null
 })
 
 export const getSubcategorySeoSnapshot = cache(async (categorySlug: string, subcategorySlug: string) => {
+  const normalizedCategorySlug = normalizeRouteSlug(categorySlug)
+  const normalizedSubcategorySlug = normalizeRouteSlug(subcategorySlug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('subcategories')
     .select('id, name, slug, description, created_at, updated_at, categories!inner(name, slug, is_visible)')
-    .eq('slug', subcategorySlug)
+    .eq('slug', normalizedSubcategorySlug)
     .eq('is_visible', true)
-    .eq('categories.slug', categorySlug)
+    .eq('categories.slug', normalizedCategorySlug)
     .eq('categories.is_visible', true)
     .maybeSingle()
 
@@ -73,11 +77,12 @@ export const getSubcategorySeoSnapshot = cache(async (categorySlug: string, subc
 })
 
 export const getRankingSeoSnapshot = cache(async (slug: string) => {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('rankings')
     .select('id, title, slug, summary, ranking_type, seo_title, seo_description, cover_image_url, published_at, created_at, updated_at, categories(name, slug), subcategories(name, slug)')
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('status', 'published')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
@@ -130,11 +135,12 @@ export const getRankingSeoSnapshot = cache(async (slug: string) => {
 })
 
 export const getItemSeoSnapshot = cache(async (slug: string) => {
+  const normalizedSlug = normalizeRouteSlug(slug)
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('items')
     .select('id, title, slug, description, image_url, brand_or_creator, item_type, created_at, updated_at')
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('status', 'active')
     .in('moderation_status', PUBLIC_MODERATION_STATUSES)
     .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
