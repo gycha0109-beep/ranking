@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Bookmark, Layers } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
+import BookmarkRemoveButton from '@/components/engagement/BookmarkRemoveButton'
 import { listMyBookmarks } from '@/lib/actions/engagement'
 import { createClient } from '@/lib/supabase/server'
 
@@ -40,44 +41,53 @@ export default async function BookmarksPage() {
                 : `/items/${bookmark.slug}`
 
               return (
-                <Link
+                <article
                   key={`${bookmark.targetType}-${bookmark.targetId}`}
-                  href={href}
                   className="group overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.02] transition-all hover:border-indigo-500/25 hover:bg-white/[0.04]"
                 >
-                  <div className="aspect-[16/8] overflow-hidden bg-slate-900/60">
-                    {bookmark.imageUrl ? (
-                      <SafeImage
-                        src={bookmark.imageUrl}
-                        alt={bookmark.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        fallbackSrc="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Layers className="h-8 w-8 text-slate-700" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-3 p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-indigo-300">
-                        {bookmark.targetType === 'ranking' ? 'Ranking' : 'Item'}
-                      </span>
-                      <span className="text-[10px] text-slate-600">
-                        {new Date(bookmark.bookmarkedAt).toLocaleDateString('ko-KR')}
-                      </span>
+                  <Link href={href} className="block">
+                    <div className="aspect-[16/8] overflow-hidden bg-slate-900/60">
+                      {bookmark.imageUrl ? (
+                        <SafeImage
+                          src={bookmark.imageUrl}
+                          alt={bookmark.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          fallbackSrc="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <Layers className="h-8 w-8 text-slate-700" />
+                        </div>
+                      )}
                     </div>
-                    <h2 className="text-base font-bold text-slate-100 transition-colors group-hover:text-indigo-300">
-                      {bookmark.title}
-                    </h2>
-                    {bookmark.summary && (
-                      <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
-                        {bookmark.summary}
-                      </p>
-                    )}
+                    <div className="space-y-3 p-5 pb-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-indigo-300">
+                          {bookmark.targetType === 'ranking' ? 'Ranking' : 'Item'}
+                        </span>
+                        <span className="text-[10px] text-slate-600">
+                          {new Date(bookmark.bookmarkedAt).toLocaleDateString('ko-KR')}
+                        </span>
+                      </div>
+                      <h2 className="text-base font-bold text-slate-100 transition-colors group-hover:text-indigo-300">
+                        {bookmark.title}
+                      </h2>
+                      {bookmark.summary && (
+                        <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
+                          {bookmark.summary}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                  <div className="px-5 pb-5">
+                    <BookmarkRemoveButton
+                      targetType={bookmark.targetType}
+                      targetId={bookmark.targetId}
+                      pathname={href}
+                      title={bookmark.title}
+                    />
                   </div>
-                </Link>
+                </article>
               )
             })}
           </div>
