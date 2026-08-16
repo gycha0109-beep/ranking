@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 export type CommentTargetType = 'ranking' | 'item'
 export type CommentPresentationStatus = 'visible' | 'needs_review' | 'blocked' | 'deleted'
@@ -97,10 +98,10 @@ async function validateTarget(input: {
   const parsed = parseTargetPath(input.pathname)
   if (!parsed || parsed.targetType !== input.targetType) return false
 
-  const supabase = await createClient()
+  const publicSupabase = createPublicClient()
 
   if (input.targetType === 'ranking') {
-    const { data, error } = await supabase
+    const { data, error } = await publicSupabase
       .from('rankings')
       .select('id')
       .eq('id', input.targetId)
@@ -113,7 +114,7 @@ async function validateTarget(input: {
     return !error && Boolean(data)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('items')
     .select('id')
     .eq('id', input.targetId)
