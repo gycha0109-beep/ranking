@@ -12,6 +12,26 @@ async function expectHealthyAuthenticatedPage(page, path) {
   await expect(page.locator('body')).not.toContainText('Application error')
 }
 
+function sanitizeLoginError(message) {
+  const trimmed = message.trim().replace(/\s+/g, ' ')
+  return EMAIL ? trimmed.replaceAll(EMAIL, '[redacted-email]') : trimmed
+}
+
+async function waitForLoginOutcome(page) {
+  const loginError = page.locator('section[aria-labelledby="account-title"] [role="alert"]').first()
+
+  try {
+    return await Promise.any([
+      page.waitForURL((candidate) => candidate.pathname === '/me/bookmarks', { timeout: 15_000 })
+        .then(() => ({ kind: 'success' })),
+      loginError.waitFor({ state: 'visible', timeout: 15_000 })
+        .then(async () => ({ kind: 'error', message: sanitizeLoginError(await loginError.innerText()) })),
+    ])
+  } catch {
+    return { kind: 'unknown', message: `login produced neither a protected-route session nor a visible error; final path=${new URL(page.url()).pathname}` }
+  }
+}
+
 test.describe('production authenticated smoke', () => {
   test('ordinary user session, protected surfaces, admin denial, and logout are healthy', async ({ page }) => {
     expect(EMAIL, 'E2E_USER_EMAIL must be configured').not.toBe('')
@@ -25,7 +45,11 @@ test.describe('production authenticated smoke', () => {
     await page.getByLabel('이메일').fill(EMAIL)
     await page.getByLabel('비밀번호').fill(PASSWORD)
     await page.getByRole('button', { name: '로그인', exact: true }).click()
-    await page.waitForURL((candidate) => candidate.pathname === '/me/bookmarks', { timeout: 15_000 })
+
+    const loginOutcome = await waitForLoginOutcome(page)
+    if (loginOutcome.kind !== 'success') {
+      throw new Error(`Production login failed: ${loginOutcome.message || loginOutcome.kind}`)
+    }
 
     await expect(page.getByRole('heading', { level: 1, name: '내 북마크' })).toBeVisible()
     await expect(page.locator('header')).toContainText(EMAIL)
