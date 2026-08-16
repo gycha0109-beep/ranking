@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createPublicClient } from '@/lib/supabase/public'
 
 type EngagementTargetType = 'ranking' | 'item'
 
@@ -90,10 +91,11 @@ export async function getEngagementTargetByPath(pathname: string): Promise<Engag
   if (!parsed) return { target: null }
 
   const supabase = await createClient()
+  const publicSupabase = createPublicClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (parsed.type === 'ranking') {
-    const { data: ranking, error } = await supabase
+    const { data: ranking, error } = await publicSupabase
       .from('rankings')
       .select('id, title')
       .eq('slug', parsed.slug)
@@ -127,7 +129,7 @@ export async function getEngagementTargetByPath(pathname: string): Promise<Engag
     }
   }
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await publicSupabase
     .from('items')
     .select('id, title')
     .eq('slug', parsed.slug)
@@ -243,11 +245,11 @@ async function verifyTargetMatchesPath(
   const parsed = parseTargetPath(pathname)
   if (!parsed || parsed.type !== targetType || !UUID_PATTERN.test(targetId)) return false
 
-  const supabase = await createClient()
+  const publicSupabase = createPublicClient()
   const table = targetType === 'ranking' ? 'rankings' : 'items'
   const status = targetType === 'ranking' ? 'published' : 'active'
 
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from(table)
     .select('id')
     .eq('id', targetId)
@@ -301,10 +303,11 @@ export async function recordContentView(input: {
   const rpcName = input.targetType === 'ranking'
     ? 'record_ranking_daily_view'
     : 'record_item_daily_view'
-  const idParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
+  const idParam = targetType => targetType
+  const rpcIdParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
 
   const execute = async (dateBucket: string) => admin.rpc(rpcName, {
-    [idParam]: input.targetId,
+    [rpcIdParam]: input.targetId,
     p_viewer_key_hash: deriveViewerHash(secret, dateBucket, kind, identity),
     p_viewed_on: dateBucket,
     p_key_version: 1,
