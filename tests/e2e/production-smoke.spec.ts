@@ -59,7 +59,7 @@ test.describe('production public smoke', () => {
     expect(href!, 'category cards must not navigate by numeric database id').not.toMatch(/^\/categories\/\d+$/)
 
     await categoryLink.click()
-    await page.waitForLoadState('domcontentloaded')
+    await page.waitForURL((url) => url.pathname === href, { timeout: 10_000 })
 
     expect(new URL(page.url()).pathname).toBe(href)
     await expect(page.locator('body')).not.toContainText('This page could not be found.')
