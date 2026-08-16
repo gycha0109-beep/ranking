@@ -46,7 +46,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run production E2E smoke
-        run: npx playwright test --config=playwright.production.config.ts
+        run: npx playwright test --config=playwright.production.config.mjs
 
       - name: Upload Playwright report
         if: always()
