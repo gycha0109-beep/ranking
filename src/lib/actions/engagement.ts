@@ -303,11 +303,10 @@ export async function recordContentView(input: {
   const rpcName = input.targetType === 'ranking'
     ? 'record_ranking_daily_view'
     : 'record_item_daily_view'
-  const idParam = targetType => targetType
-  const rpcIdParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
+  const idParam = input.targetType === 'ranking' ? 'p_ranking_id' : 'p_item_id'
 
   const execute = async (dateBucket: string) => admin.rpc(rpcName, {
-    [rpcIdParam]: input.targetId,
+    [idParam]: input.targetId,
     p_viewer_key_hash: deriveViewerHash(secret, dateBucket, kind, identity),
     p_viewed_on: dateBucket,
     p_key_version: 1,
