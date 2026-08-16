@@ -1,0 +1,60 @@
+name: Production E2E Smoke
+
+on:
+  push:
+    branches:
+      - feat/launch-1-production-e2e
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Production or preview origin to test
+        required: true
+        default: https://ranking-rho-three.vercel.app
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Playwright production smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      E2E_BASE_URL: ${{ github.event.inputs.base_url || 'https://ranking-rho-three.vercel.app' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install pinned Playwright runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run production E2E smoke
+        run: npx playwright test --config=playwright.production.config.mjs
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
