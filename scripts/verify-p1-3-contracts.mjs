@@ -77,6 +77,8 @@ requireText(searchForm, 'action="/search"', 'GET search action')
 requireText(searchForm, 'method="get"', 'GET search method')
 requireText(searchForm, 'minLength={2}', 'client search minimum')
 requireText(searchForm, 'maxLength={120}', 'client search maximum')
+requireText(searchForm, 'const formKey = JSON.stringify([defaultQuery, defaultKind, defaultSort, facetIds])', 'canonical search form remount identity')
+requireText(searchForm, '<form key={formKey} action="/search"', 'canonical search form remount boundary')
 
 const searchQueries = read('src/lib/queries/search.ts')
 requireText(searchQueries, 'SEARCH_PAGE_SIZE + 1', 'limit + 1 pagination')
