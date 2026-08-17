@@ -1,9 +1,6 @@
 name: Production QA Suite
 
 on:
-  push:
-    branches:
-      - test/launch-production-qa-suite
   workflow_dispatch:
     inputs:
       base_url:
