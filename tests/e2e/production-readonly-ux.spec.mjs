@@ -201,14 +201,22 @@ test.describe('production read-only UX compatibility', () => {
         maxTouchPoints: navigator.maxTouchPoints,
         viewportWidth: window.innerWidth,
       }))
-      expect(environment.maxTouchPoints, 'mobile emulation must expose touch input').toBeGreaterThan(0)
+      expect(testInfo.project.use.hasTouch, 'mobile project must enable Playwright touch emulation').toBe(true)
       expect(environment.viewportWidth, 'mobile viewport should stay phone-sized').toBeLessThanOrEqual(500)
 
       await expectHealthyNavigation(page, '/')
-      await page.getByLabel('메뉴 열기').click()
-      const mobileNav = page.locator('header').getByRole('link', { name: '통합 검색', exact: true })
+      const menuSummary = page.getByLabel('메뉴 열기')
+      const box = await menuSummary.boundingBox()
+      expect(box, 'mobile menu trigger must have a tappable box').not.toBeNull()
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
+
+      const openMenu = page.locator('header details[open]')
+      await expect(openMenu).toBeVisible()
+      const mobileNav = openMenu.getByRole('link', { name: '통합 검색', exact: true })
       await expect(mobileNav).toBeVisible()
-      await mobileNav.click()
+      const navBox = await mobileNav.boundingBox()
+      expect(navBox, 'mobile integrated-search link must have a tappable box').not.toBeNull()
+      await page.touchscreen.tap(navBox.x + navBox.width / 2, navBox.y + navBox.height / 2)
       await page.waitForURL((url) => url.pathname === '/search')
       await expect(page.getByRole('heading', { level: 1, name: '통합 검색', exact: true })).toBeVisible()
     }
