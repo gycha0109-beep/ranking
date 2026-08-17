@@ -23,16 +23,20 @@ The public smoke plus compatibility suite verifies:
 - core public routes and generated internal links do not resolve to broken pages,
 - category cards use public slugs rather than numeric database IDs,
 - Unicode slugs, canonical metadata, robots, and sitemap behavior,
-- deterministic search discovery for the published `2026 닭가슴살 TOP 10` ranking,
+- deterministic ranking search for the published `2026 닭가슴살 TOP 10` ranking,
+- deterministic item search for the clean `허닭 스팀` item,
 - search sort state and browser back-history restoration,
 - keyboard search submission,
 - zero-result escape-hatch UX,
 - invalid search cursor fail-soft behavior,
 - unavailable/invalid Facet state canonicalization,
+- category sort/history and invalid cursor recovery,
 - signed-out like, bookmark, and comment actions all route to login while preserving `next`,
 - published ranking document anatomy: title, ranked items, methodology, criteria, source, item-detail traversal, and back navigation,
 - signup entry-form fields without creating a production account,
 - horizontal-overflow checks on representative public surfaces,
+- mobile menu touch navigation,
+- synthetic long-title/description overflow stress on mobile layouts,
 - delayed requests and repeated reload recovery without page errors or 5xx responses.
 
 Compatibility projects run the compact read-only UX suite on:
@@ -44,6 +48,8 @@ Compatibility projects run the compact read-only UX suite on:
 - mobile WebKit using an iPhone device profile.
 
 The mobile projects assert touch capability and phone-sized viewport behavior. This materially exceeds a plain viewport resize, but it is still browser/device emulation rather than physical-device Chrome/Safari. Physical-device touch, browser chrome, OS keyboard, safe-area, and device-specific rendering remain a human/device-lab boundary.
+
+The long-content check is deliberately described as synthetic: the test rewrites already-rendered text in the browser to stress the production CSS. It is useful for overflow detection but does not substitute for a real long-content production fixture.
 
 ## Credentialed production mutation coverage
 
@@ -64,7 +70,7 @@ The suite uses one stable published target:
 
 - `/rankings/best-chicken-breast`
 
-Cleanup normalizes current state to like OFF, bookmark OFF, and no live E2E comment. Append-only engagement events and deleted-comment tombstones remain as accepted QA evidence under the dedicated test identity.
+Cleanup normalizes current state to like OFF, bookmark OFF, and no live E2E comment. append-only engagement events and deleted-comment tombstones remain as accepted QA evidence under the dedicated test identity.
 
 A `finally` cleanup block performs best-effort normalization even when a primary assertion fails.
 
@@ -82,7 +88,7 @@ Current facts:
 Consequences:
 
 - a real multi-Facet select/combine/remove E2E cannot be claimed until production or a fixture environment has Facet data,
-- long-title/long-description overflow cannot be honestly validated against real production ranking content yet,
+- long-title/long-description overflow cannot be honestly validated against real production ranking content yet; only synthetic DOM stress is covered,
 - vote mutation remains excluded until a dedicated `user_vote` fixture exists,
 - actual administrator login cannot be automated without a dedicated non-human admin E2E credential,
 - a full fresh-user signup/login/logout lifecycle would create persistent Auth identity/email side effects and therefore is not run against production without an explicit disposable-user cleanup contract,
