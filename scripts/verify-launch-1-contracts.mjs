@@ -22,6 +22,7 @@ const routing = read('src/lib/routing.ts')
 const publicQueries = read('src/lib/queries/public.ts')
 const seo = read('src/lib/seo.ts')
 const middleware = read('src/middleware.ts')
+const nextConfig = read('next.config.ts')
 
 for (const forbidden of [
   '랭킹위키 MVP',
@@ -56,7 +57,7 @@ requireCondition(engagement.includes("const { data: item, error } = await public
 requireCondition(engagement.includes('const { data, error } = await publicSupabase\n    .from(table)'), 'view target validation must preserve the public-read security boundary')
 
 requireCondition(adminClient.includes('SUPABASE_SECRET_KEY'), 'admin client must accept the current Supabase Secret-key environment contract')
-requireCondition(adminClient.includes('SUPABASE_SERVICE_ROLE_KEY'), 'admin client must preserve the legacy service-role environment fallback')
+requireCondition(adminClient.includes('SUPABASE_SERVICE_ROLE_KEY'), 'admin client must preserve the legacy server-key fallback')
 requireCondition(adminClient.includes('process.env.SUPABASE_SERVICE_ROLE_KEY = configuredAdminKey'), 'current Secret keys must bridge legacy server-only view-writer consumers')
 requireCondition(adminClient.includes('detectSessionInUrl: false'), 'server admin client must disable URL session detection')
 
@@ -97,5 +98,13 @@ const vercelOriginIndex = seo.indexOf('VERCEL_PROJECT_PRODUCTION_URL')
 requireCondition(explicitOriginIndex >= 0 && vercelOriginIndex > explicitOriginIndex, 'production site origin must prefer NEXT_PUBLIC_SITE_URL before the Vercel fallback')
 requireCondition(middleware.includes("pathname === '/login'"), 'login must remain a private noindex surface')
 requireCondition(middleware.includes("noindex, nofollow"), 'private surfaces must keep noindex,nofollow')
+
+requireCondition(nextConfig.includes('poweredByHeader: false'), 'production responses must not expose the Next.js powered-by header')
+requireCondition(nextConfig.includes('X-Content-Type-Options') && nextConfig.includes('nosniff'), 'production responses must set nosniff')
+requireCondition(nextConfig.includes('Referrer-Policy') && nextConfig.includes('strict-origin-when-cross-origin'), 'production responses must use a strict referrer policy')
+requireCondition(nextConfig.includes('X-Frame-Options') && nextConfig.includes('DENY'), 'production responses must deny framing')
+requireCondition(nextConfig.includes('Permissions-Policy') && nextConfig.includes('camera=(), microphone=(), geolocation=()'), 'production responses must disable unused sensitive browser capabilities')
+requireCondition(!nextConfig.includes('Strict-Transport-Security'), 'Vercel-managed HSTS must not be duplicated in application config')
+requireCondition(!nextConfig.includes('Content-Security-Policy'), 'CSP requires a dedicated nonce/RSC compatibility contract before activation')
 
 console.log('LAUNCH-1 contracts verified')
