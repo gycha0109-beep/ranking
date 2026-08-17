@@ -11,7 +11,7 @@
   --rw-border-strong: #c9d0d9;
   --rw-text: #171a1f;
   --rw-text-soft: #3f4752;
-  --rw-text-muted: #6b7280;
+  --rw-text-muted: #5f6875;
   --rw-brand: #3457c8;
   --rw-brand-strong: #2445ad;
   --rw-brand-soft: #eef2ff;
@@ -111,6 +111,19 @@ button, input, select, textarea { font: inherit; }
 }
 .rw-button-secondary:hover { border-color: #aeb7c4; background: #f8fafc; }
 
+/* UI-1 used several one-off muted colors before launch accessibility verification.
+   Normalize those legacy utilities to one token that stays >= 4.5:1 on the light public surfaces. */
+[class*="text-[#8a94a3]"],
+[class*="text-[#9aa3af]"],
+[class*="text-[#a0a8b3]"],
+[class*="text-[#77808d]"],
+[class*="text-[#737c89]"],
+[class*="text-[#7b8491]"],
+[class*="text-[#667085]"],
+[class*="text-[#62748e]"] {
+  color: var(--rw-text-muted) !important;
+}
+
 /* P1 comment functionality predates UI-1. Keep the interaction code intact while mapping its dark utility surface into the public light shell. */
 .rw-comment-shell section { border-color: #dde2e8 !important; }
 .rw-comment-shell [class*="border-white"] { border-color: #e3e7ec !important; }
@@ -123,7 +136,8 @@ button, input, select, textarea { font: inherit; }
 .rw-comment-shell [class*="text-slate-400"] { color: #5f6875 !important; }
 .rw-comment-shell [class*="text-slate-500"],
 .rw-comment-shell [class*="text-slate-600"],
-.rw-comment-shell [class*="text-slate-700"] { color: #8a94a3 !important; }
+.rw-comment-shell [class*="text-slate-700"] { color: var(--rw-text-muted) !important; }
+.rw-comment-shell #comments-heading { color: #303640 !important; }
 .rw-comment-shell [class*="text-indigo-100"],
 .rw-comment-shell [class*="text-indigo-200"],
 .rw-comment-shell [class*="text-indigo-300"],
@@ -136,7 +150,7 @@ button, input, select, textarea { font: inherit; }
   color: #303640 !important;
 }
 .rw-comment-shell textarea::placeholder,
-.rw-comment-shell input::placeholder { color: #a0a8b3 !important; }
+.rw-comment-shell input::placeholder { color: var(--rw-text-muted) !important; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #eef1f4; }

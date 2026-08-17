@@ -196,7 +196,7 @@ export default async function RankingDetailPage({ params }: Props) {
               {ranking.sources && ranking.sources.length > 0 && (
                 <div className="rw-surface rw-card p-5">
                   <h3 className="flex items-center gap-2 text-sm font-extrabold text-[#303640]"><HelpCircle className="h-4 w-4 text-[#3457c8]" />출처</h3>
-                  <div className="mt-3 space-y-3">{ranking.sources.map((source: any) => <div key={source.id}><div className="flex items-center gap-1.5"><span className="text-xs font-extrabold text-[#4f5864]">{source.label}</span>{source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-[#3457c8]"><ExternalLink className="h-3 w-3" /></a>}</div>{source.note && <p className="mt-1 text-[11px] leading-5 text-[#8a94a3]">{source.note}</p>}</div>)}</div>
+                  <div className="mt-3 space-y-3">{ranking.sources.map((source: any) => <div key={source.id}><div className="flex items-center gap-1.5"><span className="text-xs font-extrabold text-[#4f5864]">{source.label}</span>{source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`${source.label} 출처 열기`} className="text-[#3457c8]"><ExternalLink className="h-3 w-3" /></a>}</div>{source.note && <p className="mt-1 text-[11px] leading-5 text-[#8a94a3]">{source.note}</p>}</div>)}</div>
                 </div>
               )}
             </aside>

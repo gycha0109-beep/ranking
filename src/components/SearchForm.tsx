@@ -21,8 +21,10 @@ export default function SearchForm({
   showFilters = false,
   className = '',
 }: Props) {
+  const formKey = JSON.stringify([defaultQuery, defaultKind, defaultSort, facetIds])
+
   return (
-    <form action="/search" method="get" role="search" className={className}>
+    <form key={formKey} action="/search" method="get" role="search" className={className}>
       {facetIds.map((id) => (
         <input key={id} type="hidden" name="facet" value={id} />
       ))}
