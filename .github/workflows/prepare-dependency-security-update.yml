@@ -1,4 +1,4 @@
-name: Prepare Dependency Security Update
+name: Finalize Dependency Security Update
 
 on:
   push:
@@ -6,34 +6,39 @@ on:
       - fix/launch-dependency-security
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  prepare:
+  finalize:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: fix/launch-dependency-security
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
       - name: Install baseline
         run: npm ci
-      - name: Apply Next security update
+      - name: Apply verified Next security update
         run: npm install --save-exact next@16.3.1 eslint-config-next@16.3.1
-      - name: Capture audit before transitive fix
-        shell: bash
-        run: |
-          npm audit --json > npm-audit-before-fix.json || true
-          node -e "const a=require('./npm-audit-before-fix.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}, null, 2))"
-      - name: Apply non-breaking audit fixes
+      - name: Apply non-breaking transitive fixes
         run: npm audit fix
-      - name: Capture final audit
+      - name: Require zero known npm advisories
         shell: bash
         run: |
-          npm audit --json > npm-audit-after.json || true
-          node -e "const a=require('./npm-audit-after.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}, null, 2))"
+          npm audit --json > npm-audit-final.json || true
+          node - <<'NODE'
+          const audit = require('./npm-audit-final.json')
+          const vulnerabilities = audit.metadata?.vulnerabilities || {}
+          console.log(JSON.stringify(vulnerabilities, null, 2))
+          if ((vulnerabilities.total || 0) !== 0) {
+            console.error('Expected zero known npm advisories before finalizing dependency update.')
+            process.exit(1)
+          }
+          NODE
       - name: Validate updated app
         run: |
           npm run verify:p1-2
@@ -46,13 +51,65 @@ jobs:
           npm run verify:launch-1
           npm run lint
           npm run build
-      - name: Upload generated dependency files
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-security-update
-          path: |
-            package.json
-            package-lock.json
-            npm-audit-before-fix.json
-            npm-audit-after.json
-          retention-days: 7
+      - name: Record security update evidence
+        shell: bash
+        run: |
+          cat > docs/launch-dependency-security-update.md <<'DOC'
+          # Launch Dependency Security Update
+
+          ## Baseline
+
+          - Repository: `gycha0109-beep/ranking`
+          - Baseline main: `08ad96428a92170873c51f1b495077303ac88fcb`
+          - Baseline direct Next.js: `16.2.6`
+          - Database / Hosted data mutation: none
+
+          ## Audit finding
+
+          An exact-lockfile `npm audit --json` against the launch baseline reported 7 known advisories:
+
+          - high: 6
+          - low: 1
+          - critical: 0
+
+          Affected aggregate packages included the direct `next` dependency plus transitive `postcss`, `sharp`, `@babel/core`, `brace-expansion`, and `js-yaml` paths.
+
+          A trial update to Next `16.2.11` removed the direct Next advisory range but did not clear the vulnerable transitive dependency graph, so it was rejected as incomplete.
+
+          ## Final update
+
+          The verified bounded update is:
+
+          - `next`: `16.3.1`
+          - `eslint-config-next`: `16.3.1`
+          - non-breaking `npm audit fix` lockfile resolution for remaining transitive advisories
+
+          The resulting lockfile resolves the previously affected transitive packages to safe audit results and `npm audit --json` reports zero known advisories at generation time.
+
+          ## Verification contract
+
+          Before the generated package files are committed, automation requires:
+
+          1. `npm audit` total = 0,
+          2. P1-2 through P2-2 static contracts pass,
+          3. UI-1 contract passes,
+          4. LAUNCH-1 contract passes,
+          5. ESLint passes,
+          6. Next production build passes.
+
+          The final repository branch then receives only the dependency files and this evidence document; the temporary preparation workflow removes itself.
+
+          ## Runtime follow-up
+
+          After merge approval and deployment, rerun the public production smoke/compatibility suite and inspect Vercel runtime errors. This dependency update does not alter database schema or Hosted content.
+          DOC
+      - name: Commit generated dependency update and remove preparer
+        shell: bash
+        run: |
+          rm -f npm-audit-final.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json docs/launch-dependency-security-update.md
+          git rm .github/workflows/prepare-dependency-security-update.yml
+          git commit -m "fix: update launch dependencies to audited versions"
+          git push origin HEAD:fix/launch-dependency-security
