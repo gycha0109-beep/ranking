@@ -1,0 +1,50 @@
+name: Prepare Dependency Security Update
+
+on:
+  push:
+    branches:
+      - fix/launch-dependency-security
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install baseline
+        run: npm ci
+      - name: Apply minimal Next patch update
+        run: npm install --save-exact next@16.2.11 eslint-config-next@16.2.11
+      - name: Capture post-update audit
+        shell: bash
+        run: |
+          npm audit --json > npm-audit-after.json || true
+          node -e "const a=require('./npm-audit-after.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}, null, 2))"
+      - name: Validate updated app
+        run: |
+          npm run verify:p1-2
+          npm run verify:p1-3
+          npm run verify:p1-4
+          npm run verify:p1-5
+          npm run verify:p2-1
+          npm run verify:p2-2
+          npm run verify:ui-1
+          npm run verify:launch-1
+          npm run lint
+          npm run build
+      - name: Upload generated dependency files
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-update
+          path: |
+            package.json
+            package-lock.json
+            npm-audit-after.json
+          retention-days: 7
