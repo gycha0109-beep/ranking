@@ -12,7 +12,6 @@ function parseCount(text) {
 
 async function login(page, { verifyLocalizedFailure = false } = {}) {
   await page.goto('/login?next=%2Fme%2Fbookmarks', { waitUntil: 'domcontentloaded' })
-
   await page.getByLabel('이메일').fill(EMAIL)
   await page.getByLabel('비밀번호').fill(verifyLocalizedFailure ? `${PASSWORD}__wrong__` : PASSWORD)
   await page.getByRole('button', { name: '로그인', exact: true }).click()
@@ -21,7 +20,6 @@ async function login(page, { verifyLocalizedFailure = false } = {}) {
     const alert = page.getByRole('alert').first()
     await expect(alert).toContainText('이메일 또는 비밀번호가 올바르지 않습니다.')
     await expect(alert).not.toContainText('Invalid login credentials')
-
     await page.getByLabel('비밀번호').fill(PASSWORD)
     await page.getByRole('button', { name: '로그인', exact: true }).click()
   }
@@ -42,12 +40,21 @@ async function getBookmarkButton(page) {
   return button
 }
 
+async function waitForEngagementMutation(page, button) {
+  // LikeDock applies optimistic state before its Server Action resolves. Give React
+  // time to enter the pending state, then require the control to become usable again
+  // before reloading/navigating so the browser cannot abort the mutation request.
+  await page.waitForTimeout(250)
+  await expect(button).toBeEnabled({ timeout: 15_000 })
+}
+
 async function ensureLikeState(page, desired) {
   const button = await getLikeButton(page)
   const current = (await button.getAttribute('aria-pressed')) === 'true'
   if (current !== desired) {
     await button.click()
     await expect(button).toHaveAttribute('aria-pressed', desired ? 'true' : 'false')
+    await waitForEngagementMutation(page, button)
   }
   return button
 }
@@ -58,6 +65,7 @@ async function ensureBookmarkState(page, desired) {
   if (current !== desired) {
     await button.click()
     await expect(button).toHaveAttribute('aria-pressed', desired ? 'true' : 'false')
+    await waitForEngagementMutation(page, button)
   }
   return button
 }
@@ -71,10 +79,8 @@ async function readViewCount(page) {
 async function deleteCommentIfVisible(page, text) {
   const article = page.locator('article').filter({ hasText: text }).first()
   if (await article.count() === 0 || !(await article.isVisible().catch(() => false))) return
-
   const deleteButton = article.getByRole('button', { name: '삭제', exact: true })
   if (!(await deleteButton.isVisible().catch(() => false))) return
-
   page.once('dialog', (dialog) => void dialog.accept())
   await deleteButton.click()
   await expect(page.getByText(text, { exact: true })).toHaveCount(0)
@@ -83,18 +89,13 @@ async function deleteCommentIfVisible(page, text) {
 async function bestEffortCleanup(page, commentTexts) {
   try {
     await page.goto(TARGET_PATH, { waitUntil: 'domcontentloaded' })
-
     if (await page.locator('header').getByRole('link', { name: '로그인' }).isVisible().catch(() => false)) {
       await login(page)
       await page.goto(TARGET_PATH, { waitUntil: 'domcontentloaded' })
     }
-
     await ensureLikeState(page, false).catch(() => {})
     await ensureBookmarkState(page, false).catch(() => {})
-
-    for (const text of commentTexts) {
-      await deleteCommentIfVisible(page, text).catch(() => {})
-    }
+    for (const text of commentTexts) await deleteCommentIfVisible(page, text).catch(() => {})
   } catch {
     // Cleanup is best-effort; the primary assertion failure remains authoritative.
   }
@@ -116,7 +117,6 @@ test.describe('production authenticated QA', () => {
 
     await login(page, { verifyLocalizedFailure: true })
     await expect(page.locator('header')).toContainText(EMAIL)
-
     await page.reload({ waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('heading', { level: 1, name: '내 북마크' })).toBeVisible()
     await expect(page.locator('header')).toContainText(EMAIL)
@@ -125,9 +125,6 @@ test.describe('production authenticated QA', () => {
       await page.goto(TARGET_PATH, { waitUntil: 'domcontentloaded' })
       await expect(page.getByRole('heading', { level: 1 })).toContainText('2026 닭가슴살 TOP 10')
 
-      // The first hydration may persist its view after the initial UI count is rendered.
-      // Give that write time to settle, reload once to establish the DB-backed count,
-      // then reload again to verify the same browser identity does not add another row.
       await page.waitForTimeout(2_500)
       await page.reload({ waitUntil: 'domcontentloaded' })
       await page.waitForTimeout(1_500)
@@ -142,6 +139,7 @@ test.describe('production authenticated QA', () => {
       await resetLike.click()
       await expect(resetLike).toHaveAttribute('aria-pressed', 'true')
       await expect.poll(async () => parseCount(await resetLike.innerText())).toBe(likeCountBefore + 1)
+      await waitForEngagementMutation(page, resetLike)
 
       await page.reload({ waitUntil: 'domcontentloaded' })
       const persistedLike = await getLikeButton(page)
@@ -150,11 +148,13 @@ test.describe('production authenticated QA', () => {
       await persistedLike.click()
       await expect(persistedLike).toHaveAttribute('aria-pressed', 'false')
       await expect.poll(async () => parseCount(await persistedLike.innerText())).toBe(likeCountBefore)
+      await waitForEngagementMutation(page, persistedLike)
 
       const bookmarkButton = await ensureBookmarkState(page, false)
       await bookmarkButton.click()
       await expect(bookmarkButton).toHaveAttribute('aria-pressed', 'true')
       await expect(bookmarkButton).toContainText('저장됨')
+      await waitForEngagementMutation(page, bookmarkButton)
 
       await page.goto('/me/bookmarks', { waitUntil: 'domcontentloaded' })
       const savedCard = page.locator(`article:has(a[href="${TARGET_PATH}"])`).first()
@@ -210,7 +210,6 @@ test.describe('production authenticated QA', () => {
     await expect(accountMenu.locator('summary')).toBeVisible()
     await accountMenu.locator('summary').click()
     await accountMenu.getByRole('button', { name: '로그아웃', exact: true }).click()
-
     await expect(page.locator('header').getByRole('link', { name: '로그인' })).toBeVisible({ timeout: 15_000 })
     await page.goto('/me/bookmarks', { waitUntil: 'domcontentloaded' })
     url = new URL(page.url())
