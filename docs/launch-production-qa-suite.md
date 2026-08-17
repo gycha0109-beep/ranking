@@ -5,14 +5,49 @@
 - Repository: `gycha0109-beep/ranking`
 - Baseline `main`: `08ad96428a92170873c51f1b495077303ac88fcb`
 - Production origin: `https://ranking-rho-three.vercel.app`
-- Public production smoke: already merged and retained as a separate read-only suite
 - Dedicated ordinary-user E2E credentials: GitHub Actions repository secrets `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`
 
 ## Goal
 
-Replace repetitive manual launch QA with one repeatable Chromium Playwright suite against the real production deployment.
+Replace repetitive manual launch QA with repeatable Playwright suites against the real production deployment while keeping production mutation scope bounded and auditable.
 
-The suite covers browser/session behavior that repository CI and HTTP-only public smoke cannot prove:
+The launch QA surface is split into two classes:
+
+1. read-only public/compatibility QA that is safe to repeat,
+2. credentialed mutation QA that is explicit-only and cleans up current mutable state.
+
+## Read-only production coverage
+
+The public smoke plus compatibility suite verifies:
+
+- core public routes and generated internal links do not resolve to broken pages,
+- category cards use public slugs rather than numeric database IDs,
+- Unicode slugs, canonical metadata, robots, and sitemap behavior,
+- deterministic search discovery for the published `2026 닭가슴살 TOP 10` ranking,
+- search sort state and browser back-history restoration,
+- keyboard search submission,
+- zero-result escape-hatch UX,
+- invalid search cursor fail-soft behavior,
+- unavailable/invalid Facet state canonicalization,
+- signed-out like, bookmark, and comment actions all route to login while preserving `next`,
+- published ranking document anatomy: title, ranked items, methodology, criteria, source, item-detail traversal, and back navigation,
+- signup entry-form fields without creating a production account,
+- horizontal-overflow checks on representative public surfaces,
+- delayed requests and repeated reload recovery without page errors or 5xx responses.
+
+Compatibility projects run the compact read-only UX suite on:
+
+- desktop Chromium,
+- desktop Firefox,
+- desktop WebKit (Safari engine approximation),
+- mobile Chromium using a Pixel device profile,
+- mobile WebKit using an iPhone device profile.
+
+The mobile projects assert touch capability and phone-sized viewport behavior. This materially exceeds a plain viewport resize, but it is still browser/device emulation rather than physical-device Chrome/Safari. Physical-device touch, browser chrome, OS keyboard, safe-area, and device-specific rendering remain a human/device-lab boundary.
+
+## Credentialed production mutation coverage
+
+The integrated ordinary-user suite verifies:
 
 1. protected-route redirect when signed out,
 2. localized invalid-password feedback,
@@ -25,76 +60,78 @@ The suite covers browser/session behavior that repository CI and HTTP-only publi
 9. ordinary-user admin denial,
 10. logout and protected-route denial after logout.
 
-Mobile QA is intentionally deferred from this launch-completion suite. The already-merged public smoke retains its existing viewport check.
-
-## Production mutation boundary
-
-This suite is intentionally narrow and uses only the dedicated E2E ordinary-user account against one stable published target:
+The suite uses one stable published target:
 
 - `/rankings/best-chicken-breast`
 
-The account is not an administrator and is not used as a normal end-user account.
-
-Before this suite was introduced, Hosted validation confirmed the dedicated test-account candidate had zero current likes, bookmarks, and live comments.
-
-The suite normalizes mutable current state:
-
-- like -> OFF at cleanup,
-- bookmark -> OFF at cleanup,
-- created test comment -> deleted through the public UI.
-
-The application deliberately keeps append-only engagement event rows and comment mutation history, and comment deletion is a tombstone rather than physical deletion. Those audit traces are accepted as test evidence under the dedicated E2E identity; they are not ordinary-user content.
+Cleanup normalizes current state to like OFF, bookmark OFF, and no live E2E comment. Append-only engagement events and deleted-comment tombstones remain as accepted QA evidence under the dedicated test identity.
 
 A `finally` cleanup block performs best-effort normalization even when a primary assertion fails.
 
-## Explicit non-goals
+## Production fixture authority and honest gaps
+
+Hosted production was inspected read-only before expanding the suite.
+
+Current facts:
+
+- exactly one published ranking is available: `best-chicken-breast`,
+- that ranking currently has 2 ranking entries, 2 criteria, 1 source, and 0 Facets,
+- `facet_groups` / `facets` currently expose no production Facet fixtures,
+- the published ranking title/summary are short and therefore are not a real long-content layout fixture.
+
+Consequences:
+
+- a real multi-Facet select/combine/remove E2E cannot be claimed until production or a fixture environment has Facet data,
+- long-title/long-description overflow cannot be honestly validated against real production ranking content yet,
+- vote mutation remains excluded until a dedicated `user_vote` fixture exists,
+- actual administrator login cannot be automated without a dedicated non-human admin E2E credential,
+- a full fresh-user signup/login/logout lifecycle would create persistent Auth identity/email side effects and therefore is not run against production without an explicit disposable-user cleanup contract,
+- duplicate-email signup is likewise not repeated automatically because Supabase Auth may intentionally avoid account-existence disclosure and may cause email/rate-limit side effects.
+
+The suite does test the signup surface itself without submitting it, so basic first-entry form regressions are still covered without production Auth mutation.
+
+## Explicit mutation non-goals
 
 The production QA suite MUST NOT perform:
 
 - comment reports,
 - moderation actions,
-- sanctions or appeals,
-- admin writes,
-- ranking/content editor writes,
+- sanctions or appeals writes,
+- admin/editor writes,
 - role or capability changes,
 - vote mutations without a dedicated production `user_vote` fixture,
-- database writes using a Supabase service/secret key from the Playwright job.
-
-Those belong to isolated fixture/staging coverage when needed.
+- fresh production account creation without an explicit cleanup contract,
+- database writes using a Supabase service/secret key from a Playwright browser job.
 
 ## Credential and evidence policy
 
-The workflow receives only:
+The credentialed browser workflow receives only:
 
 - `E2E_USER_EMAIL`
 - `E2E_USER_PASSWORD`
 
 from GitHub Actions repository secrets.
 
-The browser job does not receive `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or any other privileged database credential.
+It does not receive `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or another privileged database credential.
 
-Playwright trace, video, and screenshots are disabled for this authenticated mutation suite to avoid persisting session or credential-adjacent browser artifacts. The HTML test report is retained for short-lived execution evidence.
+Trace, screenshot, and video capture are disabled in the authenticated mutation config. Read-only compatibility runs may retain failure diagnostics because they contain no authenticated session.
 
 ## Workflow lifecycle
 
-During implementation the workflow auto-runs only on pushes to:
+The read-only production E2E workflow is safe to run repeatedly on the QA implementation branch and through `workflow_dispatch`.
 
-- `test/launch-production-qa-suite`
+The credentialed mutation workflow is `workflow_dispatch` only. It deliberately does not auto-run on branch or `main` pushes so ordinary repository edits do not append production engagement/audit events.
 
-It also supports manual `workflow_dispatch` against an explicitly supplied base URL.
-
-It does not auto-run on `main`, so merging the test harness does not repeatedly mutate production engagement/audit streams on every application commit.
-
-The existing public production smoke workflow is narrowed to execute only `tests/e2e/production-smoke.spec.mjs`, ensuring it never picks up the credentialed QA spec.
+This separation makes the cheap/read-only checks continuous while keeping production writes deliberate.
 
 ## Release gate
 
-Before this test harness is merge-ready:
+Before the harness is merge-ready:
 
-1. integrated production QA passes against the real production origin,
-2. Hosted read-only poststate shows no current like/bookmark/live-comment residue for the E2E account,
-3. exact-head repository CI passes all existing verifiers, lint, and production build,
-4. the branch diff contains no application or database behavior changes,
-5. PR CI passes on the exact feature head.
-
-After those gates, the stale authenticated-smoke PR #25 is superseded by this integrated suite and should be closed unmerged.
+1. read-only Chromium public smoke passes,
+2. desktop Firefox/WebKit and mobile Chromium/WebKit compatibility smoke passes,
+3. credentialed integrated production QA passes once on the final head,
+4. Hosted read-only poststate shows no current like/bookmark/live-comment residue for the E2E account,
+5. exact-head repository CI passes all existing verifiers, lint, and production build,
+6. PR CI passes on the exact feature head,
+7. remaining fixture/device boundaries are recorded rather than represented as covered.
