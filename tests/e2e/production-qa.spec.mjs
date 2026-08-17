@@ -125,12 +125,17 @@ test.describe('production authenticated QA', () => {
       await page.goto(TARGET_PATH, { waitUntil: 'domcontentloaded' })
       await expect(page.getByRole('heading', { level: 1 })).toContainText('2026 닭가슴살 TOP 10')
 
-      await page.waitForTimeout(1_500)
-      const viewCountAfterFirstHydration = await readViewCount(page)
+      // The first hydration may persist its view after the initial UI count is rendered.
+      // Give that write time to settle, reload once to establish the DB-backed count,
+      // then reload again to verify the same browser identity does not add another row.
+      await page.waitForTimeout(2_500)
       await page.reload({ waitUntil: 'domcontentloaded' })
       await page.waitForTimeout(1_500)
-      const viewCountAfterReload = await readViewCount(page)
-      expect(viewCountAfterReload, 'same browser identity must not add a second daily view').toBe(viewCountAfterFirstHydration)
+      const settledViewCount = await readViewCount(page)
+      await page.reload({ waitUntil: 'domcontentloaded' })
+      await page.waitForTimeout(1_500)
+      const viewCountAfterDedupeReload = await readViewCount(page)
+      expect(viewCountAfterDedupeReload, 'same browser identity must not add a second daily view').toBe(settledViewCount)
 
       const resetLike = await ensureLikeState(page, false)
       const likeCountBefore = parseCount(await resetLike.innerText())
