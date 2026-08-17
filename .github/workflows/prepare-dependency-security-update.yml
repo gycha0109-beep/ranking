@@ -20,9 +20,16 @@ jobs:
           cache: npm
       - name: Install baseline
         run: npm ci
-      - name: Apply minimal Next patch update
-        run: npm install --save-exact next@16.2.11 eslint-config-next@16.2.11
-      - name: Capture post-update audit
+      - name: Apply Next security update
+        run: npm install --save-exact next@16.3.1 eslint-config-next@16.3.1
+      - name: Capture audit before transitive fix
+        shell: bash
+        run: |
+          npm audit --json > npm-audit-before-fix.json || true
+          node -e "const a=require('./npm-audit-before-fix.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}, null, 2))"
+      - name: Apply non-breaking audit fixes
+        run: npm audit fix
+      - name: Capture final audit
         shell: bash
         run: |
           npm audit --json > npm-audit-after.json || true
@@ -46,5 +53,6 @@ jobs:
           path: |
             package.json
             package-lock.json
+            npm-audit-before-fix.json
             npm-audit-after.json
           retention-days: 7
