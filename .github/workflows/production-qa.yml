@@ -1,0 +1,65 @@
+name: Production QA Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Production origin to test
+        required: true
+        default: https://ranking-rho-three.vercel.app
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  production-qa:
+    name: Playwright integrated production QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      E2E_BASE_URL: ${{ github.event.inputs.base_url || 'https://ranking-rho-three.vercel.app' }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require dedicated E2E credentials
+        shell: bash
+        run: |
+          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" ]]; then
+            echo "::error::E2E_USER_EMAIL and E2E_USER_PASSWORD repository secrets are required."
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install pinned Playwright runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run integrated production QA
+        run: npx playwright test tests/e2e/production-qa.spec.mjs --config=playwright.production-qa.config.mjs
+
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-qa-report
+          path: playwright-qa-report/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -3,7 +3,17 @@ name: Production E2E Smoke
 on:
   push:
     branches:
-      - feat/launch-1-production-e2e
+      - test/launch-production-qa-suite
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/production-e2e.yml'
+      - 'playwright.production.config.mjs'
+      - 'playwright.production-compat.config.mjs'
+      - 'tests/e2e/production-smoke.spec.mjs'
+      - 'tests/e2e/production-readonly-ux.spec.mjs'
+      - 'tests/e2e/production-accessibility.spec.mjs'
   workflow_dispatch:
     inputs:
       base_url:
@@ -21,9 +31,9 @@ concurrency:
 
 jobs:
   smoke:
-    name: Playwright production smoke
+    name: Playwright production smoke and compatibility
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       E2E_BASE_URL: ${{ github.event.inputs.base_url || 'https://ranking-rho-three.vercel.app' }}
     steps:
@@ -39,22 +49,29 @@ jobs:
       - name: Install application dependencies
         run: npm ci
 
-      - name: Install pinned Playwright runner
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+      - name: Install pinned browser QA runners
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.12.1
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Run production E2E smoke
-        run: npx playwright test --config=playwright.production.config.mjs
+      - name: Run deep Chromium production smoke
+        run: npx playwright test tests/e2e/production-smoke.spec.mjs --config=playwright.production.config.mjs
 
-      - name: Upload Playwright report
+      - name: Run production accessibility acceptance
+        run: npx playwright test tests/e2e/production-accessibility.spec.mjs --config=playwright.production.config.mjs
+
+      - name: Run cross-browser read-only UX compatibility
+        run: npx playwright test --config=playwright.production-compat.config.mjs
+
+      - name: Upload Playwright reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: production-e2e-report
           path: |
             playwright-report/
+            playwright-compat-report/
             test-results/
           if-no-files-found: ignore
           retention-days: 7
