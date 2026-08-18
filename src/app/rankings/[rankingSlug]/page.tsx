@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPublishedRankingBySlug, getRelatedRankings } from '@/lib/queries/public'
+import { getRankingSponsorshipDisclosures } from '@/lib/queries/sponsorships'
 import {
   Award,
   CalendarDays,
@@ -12,11 +13,11 @@ import {
   Info,
   Network,
   Scale,
-  ShieldCheck,
   Star,
   Tag,
 } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
+import SponsorshipDisclosure from '@/components/sponsorship/SponsorshipDisclosure'
 
 export const revalidate = 0
 
@@ -41,7 +42,12 @@ export default async function RankingDetailPage({ params }: Props) {
   const ranking = await getPublishedRankingBySlug(rankingSlug)
   if (!ranking) notFound()
 
-  const relatedRankings = await getRelatedRankings(ranking)
+  const [relatedRankings, sponsorshipDisclosures] = await Promise.all([
+    getRelatedRankings(ranking),
+    getRankingSponsorshipDisclosures(ranking.id),
+  ])
+  const rankingDisclosures = sponsorshipDisclosures.filter((disclosure) => disclosure.target_type === 'ranking')
+  const placementDisclosures = sponsorshipDisclosures.filter((disclosure) => disclosure.target_type === 'placement')
   const scopeItems = Object.entries(ranking.scope_json || {}).map(([key, val]) => ({ label: key.toUpperCase(), value: String(val) }))
 
   return (
@@ -62,6 +68,7 @@ export default async function RankingDetailPage({ params }: Props) {
 
           <h1 className="mt-4 text-3xl font-black leading-[1.2] tracking-[-0.045em] text-[#171a1f] sm:text-4xl">{ranking.title}</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#5f6875] sm:text-base">{ranking.summary}</p>
+          {rankingDisclosures.length > 0 && <div className="mt-5"><SponsorshipDisclosure disclosures={rankingDisclosures} /></div>}
         </div>
       </header>
 
@@ -80,15 +87,10 @@ export default async function RankingDetailPage({ params }: Props) {
               const item = entry.items
               if (!item) return null
               const topThree = entry.position <= 3
+              const disclosures = placementDisclosures.filter((disclosure) => disclosure.item_id === item.id)
 
               return (
                 <article key={entry.id} className={`relative overflow-hidden rounded-[20px] border bg-white p-5 sm:p-6 ${entry.position === 1 ? 'border-[#d4b56b]' : 'border-[#dde2e8]'}`}>
-                  {entry.sponsor_flag && (
-                    <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-lg bg-[#fff7e6] px-2 py-1 text-[9px] font-extrabold text-[#8f650f]">
-                      <ShieldCheck className="h-3 w-3" />스폰서 표기
-                    </span>
-                  )}
-
                   <div className="grid gap-5 sm:grid-cols-[58px_88px_minmax(0,1fr)] sm:items-start">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl font-black ${topThree ? 'bg-[#171a1f] text-white' : 'bg-[#f0f2f5] text-[#667085]'}`}>
                       {entry.position}
@@ -117,6 +119,7 @@ export default async function RankingDetailPage({ params }: Props) {
                       </div>
 
                       <p className="mt-3 text-sm leading-7 text-[#4f5864]">{entry.reason}</p>
+                      {disclosures.length > 0 && <div className="mt-4"><SponsorshipDisclosure disclosures={disclosures} compact /></div>}
 
                       {entry.score_json?.scores && entry.score_json.scores.length > 0 && (
                         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
