@@ -4,12 +4,12 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / UI-1 CLOSED / LAUNCH-1 ACTIVE**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
-- LAUNCH-1 Production Deployment & Launch Hardening: pre-deployment remediation / production setup in progress
+- LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
 
 P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다.
 
@@ -17,7 +17,7 @@ P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고
 
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
-LAUNCH-1은 실제 production 배포, 환경변수/Auth/SEO 설정, 브라우저·runtime smoke와 launch blocker remediation을 담당합니다.
+LAUNCH-1은 실제 Vercel Production 배포, 환경/Auth/SEO/security hardening, 실제 Production browser/runtime acceptance, main-only Git deployment 정책, 반복 가능한 Production QA suite까지 검증하고 닫았습니다. 최종 근거는 `docs/launch-1-closeout.md`를 기준으로 합니다.
 
 ## 실행
 
@@ -121,10 +121,10 @@ npm run dev
 
 ## Production deployment contract
 
-LAUNCH-1 기준 production 배포는 다음을 만족해야 합니다.
+LAUNCH-1에서 확정한 production 배포 기준은 다음과 같습니다.
 
-- Vercel production branch: `main`
-- production deployment SHA가 검증된 authoritative `main` SHA와 일치
+- Vercel Git deployment는 `main`만 허용하고 비-main branch/commit Preview deployment는 차단
+- production deployment SHA가 authoritative `main` SHA와 일치
 - Hosted Supabase project URL과 publishable/anon key 설정
 - service role key는 서버 전용 환경변수로만 보관
 - `ADMIN_BOOTSTRAP_EMAIL`은 Production에 설정하지 않음
@@ -133,6 +133,7 @@ LAUNCH-1 기준 production 배포는 다음을 만족해야 합니다.
 - likes/bookmarks/comments/voting/history/auth 핵심 interaction smoke
 - `robots.txt`, `sitemap.xml`, canonical/noindex 실제 URL 검증
 - Vercel runtime/build error 및 Supabase Auth/API 오류 점검
+- 대표 public page의 automated accessibility acceptance와 cross-browser/mobile-emulated read-only QA
 
 ## 검증
 
@@ -163,15 +164,15 @@ P2-2 repository migrations:
 - `20260816020000_p2_2_ranking_history_vote_finalization.sql`
 - `20260816021000_p2_2_public_history_moderation_filter.sql`
 
-UI-1과 현재 LAUNCH-1 pre-deployment remediation은 DB schema/RPC migration을 추가하지 않습니다.
+UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
 
 1. User Voting — P2-1 `SUCCESS / CLOSED`
 2. Ranking Change History / Vote Finalization — P2-2 `SUCCESS / CLOSED`
 3. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
-4. Production Deployment & Launch Hardening — LAUNCH-1 active
-5. External data import / crawling — 배포 후 실제 운영 필요를 확인한 뒤 설계
-6. Sponsor transparency/management — 현재 backlog/deferred
+4. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
+5. Sponsor Transparency / Management — P2-3 next design stage
+6. External data import / crawling — 실제 운영에서 수동 콘텐츠 입력이 병목으로 확인된 뒤 설계
 
 각 stage는 별도 design/review/final-contract/CI lifecycle을 거칩니다.
