@@ -71,6 +71,12 @@ function redirectResult(path: string, message: string, isError = false): never {
   redirect(`${path}?${params.toString()}`)
 }
 
+function adminSubjectType(rpcName: string) {
+  return ['admin_create_sponsor', 'admin_update_sponsor', 'admin_archive_sponsor'].includes(rpcName)
+    ? 'sponsor'
+    : 'sponsorship'
+}
+
 async function mutation(
   rpcName: string,
   args: Record<string, unknown>,
@@ -82,7 +88,7 @@ async function mutation(
     actionKey: rpcName,
     resourceKey: 'sponsorship_management',
     routeKey: path,
-    subjectType: rpcName.includes('sponsor') ? 'sponsorship' : 'sponsor',
+    subjectType: adminSubjectType(rpcName),
     subjectRef,
   })
   if (result.error) redirectResult(path, result.error.message, true)
