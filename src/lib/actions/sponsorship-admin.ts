@@ -51,6 +51,13 @@ export type SponsorshipEventRow = {
 
 export type SponsorshipOption = { id: string; title: string; slug: string }
 
+export type SponsorshipReadiness = {
+  unresolvedLegacyFlags: number
+  legacyReconcileEvents: number
+  publishedSponsorships: number
+  normalizedAuthorityReady: boolean
+}
+
 function text(formData: FormData, key: string) {
   return String(formData.get(key) || '').trim()
 }
@@ -124,6 +131,23 @@ export async function listSponsorshipEvents(limit = 50): Promise<SponsorshipEven
   const { data, error } = await supabase.rpc('admin_list_sponsorship_events', { p_limit: limit })
   if (error) throw new Error(error.message)
   return (data || []) as SponsorshipEventRow[]
+}
+
+export async function getSponsorshipReadiness(): Promise<SponsorshipReadiness> {
+  const supabase = await requireAdminCapability('sponsorship_manage', {
+    actionKey: 'admin_get_sponsorship_readiness', resourceKey: 'sponsorship_management', routeKey: '/admin/sponsorships',
+  })
+  const { data, error } = await supabase.rpc('admin_get_sponsorship_readiness')
+  if (error) throw new Error(error.message)
+  const value = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown>
+    : {}
+  return {
+    unresolvedLegacyFlags: Number(value.unresolved_legacy_flags || 0),
+    legacyReconcileEvents: Number(value.legacy_reconcile_events || 0),
+    publishedSponsorships: Number(value.published_sponsorships || 0),
+    normalizedAuthorityReady: value.normalized_authority_ready === true,
+  }
 }
 
 export async function getSponsorshipOptions() {
