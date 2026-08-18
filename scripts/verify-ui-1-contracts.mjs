@@ -18,6 +18,7 @@ const ranking = read('src/app/rankings/[rankingSlug]/page.tsx')
 const rankingLayout = read('src/app/rankings/[rankingSlug]/layout.tsx')
 const item = read('src/app/items/[itemSlug]/page.tsx')
 const itemLayout = read('src/app/items/[itemSlug]/layout.tsx')
+const login = read('src/app/login/LoginForm.tsx')
 const engagement = read('src/components/engagement/LikeDock.tsx')
 const voting = read('src/components/voting/RankingVotingPanel.tsx')
 const history = read('src/components/ranking-history/RankingHistoryPanel.tsx')
@@ -50,6 +51,9 @@ for (const [name, source] of [
   expectContains(source, 'rw-page', `${name} must use the UI-1 public page shell`)
   expectNotContains(source, 'bg-[#07070a]', `${name} must not reintroduce the legacy dark canvas`)
 }
+
+expectContains(login, 'className="rw-muted mt-5 text-center text-xs leading-5"', 'login footer must use the accessible muted text token')
+expectNotContains(login, 'mt-5 text-center text-xs leading-5 text-slate-500', 'login footer must not use the low-contrast slate-500 utility')
 
 expectContains(facets, "lg:hidden", 'facet filter must expose a mobile surface')
 expectContains(facets, "lg:block", 'facet filter must expose a desktop surface')
