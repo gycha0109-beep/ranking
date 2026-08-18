@@ -34,6 +34,7 @@ export type SponsorshipRow = {
   internal_note: string | null
   created_at: string
   updated_at: string
+  period_state: 'upcoming' | 'current' | 'historical'
 }
 
 export type SponsorshipEventRow = {
@@ -84,6 +85,15 @@ function adminSubjectType(rpcName: string) {
     : 'sponsorship'
 }
 
+function normalizeSponsorshipPeriod(row: Omit<SponsorshipRow, 'period_state'>): SponsorshipRow['period_state'] {
+  const now = Date.now()
+  const startsAt = new Date(row.starts_at).getTime()
+  const endsAt = row.ends_at ? new Date(row.ends_at).getTime() : null
+  if (startsAt > now) return 'upcoming'
+  if (endsAt !== null && endsAt <= now) return 'historical'
+  return 'current'
+}
+
 async function mutation(
   rpcName: string,
   args: Record<string, unknown>,
@@ -121,7 +131,8 @@ export async function listSponsorships(): Promise<SponsorshipRow[]> {
   })
   const { data, error } = await supabase.rpc('admin_list_sponsorships')
   if (error) throw new Error(error.message)
-  return (data || []) as SponsorshipRow[]
+  const rows = (data || []) as Array<Omit<SponsorshipRow, 'period_state'>>
+  return rows.map((row) => ({ ...row, period_state: normalizeSponsorshipPeriod(row) }))
 }
 
 export async function listSponsorshipEvents(limit = 50): Promise<SponsorshipEventRow[]> {
