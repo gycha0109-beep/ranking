@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
 import type { SearchKind, SearchSort } from '@/lib/search/contracts'
 
@@ -9,8 +11,12 @@ interface Props {
   facetIds?: string[]
   compact?: boolean
   showFilters?: boolean
+  historySync?: boolean
   className?: string
 }
+
+const SEARCH_KINDS = new Set(['all', 'ranking', 'item'])
+const SEARCH_SORTS = new Set(['relevance', 'latest', 'popular'])
 
 export default function SearchForm({
   defaultQuery = '',
@@ -19,12 +25,53 @@ export default function SearchForm({
   facetIds = [],
   compact = false,
   showFilters = false,
+  historySync = false,
   className = '',
 }: Props) {
+  const formRef = useRef<HTMLFormElement>(null)
   const formKey = JSON.stringify([defaultQuery, defaultKind, defaultSort, facetIds])
 
+  useEffect(() => {
+    if (!historySync) return
+
+    const restoreCanonicalControls = () => {
+      const form = formRef.current
+      if (!form) return
+
+      form.reset()
+
+      const params = new URLSearchParams(window.location.search)
+      const queryControl = form.elements.namedItem('q')
+      const kindControl = form.elements.namedItem('type')
+      const sortControl = form.elements.namedItem('sort')
+
+      if (queryControl instanceof HTMLInputElement) {
+        queryControl.value = params.get('q') ?? ''
+      }
+
+      if (kindControl instanceof HTMLSelectElement) {
+        const requestedKind = params.get('type') ?? 'all'
+        kindControl.value = SEARCH_KINDS.has(requestedKind) ? requestedKind : 'all'
+      }
+
+      if (sortControl instanceof HTMLSelectElement) {
+        const requestedSort = params.get('sort') ?? 'relevance'
+        sortControl.value = SEARCH_SORTS.has(requestedSort) ? requestedSort : 'relevance'
+      }
+    }
+
+    restoreCanonicalControls()
+    window.addEventListener('pageshow', restoreCanonicalControls)
+    window.addEventListener('popstate', restoreCanonicalControls)
+
+    return () => {
+      window.removeEventListener('pageshow', restoreCanonicalControls)
+      window.removeEventListener('popstate', restoreCanonicalControls)
+    }
+  }, [formKey, historySync])
+
   return (
-    <form key={formKey} action="/search" method="get" role="search" className={className}>
+    <form ref={formRef} key={formKey} action="/search" method="get" role="search" className={className}>
       {facetIds.map((id) => (
         <input key={id} type="hidden" name="facet" value={id} />
       ))}

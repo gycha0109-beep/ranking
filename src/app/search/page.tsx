@@ -111,6 +111,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             defaultSort={sort}
             facetIds={facetIds}
             showFilters
+            historySync
             className="mt-6 max-w-4xl rounded-2xl border border-[#dde2e8] bg-[#f8f9fb] p-4"
           />
         </div>
