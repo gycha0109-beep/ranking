@@ -19,6 +19,7 @@ const kindLabels: Record<AdminAuditEventKind, string> = {
   sanction_event: '사용자 제재',
   appeal_decision: '이의제기 결정',
   maintenance_job: '유지보수 작업',
+  sponsorship_change: '협찬 관계 변경',
 }
 
 function formatDate(value: string) {
