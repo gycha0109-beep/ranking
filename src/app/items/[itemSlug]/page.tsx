@@ -2,8 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getItemBySlug, getRankingsContainingItem, getRelatedItems } from '@/lib/queries/public'
+import { getItemSponsorshipDisclosures } from '@/lib/queries/sponsorships'
 import { Award, ChevronRight, ExternalLink, Layers, Network, ShieldAlert, Tag } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
+import SponsorshipDisclosure from '@/components/sponsorship/SponsorshipDisclosure'
 
 interface Props {
   params: Promise<{ itemSlug: string }>
@@ -14,9 +16,10 @@ export default async function ItemDetailPage({ params }: Props) {
   const item = await getItemBySlug(itemSlug)
   if (!item) notFound()
 
-  const [rankings, relatedItems] = await Promise.all([
+  const [rankings, relatedItems, sponsorshipDisclosures] = await Promise.all([
     getRankingsContainingItem(item.id),
     getRelatedItems(item),
+    getItemSponsorshipDisclosures(item.id),
   ])
 
   return (
@@ -38,6 +41,7 @@ export default async function ItemDetailPage({ params }: Props) {
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-[#171a1f] sm:text-4xl">{item.title}</h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5f6875]">{item.description || '이 아이템에 대한 상세 설명이 등록되어 있지 않습니다.'}</p>
+            {sponsorshipDisclosures.length > 0 && <div className="mt-5"><SponsorshipDisclosure disclosures={sponsorshipDisclosures} /></div>}
 
             {item.facets && item.facets.length > 0 && (
               <div className="mt-5 flex flex-wrap gap-2">
