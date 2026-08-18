@@ -28,6 +28,7 @@ const kindLabels: Record<AdminAuditEventKind, string> = {
   sanction_event: '사용자 제재',
   appeal_decision: '이의제기 결정',
   maintenance_job: '유지보수 작업',
+  sponsorship_change: '협찬 관계 변경',
 }
 
 function normalizeDate(value?: string) {
@@ -98,7 +99,7 @@ export default async function AdminAuditPage({ searchParams }: Props) {
             <span className="text-xs font-black uppercase tracking-widest">Operator Audit</span>
           </div>
           <h1 className="mt-2 text-3xl font-black text-white">운영 감사 상관관계 탐색</h1>
-          <p className="mt-2 text-sm text-slate-500">행위자·대상·결정 근거와 같은 사건의 후속 제재·이의제기를 안정적인 cursor로 추적합니다.</p>
+          <p className="mt-2 text-sm text-slate-500">행위자·대상·결정 근거와 같은 사건의 후속 제재·이의제기·협찬 변경을 안정적인 cursor로 추적합니다.</p>
         </header>
 
         <section className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
@@ -129,7 +130,7 @@ export default async function AdminAuditPage({ searchParams }: Props) {
               </label>
               <label className="space-y-1 text-xs text-slate-400 md:col-span-2">
                 <span>Correlation ID</span>
-                <input name="correlation" defaultValue={params.correlation || ''} placeholder="comment:... / sanction:... / maintenance:..." className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
+                <input name="correlation" defaultValue={params.correlation || ''} placeholder="comment:... / sanction:... / sponsorship:..." className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white" />
               </label>
               <label className="space-y-1 text-xs text-slate-400">
                 <span>시작일</span>
