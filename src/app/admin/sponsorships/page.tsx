@@ -1,14 +1,18 @@
 import Link from 'next/link'
-import { Archive, ArrowLeft, ClipboardList, Megaphone, Send, Save } from 'lucide-react'
+import { Archive, ArrowLeft, CheckCircle2, ClipboardList, Megaphone, Send, Save, ShieldAlert } from 'lucide-react'
+import SponsorshipDisclosure from '@/components/sponsorship/SponsorshipDisclosure'
+import type { SponsorshipDisclosure as PublicSponsorshipDisclosure } from '@/lib/queries/sponsorships'
 import {
   archiveSponsorshipAction,
   createSponsorshipAction,
   getSponsorshipOptions,
+  getSponsorshipReadiness,
   listSponsors,
   listSponsorshipEvents,
   listSponsorships,
   publishSponsorshipAction,
   updateSponsorshipAction,
+  type SponsorshipRow,
 } from '@/lib/actions/sponsorship-admin'
 
 export const dynamic = 'force-dynamic'
@@ -36,9 +40,42 @@ function datetime(value: string | null) {
   return new Date(value).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
 }
 
+function previewDisclosure(row: SponsorshipRow): PublicSponsorshipDisclosure {
+  const now = Date.now()
+  const startsAt = new Date(row.starts_at).getTime()
+  const endsAt = row.ends_at ? new Date(row.ends_at).getTime() : null
+  const periodState: PublicSponsorshipDisclosure['period_state'] = startsAt > now
+    ? 'upcoming'
+    : endsAt !== null && endsAt <= now
+      ? 'historical'
+      : 'current'
+
+  return {
+    id: row.id,
+    sponsor_name: row.sponsor_name,
+    sponsor_website_url: null,
+    target_type: row.target_type,
+    ranking_id: row.ranking_id,
+    item_id: row.item_id,
+    relationship_type: row.relationship_type,
+    disclosure_text: row.disclosure_text,
+    influence_scope: row.influence_scope,
+    influence_note: row.influence_note,
+    starts_at: row.starts_at,
+    ends_at: row.ends_at,
+    published_at: row.published_at || row.updated_at,
+    period_state: periodState,
+  }
+}
+
 export default async function SponsorshipsAdminPage({ searchParams }: Props) {
-  const [sponsors, sponsorships, events, options, params] = await Promise.all([
-    listSponsors(), listSponsorships(), listSponsorshipEvents(30), getSponsorshipOptions(), searchParams,
+  const [sponsors, sponsorships, events, options, readiness, params] = await Promise.all([
+    listSponsors(),
+    listSponsorships(),
+    listSponsorshipEvents(30),
+    getSponsorshipOptions(),
+    getSponsorshipReadiness(),
+    searchParams,
   ])
   const activeSponsors = sponsors.filter((sponsor) => sponsor.status === 'active')
 
@@ -53,6 +90,23 @@ export default async function SponsorshipsAdminPage({ searchParams }: Props) {
 
         {params.ok && <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-bold text-emerald-200">{params.ok}</div>}
         {params.error && <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-bold text-rose-200">{params.error}</div>}
+
+        <section className={`rounded-2xl border p-5 ${readiness.normalizedAuthorityReady ? 'border-emerald-500/20 bg-emerald-500/[0.06]' : 'border-rose-500/20 bg-rose-500/[0.06]'}`}>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className={`flex items-center gap-2 text-sm font-black ${readiness.normalizedAuthorityReady ? 'text-emerald-200' : 'text-rose-200'}`}>
+                {readiness.normalizedAuthorityReady ? <CheckCircle2 className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                Normalized sponsorship authority
+              </div>
+              <p className="mt-2 text-xs leading-6 text-slate-400">Legacy `sponsor_flag`는 더 이상 협찬 truth가 아닙니다. 미해결 플래그가 0일 때만 정규화된 협찬 권위를 정상 상태로 봅니다.</p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-[10px] font-black">
+              <span className={`rounded-lg px-2.5 py-1.5 ${readiness.unresolvedLegacyFlags === 0 ? 'bg-emerald-500/10 text-emerald-200' : 'bg-rose-500/10 text-rose-200'}`}>미해결 legacy {readiness.unresolvedLegacyFlags}</span>
+              <span className="rounded-lg bg-indigo-500/10 px-2.5 py-1.5 text-indigo-200">reconcile 이력 {readiness.legacyReconcileEvents}</span>
+              <span className="rounded-lg bg-cyan-500/10 px-2.5 py-1.5 text-cyan-200">공개 관계 {readiness.publishedSponsorships}</span>
+            </div>
+          </div>
+        </section>
 
         <section className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-6">
           <h2 className="flex items-center gap-2 font-black text-white"><Megaphone className="h-5 w-5 text-indigo-300" />새 협찬 관계 초안</h2>
@@ -88,6 +142,7 @@ export default async function SponsorshipsAdminPage({ searchParams }: Props) {
                 <div className="text-right text-[11px] text-slate-600"><p>{relationshipLabels[row.relationship_type] || row.relationship_type}</p><p>{datetime(row.starts_at)} → {datetime(row.ends_at)}</p></div>
               </div>
               <div className="mt-4 rounded-xl border border-white/[0.05] bg-black/20 p-4"><p className="text-xs font-bold text-slate-300">공개 문구</p><p className="mt-1 text-sm leading-6 text-slate-400">{row.disclosure_text}</p><p className="mt-2 text-[11px] text-slate-600">편집 영향: {influenceLabels[row.influence_scope] || row.influence_scope}{row.influence_note ? ` · ${row.influence_note}` : ''}</p></div>
+              <div className="mt-4 rounded-xl border border-indigo-500/10 bg-indigo-500/[0.03] p-4"><p className="mb-2 text-[10px] font-black uppercase tracking-wider text-indigo-300">공개 미리보기</p><SponsorshipDisclosure disclosures={[previewDisclosure(row)]} compact /></div>
 
               {row.status === 'draft' && (
                 <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_260px]">
