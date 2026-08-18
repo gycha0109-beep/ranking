@@ -41,15 +41,6 @@ function datetime(value: string | null) {
 }
 
 function previewDisclosure(row: SponsorshipRow): PublicSponsorshipDisclosure {
-  const now = Date.now()
-  const startsAt = new Date(row.starts_at).getTime()
-  const endsAt = row.ends_at ? new Date(row.ends_at).getTime() : null
-  const periodState: PublicSponsorshipDisclosure['period_state'] = startsAt > now
-    ? 'upcoming'
-    : endsAt !== null && endsAt <= now
-      ? 'historical'
-      : 'current'
-
   return {
     id: row.id,
     sponsor_name: row.sponsor_name,
@@ -64,7 +55,7 @@ function previewDisclosure(row: SponsorshipRow): PublicSponsorshipDisclosure {
     starts_at: row.starts_at,
     ends_at: row.ends_at,
     published_at: row.published_at || row.updated_at,
-    period_state: periodState,
+    period_state: row.period_state,
   }
 }
 
