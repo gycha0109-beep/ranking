@@ -12,9 +12,10 @@ Implemented surfaces:
 - `sponsorship_manage` admin capability;
 - sponsor and sponsorship management RPCs;
 - public-safe ranking/item disclosure RPCs;
+- explicit `upcoming` / `current` / `historical` public disclosure state;
 - ranking publication and placement-save guards;
 - integrated `sponsorship_change` audit stream/detail support;
-- admin sponsor/sponsorship management pages;
+- admin sponsor/sponsorship management pages with relationship counts, readiness status and public preview;
 - public ranking/item disclosure UI;
 - P2-3 repository contract verifier and CI gate.
 
@@ -44,6 +45,7 @@ Hosted poststate after migration and dynamic validation:
 - unresolved legacy sponsor flags: `0`
 - current ranking public disclosures: `[]`
 - current item public disclosures: `[]`
+- normalized sponsorship authority ready: `true`
 
 The one event records the exact before/after change from `sponsor_flag=true` to `false` and is visible through the integrated `sponsorship_change` audit stream.
 
@@ -51,7 +53,7 @@ The one event records the exact before/after change from `sponsor_flag=true` to 
 
 Raw sponsorship tables grant no direct privileges to `anon` or `authenticated`.
 
-Public reads are exposed only through bounded SECURITY DEFINER disclosure RPCs. They contain sponsor identity, relationship/disclosure/influence information and relationship dates, but exclude internal notes and actor/admin metadata.
+Public reads are exposed only through bounded SECURITY DEFINER disclosure RPCs. They contain sponsor identity, relationship/disclosure/influence information, relationship dates and period state, but exclude internal notes and actor/admin metadata.
 
 Admin mutations are RPC-only and require `sponsorship_manage`. General audit reads require `audit_view`; sensitive snapshots remain behind `audit_sensitive_view`.
 
@@ -74,7 +76,42 @@ Hosted guard tests passed for:
 - publication of a non-existent placement rejection (`23514`);
 - sponsored ranking without disclosure rejection (`23514`).
 
-All transient test rows were removed; final Hosted counts remained at zero real sponsors and zero real sponsorships.
+All transient guard-test rows were removed; final Hosted counts remained at zero real sponsors and zero real sponsorships.
+
+## Public disclosure history
+
+The final public projection returns `period_state` from Hosted authority rather than making the UI infer publication history independently:
+
+- future start → `upcoming`;
+- started and not ended → `current`;
+- ended → `historical`.
+
+A transient Hosted validation created one published relationship in each period state against the test ranking. The public ranking disclosure RPC returned all three with the expected states. Those three transient relationships and their transient sponsor were then deleted. Final Hosted counts returned to:
+
+- sponsors: `0`
+- sponsorships: `0`
+- sponsorship events: `1`
+- unresolved legacy flags: `0`.
+
+The public disclosure component visibly distinguishes upcoming, current and historical disclosures. Expired published relationships remain visible as historical records.
+
+## Admin readiness
+
+`admin_get_sponsorship_readiness` is capability-gated and reports:
+
+- unresolved legacy flags;
+- legacy reconciliation event count;
+- published sponsorship count;
+- `normalized_authority_ready`.
+
+Hosted readback after cleanup returned:
+
+- unresolved legacy flags: `0`;
+- legacy reconciliation events: `1`;
+- published sponsorships: `0`;
+- normalized authority ready: `true`.
+
+The sponsor management surface also shows current and published relationship counts. The sponsorship management surface shows readiness status and renders the shared public disclosure component as the operator preview.
 
 ## Audit integration
 
@@ -109,5 +146,6 @@ Hosted migrations applied successfully through the Supabase migration authority:
 - `p2_3_sponsor_transparency`
 - `p2_3_sponsor_audit_integration`
 - `p2_3_sponsor_fk_indexes`
+- `p2_3_disclosure_readiness`
 
 Final PR exact-head CI, merge, merged-main CI, Vercel Production readiness and public smoke remain required before this document can be promoted to `SUCCESS / CLOSED`.
