@@ -193,7 +193,7 @@ export default function LoginForm() {
           </div>
         </section>
 
-        <p className="mt-5 text-center text-xs leading-5 text-slate-500">
+        <p className="rw-muted mt-5 text-center text-xs leading-5">
           계정 기능은 공개 콘텐츠 열람과 별개이며, 로그인하지 않아도 공개 랭킹을 탐색할 수 있습니다.
         </p>
       </div>
