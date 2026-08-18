@@ -14,7 +14,6 @@ type Props = { searchParams: Promise<{ ok?: string; error?: string }> }
 
 export default async function SponsorsAdminPage({ searchParams }: Props) {
   const [sponsors, sponsorships, params] = await Promise.all([listSponsors(), listSponsorships(), searchParams])
-  const now = Date.now()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#07070a] px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
@@ -46,11 +45,7 @@ export default async function SponsorsAdminPage({ searchParams }: Props) {
           {sponsors.map((sponsor) => {
             const sponsorRelationships = sponsorships.filter((row) => row.sponsor_id === sponsor.id)
             const publishedCount = sponsorRelationships.filter((row) => row.status === 'published').length
-            const currentCount = sponsorRelationships.filter((row) => (
-              row.status === 'published'
-              && new Date(row.starts_at).getTime() <= now
-              && (!row.ends_at || new Date(row.ends_at).getTime() > now)
-            )).length
+            const currentCount = sponsorRelationships.filter((row) => row.status === 'published' && row.period_state === 'current').length
 
             return (
               <article key={sponsor.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
