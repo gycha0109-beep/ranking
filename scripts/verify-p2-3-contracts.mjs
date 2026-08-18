@@ -3,6 +3,7 @@ import fs from 'node:fs'
 const read = (path) => fs.readFileSync(path, 'utf8')
 const coreMigration = 'supabase/migrations/20260818062000_p2_3_sponsor_transparency.sql'
 const auditMigration = 'supabase/migrations/20260818062100_p2_3_sponsor_audit_integration.sql'
+const indexMigration = 'supabase/migrations/20260818062200_p2_3_sponsor_fk_indexes.sql'
 const checks = []
 
 function requireText(path, text, label = `${path}: ${text}`) {
@@ -41,7 +42,6 @@ requireText(coreMigration, 'IF EXISTS (SELECT 1 FROM public.ranking_entries WHER
 
 const coreSql = read(coreMigration)
 const publicRankingStart = coreSql.indexOf('CREATE OR REPLACE FUNCTION public.get_public_ranking_sponsorship_disclosures')
-const publicItemStart = coreSql.indexOf('CREATE OR REPLACE FUNCTION public.get_public_item_sponsorship_disclosures')
 const publicItemEnd = coreSql.indexOf('CREATE OR REPLACE FUNCTION private.enforce_sponsored_ranking_disclosure')
 const publicProjection = coreSql.slice(publicRankingStart, publicItemEnd)
 for (const forbidden of ['internal_note', 'actor_id', 'created_by', 'updated_by']) {
@@ -55,10 +55,20 @@ requireText(auditMigration, 'COALESCE(cardinality(v_event_kinds), 0) > 7', 'audi
 requireText(auditMigration, "v_kind <> 'sponsorship_change'", 'audit detail delegates non-sponsorship evidence')
 requireText(auditMigration, "event.before_data - 'internal_note' - 'created_by' - 'updated_by'", 'general audit evidence strips sensitive sponsorship fields')
 
+for (const indexName of [
+  'idx_sponsors_created_by',
+  'idx_sponsors_updated_by',
+  'idx_sponsorships_created_by',
+  'idx_sponsorships_updated_by',
+]) {
+  requireText(indexMigration, indexName, `actor foreign-key index exists: ${indexName}`)
+}
+
 requireText('src/lib/actions/sponsorship-admin.ts', "runAdminRpc('sponsorship_manage'", 'sponsorship mutations use capability-gated RPCs')
+requireText('src/lib/actions/sponsorship-admin.ts', 'subjectType: adminSubjectType(rpcName)', 'sponsor telemetry subject is classified explicitly')
 requireText('src/app/admin/page.tsx', "href: '/admin/sponsors'", 'sponsor management is exposed in admin console')
 requireText('src/app/admin/page.tsx', "href: '/admin/sponsorships'", 'sponsorship management is exposed in admin console')
-requireText('src/app/admin/rankings/[id]/edit/RankingEditorForm.tsx', "ranking_type", 'ranking editor remains separate from sponsorship truth')
+requireText('src/app/admin/rankings/[id]/edit/RankingEditorForm.tsx', 'ranking_type', 'ranking editor remains separate from sponsorship truth')
 requireText('src/app/rankings/[rankingSlug]/page.tsx', 'SponsorshipDisclosure', 'ranking page renders normalized disclosures')
 forbidText('src/app/rankings/[rankingSlug]/page.tsx', 'entry.sponsor_flag', 'public ranking page no longer trusts legacy sponsor flag')
 requireText('src/app/items/[itemSlug]/page.tsx', 'SponsorshipDisclosure', 'item page renders normalized disclosures')
