@@ -4,6 +4,7 @@ const read = (path) => fs.readFileSync(path, 'utf8')
 const coreMigration = 'supabase/migrations/20260818062000_p2_3_sponsor_transparency.sql'
 const auditMigration = 'supabase/migrations/20260818062100_p2_3_sponsor_audit_integration.sql'
 const indexMigration = 'supabase/migrations/20260818062200_p2_3_sponsor_fk_indexes.sql'
+const readinessMigration = 'supabase/migrations/20260818062300_p2_3_disclosure_readiness.sql'
 const checks = []
 
 function requireText(path, text, label = `${path}: ${text}`) {
@@ -16,6 +17,13 @@ function forbidText(path, text, label = `${path}: must not contain ${text}`) {
   const content = read(path)
   if (content.includes(text)) throw new Error(`P2-3 contract failed: ${label}`)
   checks.push(label)
+}
+
+function assertProjectionSafe(sql, label) {
+  for (const forbidden of ['internal_note', 'actor_id', 'created_by', 'updated_by']) {
+    if (sql.includes(forbidden)) throw new Error(`P2-3 contract failed: ${label} leaks ${forbidden}`)
+  }
+  checks.push(`${label} excludes internal and actor metadata`)
 }
 
 requireText(coreMigration, 'CREATE TABLE public.sponsors', 'normalized sponsor table exists')
@@ -41,13 +49,11 @@ requireText(coreMigration, 'legacy_reconcile', 'legacy reconciliation is audited
 requireText(coreMigration, 'IF EXISTS (SELECT 1 FROM public.ranking_entries WHERE sponsor_flag IS TRUE)', 'activation requires zero unresolved legacy flags')
 
 const coreSql = read(coreMigration)
-const publicRankingStart = coreSql.indexOf('CREATE OR REPLACE FUNCTION public.get_public_ranking_sponsorship_disclosures')
-const publicItemEnd = coreSql.indexOf('CREATE OR REPLACE FUNCTION private.enforce_sponsored_ranking_disclosure')
-const publicProjection = coreSql.slice(publicRankingStart, publicItemEnd)
-for (const forbidden of ['internal_note', 'actor_id', 'created_by', 'updated_by']) {
-  if (publicProjection.includes(forbidden)) throw new Error(`P2-3 contract failed: public disclosure projection leaks ${forbidden}`)
-}
-checks.push('public disclosure projection excludes internal and actor metadata')
+const coreProjection = coreSql.slice(
+  coreSql.indexOf('CREATE OR REPLACE FUNCTION public.get_public_ranking_sponsorship_disclosures'),
+  coreSql.indexOf('CREATE OR REPLACE FUNCTION private.enforce_sponsored_ranking_disclosure'),
+)
+assertProjectionSafe(coreProjection, 'initial public disclosure projection')
 
 requireText(auditMigration, 'sponsorship_change', 'sponsorship changes join the integrated audit stream')
 requireText(auditMigration, 'list_admin_audit_event_stream_pre_p2_3', 'previous audit stream remains delegated authority')
@@ -64,14 +70,37 @@ for (const indexName of [
   requireText(indexMigration, indexName, `actor foreign-key index exists: ${indexName}`)
 }
 
+requireText(readinessMigration, "'period_state', CASE", 'public disclosure exposes period state')
+requireText(readinessMigration, "THEN 'upcoming'", 'future published disclosure is explicit')
+requireText(readinessMigration, "THEN 'historical'", 'expired published disclosure remains historical')
+requireText(readinessMigration, "ELSE 'current'", 'current published disclosure is explicit')
+requireText(readinessMigration, 'CREATE OR REPLACE FUNCTION public.admin_get_sponsorship_readiness()', 'admin readiness RPC exists')
+requireText(readinessMigration, "'unresolved_legacy_flags'", 'admin readiness exposes unresolved legacy count')
+requireText(readinessMigration, "'normalized_authority_ready'", 'admin readiness exposes activation state')
+
+const readinessSql = read(readinessMigration)
+const readinessProjection = readinessSql.slice(
+  readinessSql.indexOf('CREATE OR REPLACE FUNCTION public.get_public_ranking_sponsorship_disclosures'),
+  readinessSql.indexOf('CREATE OR REPLACE FUNCTION public.admin_get_sponsorship_readiness'),
+)
+assertProjectionSafe(readinessProjection, 'final public disclosure projection')
+
 requireText('src/lib/actions/sponsorship-admin.ts', "runAdminRpc('sponsorship_manage'", 'sponsorship mutations use capability-gated RPCs')
 requireText('src/lib/actions/sponsorship-admin.ts', 'subjectType: adminSubjectType(rpcName)', 'sponsor telemetry subject is classified explicitly')
+requireText('src/lib/actions/sponsorship-admin.ts', 'getSponsorshipReadiness', 'admin readiness action is wired')
 requireText('src/app/admin/page.tsx', "href: '/admin/sponsors'", 'sponsor management is exposed in admin console')
 requireText('src/app/admin/page.tsx', "href: '/admin/sponsorships'", 'sponsorship management is exposed in admin console')
+requireText('src/app/admin/sponsors/page.tsx', '현재 관계 {currentCount}', 'sponsor page shows current relationship count')
+requireText('src/app/admin/sponsors/page.tsx', '공개 이력 {publishedCount}', 'sponsor page shows published relationship history count')
+requireText('src/app/admin/sponsorships/page.tsx', '미해결 legacy {readiness.unresolvedLegacyFlags}', 'sponsorship page exposes legacy readiness count')
+requireText('src/app/admin/sponsorships/page.tsx', '공개 미리보기', 'sponsorship page previews the public disclosure')
 requireText('src/app/admin/rankings/[id]/edit/RankingEditorForm.tsx', 'ranking_type', 'ranking editor remains separate from sponsorship truth')
 requireText('src/app/rankings/[rankingSlug]/page.tsx', 'SponsorshipDisclosure', 'ranking page renders normalized disclosures')
 forbidText('src/app/rankings/[rankingSlug]/page.tsx', 'entry.sponsor_flag', 'public ranking page no longer trusts legacy sponsor flag')
 requireText('src/app/items/[itemSlug]/page.tsx', 'SponsorshipDisclosure', 'item page renders normalized disclosures')
+requireText('src/components/sponsorship/SponsorshipDisclosure.tsx', '과거 공개 이력', 'public disclosure visually labels historical relationships')
+requireText('src/components/sponsorship/SponsorshipDisclosure.tsx', '현재 관계', 'public disclosure visually labels current relationships')
+requireText('src/lib/queries/sponsorships.ts', "period_state: SponsorshipPeriodState", 'public disclosure parser requires period state')
 requireText('src/lib/admin-audit.ts', "'sponsorship_change'", 'client audit type includes sponsorship changes')
 requireText('src/lib/actions/admin-access.ts', "eventKind === 'moderation_review' || eventKind === 'sponsorship_change'", 'UUID sponsorship audit detail validation exists')
 requireText('src/app/admin/audit/page.tsx', "sponsorship_change: '협찬 관계 변경'", 'audit list labels sponsorship changes')
