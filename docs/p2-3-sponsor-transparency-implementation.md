@@ -35,7 +35,7 @@ The migration therefore:
 4. sets the legacy flag to false;
 5. aborts unless unresolved true flags become zero.
 
-Hosted poststate after migration:
+Hosted poststate after migration and dynamic validation:
 
 - sponsors: `0`
 - sponsorships: `0`
@@ -45,6 +45,8 @@ Hosted poststate after migration:
 - current ranking public disclosures: `[]`
 - current item public disclosures: `[]`
 
+The one event records the exact before/after change from `sponsor_flag=true` to `false` and is visible through the integrated `sponsorship_change` audit stream.
+
 ## Security boundary
 
 Raw sponsorship tables grant no direct privileges to `anon` or `authenticated`.
@@ -53,6 +55,8 @@ Public reads are exposed only through bounded SECURITY DEFINER disclosure RPCs. 
 
 Admin mutations are RPC-only and require `sponsorship_manage`. General audit reads require `audit_view`; sensitive snapshots remain behind `audit_sensitive_view`.
 
+The Hosted admin authority readback reports `sponsorship_manage` for the current `super_admin` access. The available test user currently holds moderator, admin and super_admin rows simultaneously, so a clean moderator-only denial cannot be empirically demonstrated without mutating authority data. The capability function itself resolves the effective role and grants `sponsorship_manage` only to `admin` and `super_admin`.
+
 ## Editorial integrity
 
 - sponsorship does not alter ranking/search/vote scoring;
@@ -60,6 +64,39 @@ Admin mutations are RPC-only and require `sponsorship_manage`. General audit rea
 - a published placement sponsorship prevents ordinary ranking save from silently removing that item;
 - a `ranking_type='sponsored'` ranking cannot be published without a published ranking-level sponsorship disclosure;
 - placement sponsorship publication requires the ranking/item pair to exist in the current ranking entries.
+
+Hosted guard tests passed for:
+
+- append-only sponsorship event immutability (`42501`);
+- invalid relationship period rejection (`23514`);
+- legacy `sponsor_flag=true` re-authoring rejection (`23514`);
+- invalid target shape rejection (`23514`);
+- publication of a non-existent placement rejection (`23514`);
+- sponsored ranking without disclosure rejection (`23514`).
+
+All transient test rows were removed; final Hosted counts remained at zero real sponsors and zero real sponsorships.
+
+## Audit integration
+
+Hosted readback verified:
+
+- `list_admin_audit_events_v2` returns the reconciliation as `sponsorship_change`;
+- the event has a stable `sponsorship:<entity_id>` correlation ID;
+- the detail RPC returns public-safe evidence plus related events;
+- sensitive evidence remains separately capability-gated.
+
+## Advisor reconciliation
+
+Supabase performance advisor initially identified four P2-3 foreign keys without covering indexes:
+
+- `sponsors.created_by`
+- `sponsors.updated_by`
+- `sponsorships.created_by`
+- `sponsorships.updated_by`
+
+The follow-up migration adds four partial indexes and Hosted readback confirmed all four index definitions exist.
+
+Security advisor notes that the three raw P2-3 tables have RLS enabled with no policies. This is intentional deny-by-default: direct `PUBLIC`, `anon`, and `authenticated` table privileges are revoked and all reads/writes are through bounded RPCs. SECURITY DEFINER findings for the P2-3 RPCs are also intentional; admin RPCs self-authorize by capability and public RPCs expose bounded projections only. Pre-existing unrelated advisor findings are outside P2-3 scope.
 
 ## Lifecycle evidence
 
@@ -71,5 +108,6 @@ Hosted migrations applied successfully through the Supabase migration authority:
 
 - `p2_3_sponsor_transparency`
 - `p2_3_sponsor_audit_integration`
+- `p2_3_sponsor_fk_indexes`
 
 Final PR exact-head CI, merge, merged-main CI, Vercel Production readiness and public smoke remain required before this document can be promoted to `SUCCESS / CLOSED`.
