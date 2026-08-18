@@ -17,6 +17,7 @@ const ADMIN_AUDIT_EVENT_KINDS = [
   'sanction_event',
   'appeal_decision',
   'maintenance_job',
+  'sponsorship_change',
 ] as const
 
 export type AdminAuditEventKind = typeof ADMIN_AUDIT_EVENT_KINDS[number]
@@ -441,7 +442,7 @@ export async function getAdminAuditEventDetail(
       return { data: null, error: '지원하지 않는 감사 이벤트 종류입니다.' }
     }
     const normalizedId = eventId.trim()
-    const validId = eventKind === 'moderation_review'
+    const validId = eventKind === 'moderation_review' || eventKind === 'sponsorship_change'
       ? UUID_PATTERN.test(normalizedId)
       : BIGINT_PATTERN.test(normalizedId)
     if (!validId) {
