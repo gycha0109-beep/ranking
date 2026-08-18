@@ -1,5 +1,7 @@
 import { createPublicClient } from '@/lib/supabase/public'
 
+export type SponsorshipPeriodState = 'upcoming' | 'current' | 'historical'
+
 export type SponsorshipDisclosure = {
   id: string
   sponsor_name: string
@@ -14,6 +16,7 @@ export type SponsorshipDisclosure = {
   starts_at: string
   ends_at: string | null
   published_at: string
+  period_state: SponsorshipPeriodState
 }
 
 function parseDisclosures(value: unknown): SponsorshipDisclosure[] {
@@ -29,6 +32,7 @@ function parseDisclosures(value: unknown): SponsorshipDisclosure[] {
       && typeof item.influence_scope === 'string'
       && typeof item.starts_at === 'string'
       && typeof item.published_at === 'string'
+      && ['upcoming', 'current', 'historical'].includes(String(item.period_state))
   })
 }
 
