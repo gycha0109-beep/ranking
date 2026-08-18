@@ -4,16 +4,19 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
+- P2-3 Sponsor Transparency / Management: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
 - LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
 
 P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다.
 
 P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고, 변경 전/후 순위와 투표 스냅샷을 immutable revision으로 보존하며, 확정 불가능한 라운드를 사유와 함께 감사 가능한 방식으로 폐기합니다.
+
+P2-3는 협찬 주체와 ranking/item/placement 상업 관계를 정규화하고, 공개 disclosure·기간 상태·편집 영향·관리 capability·append-only audit를 제공하면서 sponsorship 존재 자체가 검색·투표·랭킹 계산에 자동 영향을 주지 않도록 분리합니다. 최종 근거는 `docs/p2-3-sponsor-transparency-implementation.md`를 기준으로 합니다.
 
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
@@ -48,6 +51,10 @@ npm run dev
 - audit/security event/maintenance surfaces
 - `user_vote` poll open/close control
 - 닫힌 투표 라운드 결과 확정/폐기 및 revision 기록
+- sponsor entity 관리
+- sponsorship draft/publish/archive 관리
+- ranking/item/placement sponsorship target 관리
+- sponsorship normalized-authority readiness와 append-only audit 조회
 
 ### 공개 탐색
 - 공개 홈/카테고리/서브카테고리
@@ -57,6 +64,8 @@ npm run dev
 - relevance/latest/popular ordering
 - Facet 다중 조합: 동일 그룹 OR, 다른 그룹 AND
 - keyset pagination
+- ranking/item 협찬·상업 관계 disclosure
+- 협찬 관계 `upcoming / current / historical` 기간 상태 공개
 
 ### 참여
 - likes
@@ -93,6 +102,21 @@ npm run dev
 - raw revision tables are RPC-only; public history omits actor and ballot identities
 - public detail shows recent official ranking-order history
 - physical ranking deletion is blocked after revision history exists; archive remains available
+
+### Sponsor Transparency / Management
+- normalized `sponsors`, `sponsorships`, append-only `sponsorship_events`
+- dedicated `sponsorship_manage` capability for admin/super_admin
+- target type: ranking / item / ranking-placement
+- relationship type, disclosure text, period, editorial influence scope/note 관리
+- draft → published → archived lifecycle
+- public-safe disclosure RPCs; internal note/actor/admin metadata 비공개
+- public `upcoming / current / historical` disclosure state
+- sponsored ranking publication requires a published ranking-level disclosure
+- placement publication requires the ranking/item pair to exist
+- ranking save cannot silently remove a published sponsored placement
+- legacy `ranking_entries.sponsor_flag` is non-authoritative and true re-authoring is rejected
+- sponsorship metadata does not automatically alter relevance/popular/latest ordering, canonical ranking positions, or vote aggregation
+- integrated `sponsorship_change` audit stream/detail
 
 ### UI-1 public experience
 - semantic light design tokens and shared public surfaces
@@ -144,6 +168,7 @@ npm run verify:p1-4
 npm run verify:p1-5
 npm run verify:p2-1
 npm run verify:p2-2
+npm run verify:p2-3
 npm run verify:ui-1
 npm run verify:launch-1
 npm run lint
@@ -164,15 +189,24 @@ P2-2 repository migrations:
 - `20260816020000_p2_2_ranking_history_vote_finalization.sql`
 - `20260816021000_p2_2_public_history_moderation_filter.sql`
 
+P2-3 repository migrations:
+- `20260818062000_p2_3_sponsor_transparency.sql`
+- `20260818062100_p2_3_sponsor_audit_integration.sql`
+- `20260818062200_p2_3_sponsor_fk_indexes.sql`
+- `20260818062300_p2_3_disclosure_readiness.sql`
+
 UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
 
 1. User Voting — P2-1 `SUCCESS / CLOSED`
 2. Ranking Change History / Vote Finalization — P2-2 `SUCCESS / CLOSED`
-3. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
-4. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
-5. Sponsor Transparency / Management — P2-3 next design stage
-6. External data import / crawling — 실제 운영에서 수동 콘텐츠 입력이 병목으로 확인된 뒤 설계
+3. Sponsor Transparency / Management — P2-3 `SUCCESS / CLOSED`
+4. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
+5. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
+6. Production Content Operations / Editorial Quality — 실제 서비스 콘텐츠 seed와 품질을 운영 흐름으로 검증
+7. External data import / crawling — 수동 콘텐츠 입력이 실제 운영 병목으로 확인된 뒤 current-state/design부터 진행
+
+P2-4 성격의 external ingestion은 fetch → raw ingestion → normalize → dedupe → staging → admin review → canonical publish까지 별도 대형 subsystem이므로, 운영 병목 근거 없이 선행 구현하지 않습니다.
 
 각 stage는 별도 design/review/final-contract/CI lifecycle을 거칩니다.

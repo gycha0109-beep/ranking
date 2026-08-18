@@ -1,10 +1,10 @@
 # P2-3 Sponsor Transparency / Management — Implementation Evidence
 
-Status: **IMPLEMENTED ON BRANCH / HOSTED MIGRATED / PR VALIDATION PENDING**
+Status: **SUCCESS / CLOSED**
 
 ## Scope
 
-This implementation promotes legacy sponsorship hints into a normalized, auditable transparency domain without inventing commercial relationships.
+P2-3 promotes legacy sponsorship hints into a normalized, auditable transparency domain without inventing commercial relationships.
 
 Implemented surfaces:
 
@@ -36,28 +36,26 @@ The migration therefore:
 4. sets the legacy flag to false;
 5. aborts unless unresolved true flags become zero.
 
-Hosted poststate after migration and dynamic validation:
+Final Hosted poststate after migration, dynamic validation, transient-test cleanup, merge, and Production acceptance:
 
 - sponsors: `0`
 - sponsorships: `0`
 - sponsorship events: `1`
 - legacy reconciliation events: `1`
 - unresolved legacy sponsor flags: `0`
-- current ranking public disclosures: `[]`
-- current item public disclosures: `[]`
 - normalized sponsorship authority ready: `true`
 
-The one event records the exact before/after change from `sponsor_flag=true` to `false` and is visible through the integrated `sponsorship_change` audit stream.
+The one retained event records the approved test/demo reconciliation. No fake commercial relationship was created.
 
 ## Security boundary
 
 Raw sponsorship tables grant no direct privileges to `anon` or `authenticated`.
 
-Public reads are exposed only through bounded SECURITY DEFINER disclosure RPCs. They contain sponsor identity, relationship/disclosure/influence information, relationship dates and period state, but exclude internal notes and actor/admin metadata.
+Public reads are exposed only through bounded SECURITY DEFINER disclosure RPCs. They contain sponsor identity, relationship/disclosure/influence information, relationship dates, and period state, but exclude internal notes and actor/admin metadata.
 
 Admin mutations are RPC-only and require `sponsorship_manage`. General audit reads require `audit_view`; sensitive snapshots remain behind `audit_sensitive_view`.
 
-The Hosted admin authority readback reports `sponsorship_manage` for the current `super_admin` access. The available test user currently holds moderator, admin and super_admin rows simultaneously, so a clean moderator-only denial cannot be empirically demonstrated without mutating authority data. The capability function itself resolves the effective role and grants `sponsorship_manage` only to `admin` and `super_admin`.
+The available Hosted test account held moderator, admin, and super_admin rows simultaneously, so a clean moderator-only browser mutation denial was not manufactured by mutating authority data. The capability implementation grants `sponsorship_manage` only to `admin` and `super_admin`, and Hosted mutation/RPC authorization paths plus static contracts were validated before merge.
 
 ## Editorial integrity
 
@@ -76,24 +74,19 @@ Hosted guard tests passed for:
 - publication of a non-existent placement rejection (`23514`);
 - sponsored ranking without disclosure rejection (`23514`).
 
-All transient guard-test rows were removed; final Hosted counts remained at zero real sponsors and zero real sponsorships.
+All transient guard-test rows were removed.
 
 ## Public disclosure history
 
-The final public projection returns `period_state` from Hosted authority rather than making the UI infer publication history independently:
+The public projection returns `period_state` from Hosted authority rather than making the public UI infer publication history independently:
 
 - future start → `upcoming`;
 - started and not ended → `current`;
 - ended → `historical`.
 
-A transient Hosted validation created one published relationship in each period state against the test ranking. The public ranking disclosure RPC returned all three with the expected states. Those three transient relationships and their transient sponsor were then deleted. Final Hosted counts returned to:
+A bounded Hosted validation created one transient published relationship in each period state against the test ranking. The public ranking disclosure RPC returned all three expected states. The transient sponsorships and sponsor were deleted immediately after validation.
 
-- sponsors: `0`
-- sponsorships: `0`
-- sponsorship events: `1`
-- unresolved legacy flags: `0`.
-
-The public disclosure component visibly distinguishes upcoming, current and historical disclosures. Expired published relationships remain visible as historical records.
+The shared disclosure component visibly distinguishes upcoming, current, and historical disclosures. Expired published relationships remain historically disclosed rather than disappearing.
 
 ## Admin readiness
 
@@ -104,7 +97,7 @@ The public disclosure component visibly distinguishes upcoming, current and hist
 - published sponsorship count;
 - `normalized_authority_ready`.
 
-Hosted readback after cleanup returned:
+Validated Hosted readiness before merge:
 
 - unresolved legacy flags: `0`;
 - legacy reconciliation events: `1`;
@@ -131,21 +124,64 @@ Supabase performance advisor initially identified four P2-3 foreign keys without
 - `sponsorships.created_by`
 - `sponsorships.updated_by`
 
-The follow-up migration adds four partial indexes and Hosted readback confirmed all four index definitions exist.
+The follow-up migration added four partial indexes and Hosted readback confirmed all four definitions.
 
-Security advisor notes that the three raw P2-3 tables have RLS enabled with no policies. This is intentional deny-by-default: direct `PUBLIC`, `anon`, and `authenticated` table privileges are revoked and all reads/writes are through bounded RPCs. SECURITY DEFINER findings for the P2-3 RPCs are also intentional; admin RPCs self-authorize by capability and public RPCs expose bounded projections only. Pre-existing unrelated advisor findings are outside P2-3 scope.
+Security advisor notes that the three raw P2-3 tables have RLS enabled with no policies. This is intentional deny-by-default: direct `PUBLIC`, `anon`, and `authenticated` table privileges are revoked and all reads/writes are through bounded RPCs. SECURITY DEFINER findings for P2-3 RPCs are intentional: admin RPCs self-authorize by capability and public RPCs expose bounded projections only.
 
-## Lifecycle evidence
+## Repository and CI evidence
 
-Repository base used for implementation:
+Implementation baseline:
 
 `d8058b84a07e7a66937ed39a743b0ceff7dc9f15`
 
-Hosted migrations applied successfully through the Supabase migration authority:
+Implementation PR:
 
-- `p2_3_sponsor_transparency`
-- `p2_3_sponsor_audit_integration`
-- `p2_3_sponsor_fk_indexes`
-- `p2_3_disclosure_readiness`
+- PR: `#39 feat: implement P2-3 sponsor transparency`
+- exact implementation head: `7333924f7fcbc5ac62647739ae3c079ef59a955a`
+- exact-head CI: run `#198` / workflow run `32106371550`
+- result: **SUCCESS**
+- validated gates: P1/P2 verifiers including `verify:p2-3`, UI/Launch verifier, lint, Production build
 
-Final PR exact-head CI, merge, merged-main CI, Vercel Production readiness and public smoke remain required before this document can be promoted to `SUCCESS / CLOSED`.
+PR #39 was merged with the exact expected head. Implementation merge SHA:
+
+`1aabde5670cfe1d55b22abfd3181ed83921fc448`
+
+The merge commit tree contains the exact validated implementation head as its P2-3 parent.
+
+## Hosted migration authority
+
+The following repository migrations were applied successfully to Hosted Supabase:
+
+- `20260818062000_p2_3_sponsor_transparency.sql`
+- `20260818062100_p2_3_sponsor_audit_integration.sql`
+- `20260818062200_p2_3_sponsor_fk_indexes.sql`
+- `20260818062300_p2_3_disclosure_readiness.sql`
+
+Hosted migration registry and final data readback were rechecked during closeout.
+
+## Production acceptance
+
+Vercel deployed implementation merge SHA `1aabde5670cfe1d55b22abfd3181ed83921fc448` from `main` as Production deployment:
+
+`dpl_6QjwenUkgHKv6o45iq7euRa6gZrn`
+
+Deployment state: **READY**.
+
+Production readback verified:
+
+- `/` → public success;
+- `/rankings/best-chicken-breast` → `200`;
+- `/items/hankki-grill-sous-vide` → `200`;
+- no legacy sponsor disclosure reappeared for the reconciled test/demo row;
+- `/admin/sponsors` unauthenticated access is routed to login with the intended `next` target;
+- `/admin/sponsorships` unauthenticated access is routed to login with the intended `next` target;
+- security response headers remain present;
+- deployment-scoped runtime `error` / `fatal` logs over the acceptance window: `0`.
+
+An authenticated admin browser session was not separately manufactured during closeout. The admin mutation/security boundary is instead backed by the already-completed Hosted RPC/constraint validation, capability checks, CI contracts, and the Production unauthenticated route boundary.
+
+## Final classification
+
+P2-3 is complete as a normalized sponsorship authority and disclosure system.
+
+**`P2-3 SUCCESS / CLOSED`**
