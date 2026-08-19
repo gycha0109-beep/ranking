@@ -14,6 +14,7 @@
     "verify:p2-1": "node scripts/verify-p2-1-contracts.mjs",
     "verify:p2-2": "node scripts/verify-p2-2-contracts.mjs",
     "verify:p2-3": "node scripts/verify-p2-3-contracts.mjs",
+    "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:launch-1": "node scripts/verify-launch-1-contracts.mjs"
   },
