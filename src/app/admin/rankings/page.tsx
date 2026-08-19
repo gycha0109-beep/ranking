@@ -3,6 +3,11 @@ import Link from 'next/link'
 import { listAdminRankings } from '@/lib/actions/admin'
 import { getRankingEditorialReadiness, type RankingEditorialReadiness } from '@/lib/actions/editorial-quality'
 import {
+  getRankingRevalidationStatus,
+  type RankingRevalidationStatus,
+  type RevalidationFreshnessState,
+} from '@/lib/actions/content-revalidation'
+import {
   FileSpreadsheet,
   ArrowLeft,
   PlusCircle,
@@ -16,22 +21,49 @@ import {
   CheckCircle2,
   AlertTriangle,
   Archive,
+  RefreshCw,
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
+const freshnessLabels: Record<RevalidationFreshnessState, string> = {
+  not_applicable: '재검증 비대상',
+  never_reviewed: '재검증 기록 없음',
+  attention_required: '출처 조치 필요',
+  overdue: '재검증 기한 초과',
+  due_soon: '재검증 예정 임박',
+  current: '재검증 유효',
+}
+
+const freshnessClasses: Record<RevalidationFreshnessState, string> = {
+  not_applicable: 'border-slate-500/15 bg-slate-500/10 text-slate-400',
+  never_reviewed: 'border-amber-500/20 bg-amber-500/10 text-amber-300',
+  attention_required: 'border-rose-500/20 bg-rose-500/10 text-rose-300',
+  overdue: 'border-orange-500/20 bg-orange-500/10 text-orange-300',
+  due_soon: 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300',
+  current: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-300',
+}
+
 export default async function AdminRankingsPage() {
   let rankings: any[] = []
   let readinessById = new Map<string, RankingEditorialReadiness>()
+  let revalidationById = new Map<string, RankingRevalidationStatus>()
   let errorMessage: string | null = null
 
   try {
     rankings = await listAdminRankings()
-    const readinessResult = await getRankingEditorialReadiness()
+    const [readinessResult, revalidationResult] = await Promise.all([
+      getRankingEditorialReadiness(),
+      getRankingRevalidationStatus(),
+    ])
     if (readinessResult.error) {
       throw new Error(`OPS-1 readiness 조회 실패: ${readinessResult.error}`)
     }
+    if (revalidationResult.error) {
+      throw new Error(`CONTENT-3 재검증 상태 조회 실패: ${revalidationResult.error}`)
+    }
     readinessById = new Map(readinessResult.data.map((row) => [row.ranking_id, row]))
+    revalidationById = new Map(revalidationResult.data.map((row) => [row.ranking_id, row]))
   } catch (err: any) {
     errorMessage = err.message
   }
@@ -77,6 +109,8 @@ export default async function AdminRankingsPage() {
 
         <div className="mb-6 rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.04] p-4 text-[11px] leading-6 text-slate-400">
           <strong className="text-indigo-300">OPS-1 운영 원칙:</strong> 공개 중인 랭킹의 editorial field는 직접 수정하지 않습니다. 발행 취소 → draft 편집 → readiness 재검사 → 재발행 순서로 운영합니다. `TOP N` 제목과 실제 항목 수, Scope, Criteria, 공개 출처, 선정 사유를 DB가 최종 검증합니다.
+          <br />
+          <strong className="text-cyan-300">CONTENT-3 운영 원칙:</strong> 공개 랭킹은 authoritative source를 주기적으로 재검증하고, 검증 결과와 다음 검증일을 append-only 이력으로 남깁니다.
         </div>
 
         {errorMessage && (
@@ -103,6 +137,7 @@ export default async function AdminRankingsPage() {
           <div className="grid gap-4">
             {rankings.map((ranking) => {
               const readiness = readinessById.get(ranking.id)
+              const revalidation = revalidationById.get(ranking.id)
               const blockerCount = readiness?.blockers.length ?? 0
 
               return (
@@ -136,6 +171,12 @@ export default async function AdminRankingsPage() {
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[9px] font-extrabold text-rose-300">
                             <AlertTriangle className="h-2.5 w-2.5" /> 품질 보완 {blockerCount}건
+                          </span>
+                        )}
+
+                        {ranking.status === 'published' && revalidation && (
+                          <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-extrabold ${freshnessClasses[revalidation.freshness_state]}`}>
+                            <RefreshCw className="h-2.5 w-2.5" /> {freshnessLabels[revalidation.freshness_state]}
                           </span>
                         )}
 
@@ -173,6 +214,9 @@ export default async function AdminRankingsPage() {
                         )}
                         <span>작성일시: {new Date(ranking.created_at).toLocaleDateString('ko-KR')}</span>
                         {ranking.published_at && <span className="text-emerald-500">발행일시: {new Date(ranking.published_at).toLocaleDateString('ko-KR')}</span>}
+                        {revalidation?.next_review_at && ranking.status === 'published' && (
+                          <span className="text-cyan-500">다음 재검증: {new Date(revalidation.next_review_at).toLocaleDateString('ko-KR')}</span>
+                        )}
                       </div>
 
                       {readiness && blockerCount > 0 && (
@@ -187,7 +231,14 @@ export default async function AdminRankingsPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 self-end md:self-center border-t border-white/5 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-end">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0 self-end md:self-center border-t border-white/5 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-end">
+                      <Link
+                        href={`/admin/rankings/${ranking.id}/revalidation`}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-cyan-600/10 hover:bg-cyan-600/20 border border-cyan-500/20 hover:border-cyan-500/35 text-cyan-300 transition-all flex items-center gap-1.5"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        재검증
+                      </Link>
                       <Link
                         href={`/admin/rankings/${ranking.id}/edit`}
                         className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 transition-all flex items-center gap-1.5"
