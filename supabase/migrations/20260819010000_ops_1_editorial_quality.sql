@@ -42,19 +42,13 @@ declare
   v_top_match text[];
   v_expected_entry_count integer := null;
 begin
-  select *
-  into v_ranking
-  from public.rankings
-  where id = p_ranking_id;
+  select * into v_ranking from public.rankings where id = p_ranking_id;
 
   if not found then
     return jsonb_build_object(
       'ranking_id', p_ranking_id,
       'editorial_ready', false,
-      'blockers', jsonb_build_array(jsonb_build_object(
-        'code', 'ranking_not_found',
-        'message', '랭킹 문서를 찾을 수 없습니다.'
-      )),
+      'blockers', jsonb_build_array(jsonb_build_object('code', 'ranking_not_found', 'message', '랭킹 문서를 찾을 수 없습니다.')),
       'entry_count', 0,
       'criteria_count', 0,
       'public_source_count', 0,
@@ -113,88 +107,43 @@ begin
   if nullif(btrim(coalesce(v_ranking.title, '')), '') is null then
     v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_title', 'message', '제목이 필요합니다.'));
   end if;
-
   if v_ranking.category_id is null then
     v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_category', 'message', '카테고리 매핑이 필요합니다.'));
   end if;
-
   if nullif(btrim(coalesce(v_ranking.summary, '')), '') is null then
     v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_summary', 'message', '공개 요약 설명이 필요합니다.'));
   end if;
-
   if nullif(btrim(coalesce(v_ranking.scope_json ->> 'target', '')), '') is null
      or nullif(btrim(coalesce(v_ranking.scope_json ->> 'period', '')), '') is null
      or nullif(btrim(coalesce(v_ranking.scope_json ->> 'method', '')), '') is null then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'incomplete_scope',
-      'message', '조사 범위의 target, period, method를 모두 작성해야 합니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'incomplete_scope', 'message', '조사 범위의 target, period, method를 모두 작성해야 합니다.'));
   end if;
-
   if v_entry_count < 2 then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'insufficient_entries',
-      'message', '공개 랭킹은 최소 2개 이상의 순위 항목이 필요합니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'insufficient_entries', 'message', '공개 랭킹은 최소 2개 이상의 순위 항목이 필요합니다.'));
   end if;
-
-  if v_entry_count > 0 and (
-    v_distinct_position_count <> v_entry_count
-    or v_min_position <> 1
-    or v_max_position <> v_entry_count
-  ) then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'non_contiguous_positions',
-      'message', '순위는 중복 없이 1부터 항목 수까지 연속되어야 합니다.'
-    ));
+  if v_entry_count > 0 and (v_distinct_position_count <> v_entry_count or v_min_position <> 1 or v_max_position <> v_entry_count) then
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'non_contiguous_positions', 'message', '순위는 중복 없이 1부터 항목 수까지 연속되어야 합니다.'));
   end if;
-
   if v_distinct_item_count <> v_entry_count then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'duplicate_items',
-      'message', '동일한 아이템을 한 랭킹에 중복 배치할 수 없습니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'duplicate_items', 'message', '동일한 아이템을 한 랭킹에 중복 배치할 수 없습니다.'));
   end if;
-
   if v_missing_reason_count > 0 then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'missing_entry_reason',
-      'message', '모든 순위 항목에 공개 선정 사유가 필요합니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_entry_reason', 'message', '모든 순위 항목에 공개 선정 사유가 필요합니다.'));
   end if;
-
   if v_inactive_item_count > 0 then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'inactive_entry_item',
-      'message', '공개 랭킹에는 active 상태의 아이템만 포함할 수 있습니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'inactive_entry_item', 'message', '공개 랭킹에는 active 상태의 아이템만 포함할 수 있습니다.'));
   end if;
-
   if v_criteria_count < 1 then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'missing_criteria',
-      'message', '최소 1개의 평가 기준이 필요합니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_criteria', 'message', '최소 1개의 평가 기준이 필요합니다.'));
   elsif v_incomplete_criteria_count > 0 then
-    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-      'code', 'incomplete_criteria',
-      'message', '모든 평가 기준에 이름과 설명이 필요합니다.'
-    ));
+    v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'incomplete_criteria', 'message', '모든 평가 기준에 이름과 설명이 필요합니다.'));
   end if;
-
   if v_ranking.ranking_type <> 'user_vote' then
     if v_valid_public_source_count < 1 then
-      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-        'code', 'missing_usable_public_source',
-        'message', '검증 가능한 공개 출처 URL이 최소 1개 필요합니다.'
-      ));
+      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'missing_usable_public_source', 'message', '검증 가능한 공개 출처 URL이 최소 1개 필요합니다.'));
     end if;
-
     if v_invalid_public_source_count > 0 then
-      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object(
-        'code', 'invalid_public_source',
-        'message', '공개 출처는 검색결과 페이지가 아닌 직접 검증 가능한 http(s) 자료여야 합니다.'
-      ));
+      v_blockers := v_blockers || jsonb_build_array(jsonb_build_object('code', 'invalid_public_source', 'message', '공개 출처는 검색결과 페이지가 아닌 직접 검증 가능한 http(s) 자료여야 합니다.'));
     end if;
   end if;
 
@@ -234,7 +183,6 @@ declare
   v_message text;
 begin
   v_readiness := private.ops_1_ranking_editorial_readiness(p_ranking_id);
-
   if coalesce((v_readiness ->> 'editorial_ready')::boolean, false) then
     return;
   end if;
@@ -281,9 +229,7 @@ begin
     coalesce((q.readiness ->> 'public_source_count')::integer, 0),
     nullif(q.readiness ->> 'expected_entry_count', '')::integer
   from public.rankings r
-  cross join lateral (
-    select private.ops_1_ranking_editorial_readiness(r.id) as readiness
-  ) q
+  cross join lateral (select private.ops_1_ranking_editorial_readiness(r.id) as readiness) q
   where p_ranking_id is null or r.id = p_ranking_id
   order by r.created_at desc;
 end;
@@ -292,78 +238,85 @@ $$;
 revoke all on function public.admin_get_ranking_editorial_readiness(uuid) from public;
 grant execute on function public.admin_get_ranking_editorial_readiness(uuid) to authenticated;
 
--- Reconcile known pre-launch content before the new invariant becomes live.
+-- Hosted has two known pre-launch fixtures. Fresh databases have neither and skip this block.
 do $$
 declare
+  v_any_known_fixture boolean;
   v_count integer;
 begin
-  select count(*)::integer
-  into v_count
-  from public.rankings r
-  where r.slug = 'best-chicken-breast'
-    and r.title = '2026 닭가슴살 TOP 10'
-    and r.status = 'published'
-    and (select count(*) from public.ranking_entries re where re.ranking_id = r.id) = 2
-    and (select count(*) from public.ranking_criteria rc where rc.ranking_id = r.id) = 2
-    and (select count(*) from public.ranking_sources rs where rs.ranking_id = r.id) = 1;
+  select exists (
+    select 1 from public.rankings where slug in ('best-chicken-breast', '간편-작성-테스트')
+  ) into v_any_known_fixture;
 
-  if v_count <> 1 then
-    raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected published best-chicken-breast prestate not found exactly once';
-  end if;
+  if v_any_known_fixture then
+    select count(*)::integer
+    into v_count
+    from public.rankings r
+    where r.slug = 'best-chicken-breast'
+      and r.title = '2026 닭가슴살 TOP 10'
+      and r.status = 'published'
+      and (select count(*) from public.ranking_entries re where re.ranking_id = r.id) = 2
+      and (select count(*) from public.ranking_criteria rc where rc.ranking_id = r.id) = 2
+      and (select count(*) from public.ranking_sources rs where rs.ranking_id = r.id) = 1;
 
-  update public.rankings
-  set status = 'draft', published_at = null, featured = false
-  where slug = 'best-chicken-breast';
+    if v_count <> 1 then
+      raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected published best-chicken-breast prestate not found exactly once';
+    end if;
 
-  select count(*)::integer
-  into v_count
-  from public.rankings r
-  where r.slug = '간편-작성-테스트'
-    and r.title = '간편 작성 테스트'
-    and r.status = 'draft'
-    and (select count(*) from public.ranking_entries re where re.ranking_id = r.id) = 4;
+    update public.rankings
+    set status = 'draft', published_at = null, featured = false
+    where slug = 'best-chicken-breast';
 
-  if v_count <> 1 then
-    raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected quick-create test draft prestate not found exactly once';
-  end if;
+    select count(*)::integer
+    into v_count
+    from public.rankings r
+    where r.slug = '간편-작성-테스트'
+      and r.title = '간편 작성 테스트'
+      and r.status = 'draft'
+      and (select count(*) from public.ranking_entries re where re.ranking_id = r.id) = 4;
 
-  select count(*)::integer
-  into v_count
-  from public.ranking_entries re
-  join public.rankings r on r.id = re.ranking_id
-  join public.items i on i.id = re.item_id
-  where r.slug = '간편-작성-테스트'
-    and i.status = 'active'
-    and i.title in ('테스트', '중입니다', '어떻게', '나올까요?');
+    if v_count <> 1 then
+      raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected quick-create test draft prestate not found exactly once';
+    end if;
 
-  if v_count <> 4 then
-    raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected four active quick-create test items';
-  end if;
-
-  if exists (
-    select 1
-    from public.ranking_entries test_entry
-    join public.rankings test_ranking on test_ranking.id = test_entry.ranking_id
-    join public.ranking_entries other_entry on other_entry.item_id = test_entry.item_id
-    where test_ranking.slug = '간편-작성-테스트'
-      and other_entry.ranking_id <> test_ranking.id
-  ) then
-    raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: a quick-create test item is referenced by another ranking';
-  end if;
-
-  update public.rankings
-  set status = 'archived', published_at = null, featured = false
-  where slug = '간편-작성-테스트';
-
-  update public.items i
-  set status = 'archived'
-  where i.id in (
-    select re.item_id
+    select count(*)::integer
+    into v_count
     from public.ranking_entries re
     join public.rankings r on r.id = re.ranking_id
+    join public.items i on i.id = re.item_id
     where r.slug = '간편-작성-테스트'
-  )
-  and i.title in ('테스트', '중입니다', '어떻게', '나올까요?');
+      and i.status = 'active'
+      and i.title in ('테스트', '중입니다', '어떻게', '나올까요?');
+
+    if v_count <> 4 then
+      raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: expected four active quick-create test items';
+    end if;
+
+    if exists (
+      select 1
+      from public.ranking_entries test_entry
+      join public.rankings test_ranking on test_ranking.id = test_entry.ranking_id
+      join public.ranking_entries other_entry on other_entry.item_id = test_entry.item_id
+      where test_ranking.slug = '간편-작성-테스트'
+        and other_entry.ranking_id <> test_ranking.id
+    ) then
+      raise exception using errcode = '23514', message = 'OPS-1 reconciliation aborted: a quick-create test item is referenced by another ranking';
+    end if;
+
+    update public.rankings
+    set status = 'archived', published_at = null, featured = false
+    where slug = '간편-작성-테스트';
+
+    update public.items i
+    set status = 'archived'
+    where i.id in (
+      select re.item_id
+      from public.ranking_entries re
+      join public.rankings r on r.id = re.ranking_id
+      where r.slug = '간편-작성-테스트'
+    )
+    and i.title in ('테스트', '중입니다', '어떻게', '나올까요?');
+  end if;
 end;
 $$;
 
@@ -435,7 +388,10 @@ begin
     perform private.ops_1_assert_ranking_editorial_ready(v_ranking_id);
   end if;
 
-  return coalesce(new, old);
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
 end;
 $$;
 
