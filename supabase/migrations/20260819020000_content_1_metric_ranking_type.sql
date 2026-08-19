@@ -1,3 +1,4 @@
+-- CONTENT-1: deterministic official/public metric rankings use a neutral metric type.
 alter table public.rankings
   drop constraint if exists rankings_ranking_type_check;
 
