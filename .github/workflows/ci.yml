@@ -34,6 +34,7 @@ jobs:
       - run: npm run verify:content-3
       - run: npm run verify:ui-1
       - run: npm run verify:launch-1
+      - run: npm run verify:measure-1
       - run: npm run lint
       - name: Build
         id: build
