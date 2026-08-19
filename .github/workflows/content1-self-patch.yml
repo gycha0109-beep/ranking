@@ -1,0 +1,63 @@
+name: CONTENT-1 bounded branch patch
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/content1-self-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/content-1-metric-ranking-type'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply bounded source substitutions
+        shell: python
+        run: |
+          from pathlib import Path
+
+          replacements = {
+              Path('src/lib/actions/admin.ts'): [
+                  (
+                      "ranking_type: 'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'user_vote' | 'sponsored'",
+                      "ranking_type: 'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'metric' | 'user_vote' | 'sponsored'",
+                  ),
+              ],
+              Path('src/app/admin/rankings/[id]/edit/RankingEditorForm.tsx'): [
+                  (
+                      '<option value="purpose">특수목적용 (purpose)</option>\n              <option value="user_vote">유저투표 (user_vote)</option>',
+                      '<option value="purpose">특수목적용 (purpose)</option>\n              <option value="metric">공식 지표 (metric)</option>\n              <option value="user_vote">유저투표 (user_vote)</option>',
+                  ),
+              ],
+              Path('src/app/admin/rankings/new/page.tsx'): [
+                  (
+                      'createRankingDraft(formData as Parameters<typeof createRankingDraft>[0])',
+                      'createRankingDraft(formData)',
+                  ),
+              ],
+          }
+
+          for path, pairs in replacements.items():
+              text = path.read_text()
+              for old, new in pairs:
+                  count = text.count(old)
+                  if count != 1:
+                      raise SystemExit(f'{path}: expected exactly one match, found {count}: {old}')
+                  text = text.replace(old, new)
+              path.write_text(text)
+
+          Path('.github/workflows/content1-self-patch.yml').unlink()
+      - name: Commit bounded patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/lib/actions/admin.ts 'src/app/admin/rankings/[id]/edit/RankingEditorForm.tsx' src/app/admin/rankings/new/page.tsx .github/workflows/content1-self-patch.yml
+          git diff --cached --check
+          git commit -m "feat: complete metric ranking admin contract"
+          git push origin HEAD:${{ github.head_ref }}
