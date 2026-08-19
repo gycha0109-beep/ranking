@@ -4,12 +4,13 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
 - P2-3 Sponsor Transparency / Management: `SUCCESS / CLOSED`
 - OPS-1 Production Content Operations / Editorial Quality: `SUCCESS / CLOSED`
+- CONTENT-1 Verified Production Seed Batch: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
 - LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
 
@@ -20,6 +21,8 @@ P2-2는 닫힌 투표 라운드를 공식 순위로 원자적으로 확정하고
 P2-3는 협찬 주체와 ranking/item/placement 상업 관계를 정규화하고, 공개 disclosure·기간 상태·편집 영향·관리 capability·append-only audit를 제공하면서 sponsorship 존재 자체가 검색·투표·랭킹 계산에 자동 영향을 주지 않도록 분리합니다. 최종 근거는 `docs/p2-3-sponsor-transparency-implementation.md`를 기준으로 합니다.
 
 OPS-1은 draft capture는 유연하게 유지하면서 공개 발행만 fail-closed 품질 계약으로 제한합니다. Scope, Criteria, 공개 근거 출처, 순위 연속성, 아이템 중복, 선정 사유, active item 상태, `TOP N` 제목과 실제 항목 수 일치를 DB와 관리자 UI에서 함께 검증합니다. 최종 근거는 `docs/ops-1-production-content-operations.md`를 기준으로 합니다.
+
+CONTENT-1은 OPS-1 계약을 실제 Production 콘텐츠에 적용해 공식·공공 데이터 기반 랭킹 4개를 발행했고, 실제 콘텐츠에서 발견된 지표형 랭킹 의미/표시 문제를 `ranking_type='metric'`과 명시적 `score_json` 값으로 보강했습니다. 최종 근거는 `docs/content-1-verified-production-seed-batch.md`를 기준으로 합니다.
 
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
@@ -51,6 +54,7 @@ npm run dev
 - OPS-1 editorial readiness와 fail-closed publication quality gate
 - published editorial field 수정 전 unpublish 요구
 - ranking entry/criteria/source 변경 시 published parent 재검증
+- `metric` 공식 지표 랭킹 생성/편집
 - moderation review
 - role/capability access control
 - sanctions/appeals
@@ -70,6 +74,7 @@ npm run dev
 - relevance/latest/popular ordering
 - Facet 다중 조합: 동일 그룹 OR, 다른 그룹 AND
 - keyset pagination
+- `metric` 랭킹의 `공식 지표` 라벨과 명시적 지표값 표시
 - ranking/item 협찬·상업 관계 disclosure
 - 협찬 관계 `upcoming / current / historical` 기간 상태 공개
 
@@ -140,6 +145,18 @@ npm run dev
 - 관리자 목록과 preview에서 readiness blocker 표시
 - Moderation Gate와 P2-3 Sponsorship Gate는 OPS-1과 별도이며 우회되지 않음
 
+### CONTENT-1 Verified Production Seed Batch
+- 공식·공공 데이터 기반 Production 랭킹 4개 발행
+- World Bank WDI 기반 `2024 명목 GDP TOP 5`, `2024 인구 TOP 5`
+- 국가데이터처 기반 `2025 시도 순유입률 TOP 3`, `2025 시도 순유출률 TOP 3`
+- `통계` 카테고리와 `세계` / `대한민국` 서브카테고리 추가
+- 재사용 가능한 국가·지역 canonical item 추가
+- `ranking_type='metric'` first-class 지원
+- metric public label `공식 지표`
+- metric entry는 rating-style `editor_score` 대신 명시적 `score_json.scores` 값 사용
+- 4개 랭킹 모두 OPS-1 `editorial_ready=true`, blocker 0
+- home/category/detail/search Production acceptance 완료
+
 ### UI-1 public experience
 - semantic light design tokens and shared public surfaces
 - responsive public navigation with mobile menu
@@ -192,6 +209,7 @@ npm run verify:p2-1
 npm run verify:p2-2
 npm run verify:p2-3
 npm run verify:ops-1
+npm run verify:content-1
 npm run verify:ui-1
 npm run verify:launch-1
 npm run lint
@@ -222,6 +240,9 @@ OPS-1 repository migrations:
 - `20260819010000_ops_1_editorial_quality.sql`
 - `20260819010100_ops_1_trigger_return_fix.sql`
 
+CONTENT-1 repository migrations:
+- `20260819020000_content_1_metric_ranking_type.sql`
+
 UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
@@ -230,12 +251,13 @@ UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
 2. Ranking Change History / Vote Finalization — P2-2 `SUCCESS / CLOSED`
 3. Sponsor Transparency / Management — P2-3 `SUCCESS / CLOSED`
 4. Production Content Operations / Editorial Quality — OPS-1 `SUCCESS / CLOSED`
-5. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
-6. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
-7. Verified Production Seed Batch — CONTENT-1 next: 실제 출처·범위·기준·선정 사유를 갖춘 소수의 실제 랭킹을 OPS-1 workflow로 발행하고 운영 소요 시간을 측정
-8. External data import / crawling — CONTENT-1에서 수동 sourcing/입력이 실제 병목으로 확인된 뒤 current-state/design부터 진행
+5. Verified Production Seed Batch — CONTENT-1 `SUCCESS / CLOSED`
+6. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
+7. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
+8. Production Editorial Expansion / Coverage Batch — CONTENT-2 next: 여러 카테고리로 실제 source-backed coverage를 확대하고 반복 작성·업데이트 비용을 측정
+9. External data import / crawling — CONTENT-2에서 sourcing/normalization/update가 실제 운영 병목으로 확인된 뒤 current-state/design부터 진행
 
-현재 Production은 OPS-1 cleanup 결과 검증 가능한 published ranking이 `0`개이고 active item이 `2`개입니다. 낮은 품질의 기존 문서를 유지하거나 근거를 꾸며 채우는 대신, CONTENT-1에서 실제 근거가 있는 소수의 랭킹을 새 품질 계약으로 발행하는 것을 우선합니다.
+현재 Production은 CONTENT-1 종료 기준 검증 가능한 published metric ranking `4`개와 active item `15`개를 갖습니다. CONTENT-1에서는 외부 sourcing/import가 현재 병목이라는 근거가 확인되지 않았으므로, 대형 ingestion subsystem보다 실제 coverage 확대와 운영 비용 측정을 우선합니다.
 
 P2-4 성격의 external ingestion은 fetch → raw ingestion → normalize → dedupe → staging → admin review → canonical publish까지 별도 대형 subsystem이므로, 운영 병목 근거 없이 선행 구현하지 않습니다.
 
