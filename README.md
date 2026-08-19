@@ -4,13 +4,14 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / CONTENT-2 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
 - P2-3 Sponsor Transparency / Management: `SUCCESS / CLOSED`
 - OPS-1 Production Content Operations / Editorial Quality: `SUCCESS / CLOSED`
 - CONTENT-1 Verified Production Seed Batch: `SUCCESS / CLOSED`
+- CONTENT-2 Production Editorial Expansion / Coverage Batch: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
 - LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
 
@@ -23,6 +24,8 @@ P2-3는 협찬 주체와 ranking/item/placement 상업 관계를 정규화하고
 OPS-1은 draft capture는 유연하게 유지하면서 공개 발행만 fail-closed 품질 계약으로 제한합니다. Scope, Criteria, 공개 근거 출처, 순위 연속성, 아이템 중복, 선정 사유, active item 상태, `TOP N` 제목과 실제 항목 수 일치를 DB와 관리자 UI에서 함께 검증합니다. 최종 근거는 `docs/ops-1-production-content-operations.md`를 기준으로 합니다.
 
 CONTENT-1은 OPS-1 계약을 실제 Production 콘텐츠에 적용해 공식·공공 데이터 기반 랭킹 4개를 발행했고, 실제 콘텐츠에서 발견된 지표형 랭킹 의미/표시 문제를 `ranking_type='metric'`과 명시적 `score_json` 값으로 보강했습니다. 최종 근거는 `docs/content-1-verified-production-seed-batch.md`를 기준으로 합니다.
+
+CONTENT-2는 기존 OPS-1/metric 계약을 새 도메인에 그대로 적용해 스포츠/KBO 3개와 문화·유산/UNESCO 1개 랭킹을 추가했습니다. 별도 schema/RPC 기능 추가 없이 카테고리 확장, canonical item 재사용, 반복 source-backed authoring, Production 검색/상세 노출을 검증했습니다. 최종 근거는 `docs/content-2-production-editorial-expansion.md`를 기준으로 합니다.
 
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
@@ -157,6 +160,17 @@ npm run dev
 - 4개 랭킹 모두 OPS-1 `editorial_ready=true`, blocker 0
 - home/category/detail/search Production acceptance 완료
 
+### CONTENT-2 Production Editorial Expansion
+- Production 랭킹 4개 추가: KBO 3개, UNESCO 세계유산 1개
+- `스포츠` / `문화·유산` top-level 카테고리와 `KBO` / `세계유산` 서브카테고리 추가
+- KBO 구단 canonical item 8개 추가
+- 기존 국가 item 재사용 + 이탈리아/프랑스/스페인 canonical item 추가
+- 모든 CONTENT-2 랭킹은 `ranking_type='metric'`
+- 20개 entry 모두 explicit `score_json.scores`, rating-style `editor_score` 0
+- 4개 랭킹 모두 OPS-1 `editorial_ready=true`, blocker 0
+- category/detail/search Production acceptance 완료
+- 별도 schema/RPC migration 없이 기존 콘텐츠 계약의 cross-domain 재사용성 확인
+
 ### UI-1 public experience
 - semantic light design tokens and shared public surfaces
 - responsive public navigation with mobile menu
@@ -243,7 +257,7 @@ OPS-1 repository migrations:
 CONTENT-1 repository migrations:
 - `20260819020000_content_1_metric_ranking_type.sql`
 
-UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
+CONTENT-2는 DB schema/RPC migration을 추가하지 않았습니다. UI-1과 LAUNCH-1도 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
 
@@ -252,12 +266,13 @@ UI-1과 LAUNCH-1은 DB schema/RPC migration을 추가하지 않았습니다.
 3. Sponsor Transparency / Management — P2-3 `SUCCESS / CLOSED`
 4. Production Content Operations / Editorial Quality — OPS-1 `SUCCESS / CLOSED`
 5. Verified Production Seed Batch — CONTENT-1 `SUCCESS / CLOSED`
-6. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
-7. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
-8. Production Editorial Expansion / Coverage Batch — CONTENT-2 next: 여러 카테고리로 실제 source-backed coverage를 확대하고 반복 작성·업데이트 비용을 측정
-9. External data import / crawling — CONTENT-2에서 sourcing/normalization/update가 실제 운영 병목으로 확인된 뒤 current-state/design부터 진행
+6. Production Editorial Expansion / Coverage Batch — CONTENT-2 `SUCCESS / CLOSED`
+7. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
+8. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
+9. Recurring Editorial Refresh / Revalidation Cadence — CONTENT-3 next: 기존 공개 문서를 권위 출처와 재대조하고 refresh/update 비용, stale-data 처리, 현실적인 재검증 주기를 측정
+10. External data import / crawling — CONTENT-3 반복 갱신에서 sourcing/normalization/update가 실제 운영 병목으로 확인된 뒤 current-state/design부터 진행
 
-현재 Production은 CONTENT-1 종료 기준 검증 가능한 published metric ranking `4`개와 active item `15`개를 갖습니다. CONTENT-1에서는 외부 sourcing/import가 현재 병목이라는 근거가 확인되지 않았으므로, 대형 ingestion subsystem보다 실제 coverage 확대와 운영 비용 측정을 우선합니다.
+현재 Production은 CONTENT-2 종료 기준 top-level category `4`개, 검증 가능한 published ranking `8`개와 active item `26`개를 갖습니다. CONTENT-2에서도 외부 sourcing/import가 현재 병목이라는 근거가 확인되지 않았으므로, 다음은 기존 문서의 재검증·갱신 비용을 실제로 측정합니다.
 
 P2-4 성격의 external ingestion은 fetch → raw ingestion → normalize → dedupe → staging → admin review → canonical publish까지 별도 대형 subsystem이므로, 운영 병목 근거 없이 선행 구현하지 않습니다.
 
