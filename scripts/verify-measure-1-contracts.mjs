@@ -11,12 +11,13 @@ const forbidText = (content, text, label) => {
 }
 
 const migrationPath = 'supabase/migrations/20260819043000_measure_1_product_usage_discovery.sql'
+const retentionMigrationPath = 'supabase/migrations/20260819043100_measure_1_retention_maintenance.sql'
 const routePath = 'src/app/api/measure-1/route.ts'
 const clientPath = 'src/components/telemetry/ProductTelemetry.tsx'
 const adminPath = 'src/app/admin/measure/page.tsx'
 const docsPath = 'docs/measure-1-product-usage-discovery-baseline.md'
 
-for (const file of [migrationPath, routePath, clientPath, adminPath, docsPath]) {
+for (const file of [migrationPath, retentionMigrationPath, routePath, clientPath, adminPath, docsPath]) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`MEASURE-1 file missing: ${file}`)
 }
 
@@ -51,6 +52,17 @@ forbidText(migration.toLowerCase(), 'ip_address', 'raw IP column')
 forbidText(migration.toLowerCase(), 'user_agent', 'user-agent fingerprint column')
 forbidText(migration.toLowerCase(), 'referrer_url', 'raw referrer URL column')
 forbidText(migration.toLowerCase(), 'metadata json', 'arbitrary metadata blob')
+
+const retentionMigration = read(retentionMigrationPath)
+requireText(retentionMigration, 'private.maintain_measure_1_telemetry_batch', 'maintenance batch adapter')
+requireText(retentionMigration, "'maintain_measure_1_telemetry'", 'maintenance job definition')
+requireText(retentionMigration, "'ranking-maint-measure-1-telemetry'", 'maintenance cron name')
+requireText(retentionMigration, "'10 4 * * *'", 'daily maintenance schedule')
+requireText(retentionMigration, "WHEN 'maintain_measure_1_telemetry' THEN", 'existing maintenance runner integration')
+requireText(retentionMigration, "private.purge_measure_1_telemetry_batch(p_batch_size)", 'retention implementation reuse')
+requireText(retentionMigration, "cron.schedule(", 'existing pg_cron scheduling')
+requireText(retentionMigration, "private.run_maintenance_job('maintain_measure_1_telemetry', 'cron')", 'centralized runner dispatch')
+forbidText(retentionMigration, 'CREATE TABLE public.maintenance_job_definitions', 'duplicate maintenance subsystem')
 
 const route = read(routePath)
 requireText(route, "const VIEWER_COOKIE = 'rw_viewer_v1'", 'existing anonymous viewer cookie reuse')
