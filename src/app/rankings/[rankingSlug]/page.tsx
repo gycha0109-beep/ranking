@@ -31,6 +31,7 @@ function getRankingTypeName(type: string) {
     popularity: '인기 지표',
     quality: '품질 평가',
     purpose: '목적별 추천',
+    metric: '공식 지표',
     user_vote: '사용자 투표',
     sponsored: '스폰서십',
   }
@@ -113,7 +114,7 @@ export default async function RankingDetailPage({ params }: Props) {
                           </Link>
                           {item.brand_or_creator && <p className="mt-0.5 text-xs font-semibold text-[#8a94a3]">{item.brand_or_creator}</p>}
                         </div>
-                        {entry.editor_score && (
+                        {ranking.ranking_type !== 'metric' && entry.editor_score && (
                           <span className="inline-flex items-center gap-1 rounded-lg bg-[#fff7e6] px-2.5 py-1.5 text-xs font-extrabold text-[#8f650f]"><Star className="h-3.5 w-3.5 fill-current" />{Number(entry.editor_score).toFixed(1)}</span>
                         )}
                       </div>

@@ -19,6 +19,8 @@ interface Subcategory {
   slug: string
 }
 
+type RankingType = 'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'metric' | 'user_vote' | 'sponsored'
+
 export default function AdminNewRankingPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
@@ -36,7 +38,7 @@ export default function AdminNewRankingPage() {
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [summary, setSummary] = useState('')
-  const [rankingType, setRankingType] = useState<'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'user_vote' | 'sponsored'>('editor_pick')
+  const [rankingType, setRankingType] = useState<RankingType>('editor_pick')
 
   const fetchInitialData = async () => {
     try {
@@ -242,13 +244,14 @@ export default function AdminNewRankingPage() {
                 <select
                   required
                   value={rankingType}
-                  onChange={(e) => setRankingType(e.target.value as any)}
+                  onChange={(e) => setRankingType(e.target.value as RankingType)}
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-900 border border-white/10 rounded-xl focus:border-indigo-500 focus:outline-none transition-all text-slate-200"
                 >
                   <option value="editor_pick">에디터 추천 (editor_pick)</option>
                   <option value="popularity">인기순 (popularity)</option>
                   <option value="quality">성분/품질비교 (quality)</option>
                   <option value="purpose">특수목적용 (purpose)</option>
+                  <option value="metric">공식 지표 (metric)</option>
                   <option value="user_vote">유저투표 (user_vote)</option>
                   <option value="sponsored">스폰서십 (sponsored)</option>
                 </select>

@@ -470,7 +470,7 @@ export async function createRankingDraft(formData: {
   title: string
   slug: string
   summary: string
-  ranking_type: 'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'user_vote' | 'sponsored'
+  ranking_type: 'editor_pick' | 'popularity' | 'quality' | 'purpose' | 'metric' | 'user_vote' | 'sponsored'
 }) {
   const supabase = await createClient()
   const user = await ensureAdmin(supabase)
