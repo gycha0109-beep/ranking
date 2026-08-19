@@ -101,7 +101,7 @@ export default function AdminNewRankingPage() {
     }
 
     startTransition(async () => {
-      const result = await createRankingDraft(formData as Parameters<typeof createRankingDraft>[0])
+      const result = await createRankingDraft(formData)
       if (result.error) {
         setErrorMessage(result.error)
       } else {

@@ -444,6 +444,7 @@ export default function RankingEditorForm({
               <option value="popularity">인기순 (popularity)</option>
               <option value="quality">성분/품질비교 (quality)</option>
               <option value="purpose">특수목적용 (purpose)</option>
+              <option value="metric">공식 지표 (metric)</option>
               <option value="user_vote">유저투표 (user_vote)</option>
               <option value="sponsored">스폰서십 (sponsored)</option>
             </select>
