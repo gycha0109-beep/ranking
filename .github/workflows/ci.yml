@@ -31,6 +31,7 @@ jobs:
       - run: npm run verify:p2-3
       - run: npm run verify:ops-1
       - run: npm run verify:content-1
+      - run: npm run verify:content-3
       - run: npm run verify:ui-1
       - run: npm run verify:launch-1
       - run: npm run lint
