@@ -1,6 +1,6 @@
 # CONTENT-1 Verified Production Seed Batch
 
-Status: **PRODUCTION SEED PUBLISHED / METRIC CONTRACT PR VALIDATION PENDING**
+Status: **SUCCESS / CLOSED**
 
 ## Objective
 
@@ -115,13 +115,13 @@ A first execution exposed a local SQL variable-reuse mistake in the publication 
 
 This execution note is retained because CONTENT-1 is intended to expose operational failure modes rather than hide them.
 
-## Product defect discovered by real content
+## Product defects discovered by real content
 
 The pre-CONTENT-1 ranking type contract had no neutral metric type. The seed rankings temporarily used `purpose`, which rendered the public badge as `목적별 추천`. That label is semantically wrong for deterministic official-statistic rankings.
 
 CONTENT-1 therefore adds `metric` as a first-class ranking type and maps it to `공식 지표` on the public surface.
 
-A second presentation defect was also found: `editor_score` is rendered with a star icon and one decimal place, which incorrectly turns raw GDP/population/rate values into rating-like scores. Metric rankings therefore do not render `editor_score` as a star rating. Their explicit metric labels and formatted values are stored in `score_json.scores` instead.
+A second presentation defect was also found: `editor_score` was rendered with a star icon and one decimal place, which incorrectly turned raw GDP/population/rate values into rating-like scores. Metric rankings no longer render `editor_score` as a star rating. Their explicit metric labels and formatted values are stored in `score_json.scores` instead.
 
 ## Metric contract change
 
@@ -146,16 +146,109 @@ This is roughly eight minutes of AI-assisted batch wall-clock for source selecti
 
 Metric taxonomy hardening and repository lifecycle validation are tracked separately from that initial content-production interval.
 
-## Close conditions
+## Implementation evidence
 
-CONTENT-1 closes only after:
+Implementation PR: `#43` — `feat: harden CONTENT-1 metric rankings`
 
-1. `metric` contract exact-head CI passes with all legacy gates;
-2. the migration is applied to Hosted Production;
-3. the implementation PR merges without tree drift;
-4. exact merged main deploys READY on Vercel;
-5. the four Production rankings are changed from temporary `purpose` to `metric` without changing their first publication timestamps;
-6. all metric entries use explicit `score_json` metric values and no rating-style `editor_score` presentation;
-7. public home/detail/category/search surfaces expose the batch correctly;
-8. Hosted final readback shows all four published, ready, and blocker-free;
-9. Production runtime errors remain clean after acceptance.
+- exact validated head: `314b3da9a932bc3638bd0d134e5a7f866e23371b`
+- authoritative CI: run `#208`, workflow run `32203091724`
+- all existing P1/P2/P2-3/OPS-1/UI-1/LAUNCH-1 verifiers: PASS
+- `verify:content-1`: PASS
+- lint: PASS
+- production build: PASS
+- merge/main: `3bd78b59c842e4be19ccebddc46369f24916f7b7`
+- validated head → merge file delta: zero
+
+Hosted migration `content_1_metric_ranking_type` was applied before the Production data conversion. The final ranking-type constraint preserves all prior types and adds `metric`.
+
+## Production conversion evidence
+
+After exact merged main deployed READY, a fail-closed transaction converted only the four known CONTENT-1 documents from temporary `purpose` to `metric`.
+
+Preconditions required:
+
+- exactly four target rankings;
+- all four `published` and `purpose`;
+- all four OPS-1 editorial-ready;
+- sixteen existing `editor_score` values.
+
+The transaction:
+
+1. preserved each original `published_at`;
+2. temporarily unpublished the four documents;
+3. changed `ranking_type` to `metric`;
+4. removed all sixteen rating-style `editor_score` values;
+5. wrote one explicit metric label/value into `score_json.scores` for every entry;
+6. republished the documents with their original first-publication timestamps;
+7. forced deferred publication constraints before commit;
+8. asserted four published, ready metric rankings as a postcondition.
+
+Final target state:
+
+- published metric rankings: `4`
+- CONTENT-1 entries: `16`
+- non-null CONTENT-1 `editor_score`: `0`
+- entries with explicit metric score: `16`
+- not editorial-ready: `0`
+- rankings with blockers: `0`
+
+## Production acceptance
+
+Vercel Production deployment:
+
+- deployment: `dpl_2ThzvvpgkSjDy8NqFK1BRKKiFARH`
+- exact main SHA: `3bd78b59c842e4be19ccebddc46369f24916f7b7`
+- target: `production`
+- state: `READY`
+- GitHub Vercel status: `success`
+
+Public acceptance passed on the canonical Production origin:
+
+- home: HTTP 200 and all four recent published rankings visible;
+- `/categories/statistics`: HTTP 200, both `세계`/`대한민국` subcategories visible, four published rankings visible;
+- all four ranking details: HTTP 200;
+- ranking badge: `공식 지표`;
+- explicit metric values visible without rating-star score presentation;
+- source, scope, criterion, ranking order and JSON-LD remain intact;
+- `GDP` search returns `2024 명목 GDP TOP 5`;
+- `순유입` search returns `2025 시도 순유입률 TOP 3`;
+- Production runtime error clusters during acceptance: `0`.
+
+Hosted final inventory after CONTENT-1:
+
+- rankings: `6` total = `4 published / 1 draft / 1 archived`;
+- published metric rankings: `4`;
+- items: `19` total = `15 active / 4 archived`;
+- sponsors: `0`;
+- sponsorships: `0`;
+- legacy `sponsor_flag=true`: `0`.
+
+## Bottleneck conclusion
+
+CONTENT-1 does **not** provide evidence that external crawling/import is currently the limiting factor.
+
+The first four authoritative documents were sourced, structured and published quickly enough with the current assisted workflow that building the large P2-4 ingestion subsystem now would be premature. The observed defects were domain/presentation issues (`metric` semantics), not source-acquisition throughput failures.
+
+External ingestion therefore remains deferred until repeated Production content expansion shows a measurable sourcing, normalization, deduplication or update-maintenance bottleneck.
+
+## Close result
+
+All nine close conditions passed:
+
+1. exact-head CI with all legacy gates and `verify:content-1`;
+2. Hosted metric migration applied;
+3. PR merged without tree drift;
+4. exact merged main deployed READY;
+5. four rankings converted to `metric` with first publication timestamps preserved;
+6. explicit metric scores present and rating-style editor scores removed;
+7. home/detail/category/search surfaces accepted;
+8. Hosted readback shows four published, ready, blocker-free metric rankings;
+9. Production runtime errors clean.
+
+**CONTENT-1 = SUCCESS / CLOSED**
+
+## Next lifecycle
+
+`CONTENT-2 — Production Editorial Expansion / Coverage Batch`
+
+CONTENT-2 should expand source-backed Production coverage across multiple categories and measure repeatable authoring/update cost. External import/crawling remains deferred until that expansion produces concrete bottleneck evidence.
