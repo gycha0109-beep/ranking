@@ -11,6 +11,7 @@ function expect(condition, message) {
 }
 
 const migration = read('supabase/migrations/20260819030000_content_3_revalidation_cadence.sql')
+const permissions = read('supabase/migrations/20260819030100_content_3_rpc_permissions.sql')
 const actions = read('src/lib/actions/content-revalidation.ts')
 const page = read('src/app/admin/rankings/[id]/revalidation/page.tsx')
 const adminList = read('src/app/admin/rankings/page.tsx')
@@ -26,6 +27,8 @@ expect(migration.includes('admin_list_ranking_revalidations'), 'admin history RP
 expect(migration.includes("private.has_admin_capability(v_user_id, 'content_manage')"), 'CONTENT-3 admin RPCs must reuse content_manage authorization')
 expect(migration.includes("'never_reviewed'") && migration.includes("'attention_required'") && migration.includes("'overdue'") && migration.includes("'due_soon'") && migration.includes("'current'"), 'freshness state contract must expose operational states')
 expect(migration.includes("jsonb_build_object(\n        'id', rs.id"), 'revalidation events must snapshot current ranking sources')
+expect(permissions.match(/REVOKE ALL ON FUNCTION public\.admin_.*ranking_revalidation.* FROM PUBLIC, anon;/g)?.length === 3, 'all CONTENT-3 admin RPCs must explicitly revoke anonymous execution')
+expect(permissions.match(/GRANT EXECUTE ON FUNCTION public\.admin_.*ranking_revalidation.* TO authenticated;/g)?.length === 3, 'CONTENT-3 admin RPCs must explicitly grant authenticated execution')
 expect(actions.includes("supabase.rpc('admin_get_ranking_revalidation_status'"), 'server actions must read CONTENT-3 status through RPC')
 expect(actions.includes("supabase.rpc('admin_record_ranking_revalidation'"), 'server actions must record CONTENT-3 events through RPC')
 expect(page.includes('재검증 결과 기록') && page.includes('재검증 이력'), 'admin revalidation page must expose recording and history UI')
