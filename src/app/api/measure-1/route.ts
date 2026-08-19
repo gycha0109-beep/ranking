@@ -135,12 +135,13 @@ async function resolveSource(sourcePath: string, targetPath: string): Promise<So
     } catch {
       return null
     }
-    const { data } = await admin.from('categories').select('id').eq('slug', slug).eq('is_visible', true).maybeSingle()
+    const { data, error } = await admin.from('categories').select('id').eq('slug', slug).eq('is_visible', true).maybeSingle()
+    if (error || !data) return null
     return {
       discoverySource: 'category',
       sourceRankingId: null,
       sourceItemId: null,
-      sourceCategoryId: data?.id || null,
+      sourceCategoryId: data.id,
     }
   }
 
