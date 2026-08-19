@@ -184,7 +184,10 @@ This new baseline view event does not replace the existing public lifetime count
 - has bounded event/source enums and field-shape checks;
 - uses idempotent client UUIDs;
 - opportunistically runs bounded retention cleanup on writes;
-- exposes a service-role cleanup RPC for explicit maintenance.
+- exposes a service-role cleanup RPC for explicit maintenance;
+- is also attached to the existing P1-2-9 centralized maintenance runner and pg_cron schedule, so retention still runs when user traffic is idle.
+
+The scheduled job is `maintain_measure_1_telemetry` / `ranking-maint-measure-1-telemetry`, runs daily at `10 4 * * *` UTC, redacts retained query text after 30 days, and deletes events after 13 months. It reuses the existing maintenance job definition, advisory lock, run ledger, timeout, batching, and pg_cron authority instead of introducing another scheduler.
 
 The public API route rejects cross-origin writes when an Origin header is present and does not inspect or persist IP, user-agent, or raw referrer values.
 
@@ -237,16 +240,17 @@ The minimum contract supports these decisions:
 MEASURE-1 closes only after:
 
 1. repository verifier passes;
-2. migration is applied through Hosted `apply_migration`;
+2. migrations are applied through Hosted `apply_migration`;
 3. Hosted schema/RLS/function/grant readback passes;
-4. controlled QA events are recorded as `qa_internal` and excluded from eligible aggregates;
-5. controlled unknown search zero/non-zero and click attribution are validated without contaminating the durable organic baseline, or are removed/explicitly classified after the probe;
-6. existing CI gates, lint, and build pass at the exact PR head;
-7. implementation PR merges to `main`;
-8. merged-main Vercel Production is READY from the merged SHA;
-9. production home/category/search/ranking/item smoke passes;
-10. runtime errors are checked;
-11. closeout evidence records the exact merged main and Production deployment.
+4. scheduled retention job definition, central-runner dispatch, cron registration, and a controlled maintenance run pass;
+5. controlled QA events are recorded as `qa_internal` and excluded from eligible aggregates;
+6. search non-zero, zero-result, click attribution, and discovery events are validated under explicit QA classification without contaminating the durable eligible baseline;
+7. existing CI gates, lint, and build pass at the exact PR head;
+8. implementation PR merges to `main`;
+9. merged-main Vercel Production is READY from the merged SHA;
+10. production home/category/search/ranking/item smoke passes;
+11. runtime errors are checked;
+12. closeout evidence records the exact merged main and Production deployment.
 
 ## Non-goals
 
