@@ -61,14 +61,13 @@ CREATE TABLE public.product_usage_events (
         AND result_count IS NOT NULL
         AND zero_result IS NOT NULL
         AND selected_position IS NULL
-        AND discovery_source IS NULL
       WHEN 'search_result_click' THEN
         search_id IS NOT NULL
         AND query_hash IS NOT NULL
+        AND query_text IS NULL
         AND result_count IS NULL
         AND zero_result IS NULL
         AND selected_position IS NOT NULL
-        AND discovery_source = 'search'
       ELSE
         search_id IS NULL
         AND query_hash IS NULL
@@ -79,16 +78,33 @@ CREATE TABLE public.product_usage_events (
     END
   ),
   CONSTRAINT product_usage_events_discovery_shape CHECK (
-    (event_type = 'content_discovery_click' AND discovery_source IN (
-      'home', 'category', 'related_ranking', 'ranking_item', 'item_ranking'
-    ))
-    OR event_type <> 'content_discovery_click'
+    CASE event_type
+      WHEN 'content_discovery_click' THEN
+        CASE discovery_source
+          WHEN 'home' THEN num_nonnulls(source_ranking_id, source_item_id, source_category_id) = 0
+          WHEN 'category' THEN source_category_id IS NOT NULL AND source_ranking_id IS NULL AND source_item_id IS NULL
+          WHEN 'related_ranking' THEN source_ranking_id IS NOT NULL AND source_item_id IS NULL AND source_category_id IS NULL
+          WHEN 'ranking_item' THEN source_ranking_id IS NOT NULL AND source_item_id IS NULL AND source_category_id IS NULL
+          WHEN 'item_ranking' THEN source_item_id IS NOT NULL AND source_ranking_id IS NULL AND source_category_id IS NULL
+          ELSE FALSE
+        END
+      WHEN 'search_result_click' THEN
+        discovery_source = 'search'
+        AND num_nonnulls(source_ranking_id, source_item_id, source_category_id) = 0
+      ELSE
+        discovery_source IS NULL
+        AND num_nonnulls(source_ranking_id, source_item_id, source_category_id) = 0
+    END
   )
 );
 
-CREATE UNIQUE INDEX uq_product_usage_content_view_daily
-  ON public.product_usage_events(viewer_key_hash, occurred_on, ranking_id, item_id)
-  WHERE event_type = 'content_view';
+CREATE UNIQUE INDEX uq_product_usage_content_view_daily_ranking
+  ON public.product_usage_events(viewer_key_hash, occurred_on, ranking_id)
+  WHERE event_type = 'content_view' AND ranking_id IS NOT NULL;
+
+CREATE UNIQUE INDEX uq_product_usage_content_view_daily_item
+  ON public.product_usage_events(viewer_key_hash, occurred_on, item_id)
+  WHERE event_type = 'content_view' AND item_id IS NOT NULL;
 
 CREATE UNIQUE INDEX uq_product_usage_search_impression
   ON public.product_usage_events(search_id)
@@ -341,6 +357,7 @@ SET search_path = public, auth, private, pg_temp
 AS $$
 DECLARE
   v_result JSONB;
+  v_baseline_started_at TIMESTAMPTZ;
 BEGIN
   IF NOT public.has_admin_capability('audit_view') THEN
     RAISE EXCEPTION 'audit_view capability required' USING ERRCODE = '42501';
@@ -349,8 +366,12 @@ BEGIN
     RAISE EXCEPTION 'invalid baseline period' USING ERRCODE = '22023';
   END IF;
 
+  SELECT MIN(e.occurred_at)
+  INTO v_baseline_started_at
+  FROM public.product_usage_events e;
+
   SELECT jsonb_build_object(
-    'period', jsonb_build_object('from', p_from, 'to', p_to),
+    'period', jsonb_build_object('from', p_from, 'to', p_to, 'measurement_started_at', v_baseline_started_at),
     'eligible', jsonb_build_object(
       'content_views', COUNT(*) FILTER (WHERE e.traffic_class = 'unknown' AND e.event_type = 'content_view'),
       'ranking_views', COUNT(*) FILTER (WHERE e.traffic_class = 'unknown' AND e.event_type = 'content_view' AND e.ranking_id IS NOT NULL),
@@ -375,21 +396,35 @@ BEGIN
         )
       END,
       'clicked_searches', (
-        SELECT COUNT(DISTINCT c.search_id)
-        FROM public.product_usage_events c
-        WHERE c.traffic_class = 'unknown'
-          AND c.event_type = 'search_result_click'
-          AND c.occurred_on BETWEEN p_from AND p_to
+        SELECT COUNT(DISTINCT s.search_id)
+        FROM public.product_usage_events s
+        WHERE s.traffic_class = 'unknown'
+          AND s.event_type = 'search'
+          AND s.occurred_on BETWEEN p_from AND p_to
+          AND EXISTS (
+            SELECT 1
+            FROM public.product_usage_events c
+            WHERE c.traffic_class = 'unknown'
+              AND c.event_type = 'search_result_click'
+              AND c.search_id = s.search_id
+          )
       ),
       'search_result_ctr', CASE
         WHEN COUNT(*) FILTER (WHERE e.traffic_class = 'unknown' AND e.event_type = 'search') = 0 THEN 0
         ELSE ROUND(
           (
-            SELECT COUNT(DISTINCT c.search_id)::NUMERIC
-            FROM public.product_usage_events c
-            WHERE c.traffic_class = 'unknown'
-              AND c.event_type = 'search_result_click'
-              AND c.occurred_on BETWEEN p_from AND p_to
+            SELECT COUNT(DISTINCT s.search_id)::NUMERIC
+            FROM public.product_usage_events s
+            WHERE s.traffic_class = 'unknown'
+              AND s.event_type = 'search'
+              AND s.occurred_on BETWEEN p_from AND p_to
+              AND EXISTS (
+                SELECT 1
+                FROM public.product_usage_events c
+                WHERE c.traffic_class = 'unknown'
+                  AND c.event_type = 'search_result_click'
+                  AND c.search_id = s.search_id
+              )
           ) / (COUNT(*) FILTER (WHERE e.traffic_class = 'unknown' AND e.event_type = 'search'))::NUMERIC,
           4
         )
@@ -409,27 +444,31 @@ BEGIN
     'engagement', jsonb_build_object(
       'likes', (
         SELECT COUNT(*) FROM public.content_like_events l
-        WHERE l.changed = TRUE AND l.requested_liked = TRUE
-          AND l.created_at >= p_from::TIMESTAMPTZ
+        WHERE v_baseline_started_at IS NOT NULL
+          AND l.changed = TRUE AND l.requested_liked = TRUE
+          AND l.created_at >= GREATEST(p_from::TIMESTAMPTZ, v_baseline_started_at)
           AND l.created_at < (p_to + 1)::TIMESTAMPTZ
           AND COALESCE(private.measure_1_user_traffic_class(l.user_id), 'unknown') = 'unknown'
       ),
       'bookmarks', (
         SELECT COUNT(*) FROM public.content_bookmark_events b
-        WHERE b.changed = TRUE AND b.requested_bookmarked = TRUE
-          AND b.created_at >= p_from::TIMESTAMPTZ
+        WHERE v_baseline_started_at IS NOT NULL
+          AND b.changed = TRUE AND b.requested_bookmarked = TRUE
+          AND b.created_at >= GREATEST(p_from::TIMESTAMPTZ, v_baseline_started_at)
           AND b.created_at < (p_to + 1)::TIMESTAMPTZ
           AND COALESCE(private.measure_1_user_traffic_class(b.user_id), 'unknown') = 'unknown'
       ),
       'comments', (
         SELECT COUNT(*) FROM public.comments c
-        WHERE c.created_at >= p_from::TIMESTAMPTZ
+        WHERE v_baseline_started_at IS NOT NULL
+          AND c.created_at >= GREATEST(p_from::TIMESTAMPTZ, v_baseline_started_at)
           AND c.created_at < (p_to + 1)::TIMESTAMPTZ
           AND COALESCE(private.measure_1_user_traffic_class(c.user_id), 'unknown') = 'unknown'
       ),
       'reactions', (
         SELECT COUNT(*) FROM public.reactions r
-        WHERE r.created_at >= p_from::TIMESTAMPTZ
+        WHERE v_baseline_started_at IS NOT NULL
+          AND r.created_at >= GREATEST(p_from::TIMESTAMPTZ, v_baseline_started_at)
           AND r.created_at < (p_to + 1)::TIMESTAMPTZ
           AND COALESCE(private.measure_1_user_traffic_class(r.user_id), 'unknown') = 'unknown'
       )
