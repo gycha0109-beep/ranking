@@ -4,7 +4,7 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / CONTENT-2 CLOSED / CONTENT-3 CLOSED / CONTENT-4 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / CONTENT-2 CLOSED / CONTENT-3 CLOSED / CONTENT-4 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED / MEASURE-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
@@ -16,6 +16,7 @@
 - CONTENT-4 Production Coverage Expansion / Editorial Operating Cycle: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
 - LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
+- MEASURE-1 Product Usage & Discovery Baseline / Real-User Validation Readiness: `SUCCESS / CLOSED`
 
 P2-1은 `user_vote` 랭킹의 계정 기반 1인 1표, 공개 aggregate, 수동 open/close, 제재 연동, moderation auto-close를 제공합니다.
 
@@ -36,6 +37,8 @@ CONTENT-4는 기존 OPS-1/metric/CONTENT-3 계약만으로 OECD PISA 3개와 FIF
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
 LAUNCH-1은 실제 Vercel Production 배포, 환경/Auth/SEO/security hardening, 실제 Production browser/runtime acceptance, main-only Git deployment 정책, 반복 가능한 Production QA suite까지 검증하고 닫았습니다. 최종 근거는 `docs/launch-1-closeout.md`를 기준으로 합니다.
+
+MEASURE-1은 legacy UI view counter와 별도로 forward-only `product_usage_events` baseline을 구축해 `content_view`, `search`, `search_result_click`, `content_discovery_click`을 최소 계약으로 측정합니다. QA/internal traffic은 `qa_internal`로 분리하고 baseline-eligible traffic은 `unknown`으로 유지하며, raw IP·user-agent·raw referrer·stable cross-day identity를 저장하지 않습니다. 검색어는 HMAC·bounded retention을 적용하고 `/admin/measure`에서 기존 `audit_view` capability로 최소 운영 readout만 제공합니다. 최종 근거는 `docs/measure-1-product-usage-discovery-baseline.md`를 기준으로 합니다.
 
 ## 실행
 
@@ -70,6 +73,7 @@ npm run dev
 - role/capability access control
 - sanctions/appeals
 - audit/security event/maintenance surfaces
+- MEASURE-1 `/admin/measure` baseline readout (`audit_view` capability)
 - `user_vote` poll open/close control
 - 닫힌 투표 라운드 결과 확정/폐기 및 revision 기록
 - sponsor entity 관리
@@ -88,6 +92,7 @@ npm run dev
 - `metric` 랭킹의 `공식 지표` 라벨과 명시적 지표값 표시
 - ranking/item 협찬·상업 관계 disclosure
 - 협찬 관계 `upcoming / current / historical` 기간 상태 공개
+- MEASURE-1 bounded usage/discovery telemetry with QA/internal separation
 
 ### 참여
 - likes
@@ -204,6 +209,20 @@ npm run dev
 - PISA/FIFA category/detail/search Production acceptance 완료
 - 별도 schema/RPC/application 기능 추가 없이 기존 운영 계약의 반복 사용성 확인
 
+### MEASURE-1 Product Usage & Discovery Baseline
+- legacy `content_daily_views` / `content_view_totals`는 product display authority로 유지하고 baseline eligibility에서는 제외
+- forward-only `product_usage_events` authority
+- bounded events: `content_view`, `search`, `search_result_click`, `content_discovery_click`
+- traffic class: `unknown` / `qa_internal`
+- daily HMAC viewer hash; stable cross-day identity 없음
+- raw IP, user-agent, raw referrer, arbitrary metadata JSON 미저장
+- normalized search query HMAC + short sanitized retained text
+- retained query text 30일 후 redaction, event 13개월 후 삭제
+- existing centralized maintenance runner + daily pg_cron retention
+- direct anon/auth table access 차단, bounded service-role write RPC
+- `/admin/measure`는 existing `audit_view` capability로 보호
+- Production acceptance 시 QA-only telemetry 유지, `unknown=0`
+
 ### UI-1 public experience
 - semantic light design tokens and shared public surfaces
 - responsive public navigation with mobile menu
@@ -260,6 +279,7 @@ npm run verify:content-1
 npm run verify:content-3
 npm run verify:ui-1
 npm run verify:launch-1
+npm run verify:measure-1
 npm run lint
 npm run build
 ```
@@ -296,6 +316,10 @@ CONTENT-3 repository migrations:
 - `20260819030100_content_3_rpc_permissions.sql`
 - `20260819030200_content_3_actor_fk_index.sql`
 
+MEASURE-1 repository migrations:
+- `20260819043000_measure_1_product_usage_discovery.sql`
+- `20260819043100_measure_1_retention_maintenance.sql`
+
 CONTENT-2와 CONTENT-4는 DB schema/RPC migration을 추가하지 않았습니다. UI-1과 LAUNCH-1도 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
@@ -310,12 +334,13 @@ CONTENT-2와 CONTENT-4는 DB schema/RPC migration을 추가하지 않았습니�
 8. Production Coverage Expansion / Editorial Operating Cycle — CONTENT-4 `SUCCESS / CLOSED`
 9. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
 10. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
-11. Product Usage & Discovery Baseline / Real-User Validation Readiness — MEASURE-1 next: 현재 telemetry authority를 감사하고 QA/internal traffic과 실제 사용 신호를 구분할 수 있는 최소 측정 계약, search/discovery signal 공백, baseline KPI를 정의
-12. External data import / crawling — 반복 운영에서 sourcing/normalization/update가 실제 병목으로 확인된 뒤 current-state/design부터 진행
+11. Product Usage & Discovery Baseline / Real-User Validation Readiness — MEASURE-1 `SUCCESS / CLOSED`
+12. Real-user observation window — MEASURE-1 baseline-eligible usage/search/discovery evidence를 축적하고 다음 투자 우선순위를 판단
+13. External data import / crawling — 반복 운영에서 sourcing/normalization/update가 실제 병목으로 확인된 뒤 current-state/design부터 진행
 
 현재 Production은 top-level category `5`개, visible subcategory `6`개, 검증 가능한 published ranking `13`개와 active item `42`개를 갖습니다. 13개 공개 랭킹 모두 OPS-1 readiness를 통과하고 있으며, CONTENT-4의 신규 5개에는 최초 CONTENT-3 재검증 기록과 다음 검증일이 설정되어 있습니다.
 
-현재 저장된 engagement는 현 corpus의 실사용 baseline으로 보기 어렵습니다. 누적 unique view `169`는 2026-08-17~18의 이전 QA 대상에 집중되어 있고 `149`가 `best-chicken-breast`에 귀속됩니다. likes `1`, bookmarks `1`, comments `2` 역시 현재 corpus의 실제 수요를 판단하기에 충분하지 않습니다. 또한 structured search-query telemetry table은 현재 존재하지 않습니다. 따라서 다음 단계는 콘텐츠를 맹목적으로 더 늘리기보다 측정 authority와 discovery baseline을 먼저 확립합니다.
+MEASURE-1 이전의 저장 engagement와 legacy view는 현 corpus의 실사용 baseline으로 소급 해석하지 않습니다. MEASURE-1은 QA/internal traffic을 별도 분리하는 forward-only usage/discovery authority를 Production에 확립했고, closeout acceptance 직후 durable baseline에는 `unknown` 이벤트가 0건으로 확인되었습니다. 따라서 다음 단계는 새 기능을 즉시 확장하는 것이 아니라 실제 baseline-eligible usage/search/discovery 신호를 관찰하고 그 근거로 콘텐츠 확장, 검색 개선, discovery UX, community/voting 또는 외부 ingestion의 우선순위를 결정하는 것입니다.
 
 P2-4 성격의 external ingestion은 fetch → raw ingestion → normalize → dedupe → staging → admin review → canonical publish까지 별도 대형 subsystem이므로, 운영 병목 근거 없이 선행 구현하지 않습니다.
 
