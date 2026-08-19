@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import LikeDock from '@/components/engagement/LikeDock'
+import ProductTelemetry from '@/components/telemetry/ProductTelemetry'
 import { ShieldCheck } from 'lucide-react'
 import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo'
 
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Navbar />
         <main className="flex-grow flex flex-col relative">{children}</main>
         <LikeDock />
+        <Suspense fallback={null}><ProductTelemetry /></Suspense>
         <footer className="relative z-10 border-t border-[#dde2e8] bg-white py-8 text-xs text-[#6b7280]">
           <div className="rw-container flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center gap-2 text-[#3f4752]">
