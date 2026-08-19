@@ -4,7 +4,7 @@
 
 ## Current lifecycle
 
-**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / CONTENT-2 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
+**P1 COMPLETE / P2-1 CLOSED / P2-2 CLOSED / P2-3 CLOSED / OPS-1 CLOSED / CONTENT-1 CLOSED / CONTENT-2 CLOSED / CONTENT-3 CLOSED / UI-1 CLOSED / LAUNCH-1 CLOSED**
 
 - P2-1 User Voting: `SUCCESS / CLOSED`
 - P2-2 Ranking Change History & Vote Finalization: `SUCCESS / CLOSED`
@@ -12,6 +12,7 @@
 - OPS-1 Production Content Operations / Editorial Quality: `SUCCESS / CLOSED`
 - CONTENT-1 Verified Production Seed Batch: `SUCCESS / CLOSED`
 - CONTENT-2 Production Editorial Expansion / Coverage Batch: `SUCCESS / CLOSED`
+- CONTENT-3 Recurring Editorial Refresh / Revalidation Cadence: `SUCCESS / CLOSED`
 - UI-1 Public Experience Redesign & Launch Surface Consolidation: `SUCCESS / CLOSED`
 - LAUNCH-1 Production Deployment & Launch Hardening: `SUCCESS / CLOSED`
 
@@ -26,6 +27,8 @@ OPS-1은 draft capture는 유연하게 유지하면서 공개 발행만 fail-clo
 CONTENT-1은 OPS-1 계약을 실제 Production 콘텐츠에 적용해 공식·공공 데이터 기반 랭킹 4개를 발행했고, 실제 콘텐츠에서 발견된 지표형 랭킹 의미/표시 문제를 `ranking_type='metric'`과 명시적 `score_json` 값으로 보강했습니다. 최종 근거는 `docs/content-1-verified-production-seed-batch.md`를 기준으로 합니다.
 
 CONTENT-2는 기존 OPS-1/metric 계약을 새 도메인에 그대로 적용해 스포츠/KBO 3개와 문화·유산/UNESCO 1개 랭킹을 추가했습니다. 별도 schema/RPC 기능 추가 없이 카테고리 확장, canonical item 재사용, 반복 source-backed authoring, Production 검색/상세 노출을 검증했습니다. 최종 근거는 `docs/content-2-production-editorial-expansion.md`를 기준으로 합니다.
+
+CONTENT-3는 공개 랭킹의 authoritative source 재검증을 구조화해 append-only 검증 이력, 다음 검증일, freshness 상태와 관리자 재검증 workflow를 추가했습니다. 최초 8개 공개 metric 랭킹을 모두 재검증했고 실제 stale 상태였던 UNESCO 세계유산 랭킹을 감지·교정했습니다. 최종 근거는 `docs/content-3-recurring-editorial-revalidation.md`를 기준으로 합니다.
 
 UI-1은 기존 P1/P2 데이터·검색·투표·SEO 계약을 변경하지 않고 public surface의 정보 구조와 responsive UI를 재설계했습니다.
 
@@ -58,6 +61,8 @@ npm run dev
 - published editorial field 수정 전 unpublish 요구
 - ranking entry/criteria/source 변경 시 published parent 재검증
 - `metric` 공식 지표 랭킹 생성/편집
+- CONTENT-3 revalidation freshness 상태와 다음 검증일 표시
+- append-only ranking revalidation 이력 조회/기록
 - moderation review
 - role/capability access control
 - sanctions/appeals
@@ -171,6 +176,18 @@ npm run dev
 - category/detail/search Production acceptance 완료
 - 별도 schema/RPC migration 없이 기존 콘텐츠 계약의 cross-domain 재사용성 확인
 
+### CONTENT-3 Recurring Editorial Refresh / Revalidation Cadence
+- append-only `ranking_revalidations` authority
+- outcome: `verified_unchanged / updated / source_changed / source_unavailable`
+- freshness state: `never_reviewed / attention_required / overdue / due_soon / current`
+- 마지막 검증시각과 다음 검증일 구조화
+- 검증 시 현재 `ranking_sources` metadata snapshot 보존
+- 관리자 랭킹 목록에서 freshness/다음 검증일 표시
+- 랭킹별 재검증 결과 기록 및 이력 조회
+- 최초 공개 metric 랭킹 8개 전체 revalidation 완료
+- UNESCO stale snapshot 감지 후 이탈리아 `62건` 1위 / 중국 `61건` 2위로 OPS-1 절차를 거쳐 교정
+- 최종 8개 공개 metric 랭킹 모두 latest freshness `current`
+
 ### UI-1 public experience
 - semantic light design tokens and shared public surfaces
 - responsive public navigation with mobile menu
@@ -224,6 +241,7 @@ npm run verify:p2-2
 npm run verify:p2-3
 npm run verify:ops-1
 npm run verify:content-1
+npm run verify:content-3
 npm run verify:ui-1
 npm run verify:launch-1
 npm run lint
@@ -257,6 +275,11 @@ OPS-1 repository migrations:
 CONTENT-1 repository migrations:
 - `20260819020000_content_1_metric_ranking_type.sql`
 
+CONTENT-3 repository migrations:
+- `20260819030000_content_3_revalidation_cadence.sql`
+- `20260819030100_content_3_rpc_permissions.sql`
+- `20260819030200_content_3_actor_fk_index.sql`
+
 CONTENT-2는 DB schema/RPC migration을 추가하지 않았습니다. UI-1과 LAUNCH-1도 DB schema/RPC migration을 추가하지 않았습니다.
 
 ## 다음 로드맵
@@ -267,12 +290,13 @@ CONTENT-2는 DB schema/RPC migration을 추가하지 않았습니다. UI-1과 LA
 4. Production Content Operations / Editorial Quality — OPS-1 `SUCCESS / CLOSED`
 5. Verified Production Seed Batch — CONTENT-1 `SUCCESS / CLOSED`
 6. Production Editorial Expansion / Coverage Batch — CONTENT-2 `SUCCESS / CLOSED`
-7. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
-8. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
-9. Recurring Editorial Refresh / Revalidation Cadence — CONTENT-3 next: 기존 공개 문서를 권위 출처와 재대조하고 refresh/update 비용, stale-data 처리, 현실적인 재검증 주기를 측정
-10. External data import / crawling — CONTENT-3 반복 갱신에서 sourcing/normalization/update가 실제 운영 병목으로 확인된 뒤 current-state/design부터 진행
+7. Recurring Editorial Refresh / Revalidation Cadence — CONTENT-3 `SUCCESS / CLOSED`
+8. Public Experience Redesign — UI-1 `SUCCESS / CLOSED`
+9. Production Deployment & Launch Hardening — LAUNCH-1 `SUCCESS / CLOSED`
+10. Production editorial operation / source-backed coverage expansion — OPS-1 + CONTENT-3 계약을 사용해 실제 운영과 콘텐츠 확장을 지속
+11. External data import / crawling — 반복 운영에서 sourcing/normalization/update가 실제 병목으로 확인된 뒤 current-state/design부터 진행
 
-현재 Production은 CONTENT-2 종료 기준 top-level category `4`개, 검증 가능한 published ranking `8`개와 active item `26`개를 갖습니다. CONTENT-2에서도 외부 sourcing/import가 현재 병목이라는 근거가 확인되지 않았으므로, 다음은 기존 문서의 재검증·갱신 비용을 실제로 측정합니다.
+현재 Production은 top-level category `4`개, 검증 가능한 published ranking `8`개와 active item `26`개를 갖습니다. 8개 공개 metric 랭킹은 모두 최초 CONTENT-3 재검증을 완료했고 latest freshness는 `current`입니다. 재검증 과정에서 UNESCO 세계유산 랭킹의 stale snapshot을 실제로 감지해 이탈리아 62건 / 중국 61건 상태로 교정했습니다. 현재까지는 대형 외부 ingestion subsystem을 정당화할 sourcing/import 병목이 확인되지 않았습니다.
 
 P2-4 성격의 external ingestion은 fetch → raw ingestion → normalize → dedupe → staging → admin review → canonical publish까지 별도 대형 subsystem이므로, 운영 병목 근거 없이 선행 구현하지 않습니다.
 

@@ -1,12 +1,12 @@
 # CONTENT-3 Recurring Editorial Refresh / Revalidation Cadence
 
-Status: **IMPLEMENTATION / VALIDATION**
+Status: **SUCCESS / CLOSED**
 
 ## Objective
 
 CONTENT-3 turns source-backed publication into an ongoing editorial operation rather than a one-time seed event.
 
-The stage must answer four operational questions:
+The stage answers four operational questions:
 
 1. when each published ranking was last checked against its authoritative source;
 2. when it should be checked again;
@@ -24,9 +24,9 @@ Before CONTENT-3, `ranking_sources` could store source labels, URLs and free-tex
 - freshness state;
 - immutable revalidation history.
 
-A note such as `2026-08-19 확인` is insufficient for a repeatable queue because it cannot be queried reliably for due/overdue work.
+A note such as `2026-08-19 확인` was insufficient for a repeatable queue because it could not be queried reliably for due/overdue work.
 
-## Real stale-data case discovered
+## Real stale-data case discovered and corrected
 
 The first CONTENT-3 revalidation immediately found a material change in the published UNESCO snapshot.
 
@@ -46,15 +46,21 @@ The authoritative UNESCO State Party pages rechecked during CONTENT-3 showed:
 4. Germany — 55
 5. Spain — 50
 
-Therefore `unesco-world-heritage-properties-2026-top-5` requires a safe editorial refresh. The change is processed through the existing OPS-1 contract: unpublish, edit while draft, re-run readiness, then republish. CONTENT-3 does not create a bypass for published editorial mutation.
+`unesco-world-heritage-properties-2026-top-5` was corrected through the existing OPS-1 contract: unpublish, edit while draft, re-run readiness, then republish while preserving the original first-published timestamp.
 
-The remaining seven published metric rankings were rechecked against their existing authorities and did not require value/order changes at this stage.
+Production acceptance then found one additional stale sentence in the Methodology body that still described China and Italy as tied at 61. That text was also corrected through the same OPS-1 workflow and revalidated before republishing.
+
+The final Production detail now consistently shows Italy at 62 in first place and China at 61 in second place across ranking entries, metric values, reasons, JSON-LD and Methodology text.
+
+The remaining seven published metric rankings were rechecked against their existing authorities and did not require value/order changes during this lifecycle.
 
 ## Structured revalidation contract
 
-Migration:
+Repository migrations:
 
 - `20260819030000_content_3_revalidation_cadence.sql`
+- `20260819030100_content_3_rpc_permissions.sql`
+- `20260819030200_content_3_actor_fk_index.sql`
 
 New append-only authority:
 
@@ -80,6 +86,8 @@ Allowed outcomes:
 
 Rows are immutable after insertion. Direct table access is not the admin contract; authenticated admins use SECURITY DEFINER RPCs guarded by the existing `content_manage` capability.
 
+The CONTENT-3 RPC permission follow-up explicitly revokes execution from `PUBLIC` and `anon` and grants it to `authenticated`. The actor foreign-key follow-up adds a covering index for `actor_id`.
+
 ## Freshness states
 
 The admin status RPC derives one operational state from the latest event:
@@ -95,7 +103,7 @@ The admin status RPC derives one operational state from the latest event:
 
 ## Admin workflow
 
-Admin ranking management gains a revalidation status badge and a direct `재검증` workflow link.
+Admin ranking management now shows a revalidation freshness badge, the next review date when available, and a direct `재검증` workflow link.
 
 The ranking-specific revalidation screen shows:
 
@@ -106,26 +114,85 @@ The ranking-specific revalidation screen shows:
 - append-only prior events;
 - a form to record the next event for published rankings.
 
-The server action does not accept an arbitrary source snapshot. The database records the ranking's current `ranking_sources` rows at event creation time so the audit snapshot comes from the canonical source metadata already attached to the ranking.
+The server action does not accept an arbitrary source snapshot. The database records the ranking's current `ranking_sources` rows at event creation time so the audit snapshot comes from canonical source metadata already attached to the ranking.
 
-## Initial cadence policy
+## Initial Production cadence
 
 CONTENT-3 uses source volatility rather than one global interval.
 
-Recommended initial cadence for the current Production corpus:
+The initial recorded next-review schedule is:
 
-- UNESCO current snapshot: 30 days;
-- World Bank historical GDP/population: 90 days because historical series may be revised;
-- 국가데이터처 annual domestic migration release: recheck around the next annual publication/correction cycle;
-- final KBO historical season records: low-frequency annual correction check.
+- UNESCO current snapshot: 2026-09-19;
+- World Bank historical GDP/population: 2026-11-19;
+- final KBO 2025 historical season records: 2027-01-01;
+- 국가데이터처 2025 annual domestic migration release: 2027-01-29.
 
-These intervals are operational starting points, not immutable product constants. Revalidation history is intended to provide evidence for tuning them.
+These dates are operational starting points, not immutable product constants. Revalidation history provides the evidence for tuning them.
+
+## Hosted acceptance
+
+Hosted Supabase acceptance completed with the production project as authority.
+
+- all three CONTENT-3 migrations applied;
+- admin status/history/record RPCs executed successfully under an authenticated operator with `content_manage`;
+- anonymous function execution for all three CONTENT-3 admin RPCs is revoked;
+- `ranking_revalidations` is append-only;
+- initial revalidation was recorded for all 8 published metric rankings;
+- 7 initial outcomes were `verified_unchanged`;
+- UNESCO first produced `source_changed`, then `updated` after the safe editorial refresh;
+- Production-detail acceptance discovered and corrected the remaining stale Methodology sentence, producing one additional `updated` event;
+- final latest freshness state for all 8 published metric rankings is `current`;
+- total CONTENT-3 revalidation events at closeout: 10;
+- corrected UNESCO ranking remains OPS-1 `editorial_ready=true` with zero blockers.
+
+## Repository and Production acceptance
+
+Implementation PR #46 exact head:
+
+- `ae39495cebed1457a1acf372017137ed9606ab84`
+
+Exact-head CI:
+
+- run #218;
+- all prior verifiers passed;
+- `verify:content-3` passed;
+- lint passed;
+- production build passed.
+
+Merged implementation main:
+
+- `664310e141715c85d80234bf3b91b78e629c3dcf`
+
+Validated feature head and merged main have identical file trees.
+
+Vercel Production deployment:
+
+- deployment `dpl_BaKhiSpa5VpFyebwb7AKw3hU442z`;
+- target `production`;
+- git ref `main`;
+- exact SHA `664310e141715c85d80234bf3b91b78e629c3dcf`;
+- state `READY`;
+- canonical alias `ranking-rho-three.vercel.app`;
+- no non-main Vercel deployment was created during the feature branch lifecycle;
+- Production runtime error clusters were zero during acceptance.
+
+Public UNESCO detail acceptance verified:
+
+- HTTP 200;
+- Italy position 1 with explicit metric value `62건`;
+- China position 2 with explicit metric value `61건`;
+- corrected item reasons;
+- corrected JSON-LD order;
+- corrected Methodology body;
+- updated Italy source note.
 
 ## P2-4 boundary
 
-CONTENT-3 still does not authorize a general crawler/import subsystem.
+CONTENT-3 still does not justify a general crawler/import subsystem.
 
-P2-4 should be reconsidered only if repeated revalidation demonstrates a concrete bottleneck such as:
+The first recurring revalidation cycle found one real stale document and corrected it safely, but the work did not demonstrate a sourcing, normalization or update bottleneck that warrants fetch → raw ingestion → normalize → dedupe → staging → admin review infrastructure.
+
+P2-4 should be reconsidered only if continued production operation demonstrates concrete scale pressure such as:
 
 - too many authoritative pages to check manually/assisted;
 - repetitive normalization of the same source formats;
@@ -133,18 +200,12 @@ P2-4 should be reconsidered only if repeated revalidation demonstrates a concret
 - deduplication or provenance work dominating editorial time;
 - refresh deadlines being missed because the current workflow does not scale.
 
-Until that evidence exists, revalidation remains an editorial workflow backed by structured cadence/audit data rather than a large ingestion architecture.
+Until that evidence exists, recurring revalidation remains an editorial workflow backed by structured cadence and immutable audit data.
 
-## Validation gates
+## Lifecycle conclusion
 
-CONTENT-3 closes only after:
+All CONTENT-3 validation gates are satisfied.
 
-1. exact-head CI passes all prior verifiers plus `verify:content-3`;
-2. Hosted migration is applied;
-3. admin freshness status and append-only history RPCs are proven on Hosted;
-4. all eight published metric rankings receive an initial revalidation event;
-5. the stale UNESCO ranking is updated through OPS-1 without weakening publication gates;
-6. UNESCO Production detail shows the corrected order/value;
-7. Hosted readback shows the corrected ranking editorial-ready with zero blockers;
-8. Production deployment is exact merged main and READY;
-9. Production runtime errors remain clean.
+**Lifecycle result: `SUCCESS / CLOSED`.**
+
+The next work should be normal Production editorial operation and source-backed coverage expansion using the existing OPS-1 + CONTENT-3 contracts. P2-4 external ingestion remains deferred until operational evidence changes that decision.
