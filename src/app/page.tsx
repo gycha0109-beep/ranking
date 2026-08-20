@@ -59,7 +59,7 @@ export default async function HomePage() {
               </p>
 
               <div className="mt-8 max-w-xl">
-                <SearchForm hero />
+                <SearchForm />
               </div>
             </div>
 
@@ -180,7 +180,7 @@ export default async function HomePage() {
           <div className="grid gap-6 lg:grid-cols-[0.34fr_0.66fr] lg:gap-12">
             <div className="lg:sticky lg:top-24 lg:self-start">
               <p className="rw-kicker">Recently updated</p>
-              <h2 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] text-[#15191f]">최근 발행<br className="hidden lg:block" /> 아카이브</h2>
+              <h2 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] text-[#15191f]">최근 발행 아카이브 문서</h2>
               <p className="mt-4 max-w-xs text-sm leading-7 text-[#656d77]">
                 새로 발행되거나 갱신된 랭킹 문서를 최신 순서로 확인합니다. 각 문서에는 기준과 출처가 함께 보존됩니다.
               </p>
