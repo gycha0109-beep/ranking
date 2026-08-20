@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7f9;
-  --foreground: #171a1f;
-  --rw-canvas: #f6f7f9;
+  --background: #f3f2ed;
+  --foreground: #15191f;
+  --rw-canvas: #f3f2ed;
   --rw-surface: #ffffff;
-  --rw-surface-muted: #f0f2f5;
-  --rw-surface-strong: #e9edf2;
-  --rw-border: #dde2e8;
-  --rw-border-strong: #c9d0d9;
-  --rw-text: #171a1f;
+  --rw-surface-muted: #f7f6f1;
+  --rw-surface-strong: #ebeae5;
+  --rw-border: #d9d8d2;
+  --rw-border-strong: #c4c5c0;
+  --rw-text: #15191f;
   --rw-text-soft: #3f4752;
-  --rw-text-muted: #5f6875;
-  --rw-brand: #3457c8;
-  --rw-brand-strong: #2445ad;
+  --rw-text-muted: #626a74;
+  --rw-brand: #3158e8;
+  --rw-brand-strong: #1f44c9;
   --rw-brand-soft: #eef2ff;
   --rw-positive: #087a54;
   --rw-positive-soft: #ecfdf5;
@@ -21,8 +21,8 @@
   --rw-warning-soft: #fffbeb;
   --rw-danger: #be4057;
   --rw-danger-soft: #fff1f2;
-  --rw-radius: 18px;
-  --rw-shadow: 0 8px 30px rgba(20, 30, 50, 0.06);
+  --rw-radius: 12px;
+  --rw-shadow: 0 5px 18px rgba(20, 27, 36, 0.045);
 }
 
 @theme inline {
@@ -43,12 +43,30 @@ body {
 
 a, button, input, select, textarea, summary { -webkit-tap-highlight-color: transparent; }
 button, input, select, textarea { font: inherit; }
-:focus-visible { outline: 3px solid rgba(52, 87, 200, 0.24); outline-offset: 2px; }
-::selection { background: #dfe7ff; color: #172554; }
+:focus-visible { outline: 3px solid rgba(49, 88, 232, 0.22); outline-offset: 2px; }
+::selection { background: #dfe6ff; color: #152659; }
 
 .rw-page { min-height: 100vh; background: var(--rw-canvas); color: var(--rw-text); }
 .rw-container { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
 .rw-reading { width: min(860px, calc(100% - 32px)); margin-inline: auto; }
+
+.rw-display {
+  text-wrap: balance;
+  font-feature-settings: "ss01" 1, "ss02" 1;
+}
+
+.rw-rank-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.055em;
+}
+
+.rw-hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(20, 25, 31, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 25, 31, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+}
 
 .rw-surface,
 .glass-card {
@@ -65,17 +83,18 @@ button, input, select, textarea { font: inherit; }
 
 .rw-card-interactive:hover,
 .glass-card-hover:hover {
-  border-color: #bcc7dc;
-  box-shadow: 0 12px 34px rgba(20, 30, 50, 0.1);
+  border-color: #aeb3b9;
+  box-shadow: 0 10px 28px rgba(20, 27, 36, 0.08);
   transform: translateY(-1px);
 }
 
 .rw-kicker {
   color: var(--rw-brand);
-  font-size: 0.72rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.68rem;
   line-height: 1;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-weight: 900;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -88,10 +107,10 @@ button, input, select, textarea { font: inherit; }
   justify-content: center;
   gap: 0.45rem;
   min-height: 40px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--rw-brand);
   color: #fff;
-  font-weight: 750;
+  font-weight: 800;
   transition: background 160ms ease, transform 160ms ease;
 }
 .rw-button-primary:hover { background: var(--rw-brand-strong); }
@@ -103,13 +122,13 @@ button, input, select, textarea { font: inherit; }
   gap: 0.45rem;
   min-height: 40px;
   border: 1px solid var(--rw-border-strong);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
   color: var(--rw-text-soft);
-  font-weight: 700;
+  font-weight: 750;
   transition: background 160ms ease, border-color 160ms ease;
 }
-.rw-button-secondary:hover { border-color: #aeb7c4; background: #f8fafc; }
+.rw-button-secondary:hover { border-color: #aeb3b9; background: #f8f8f5; }
 
 /* UI-1 used several one-off muted colors before launch accessibility verification.
    Normalize those legacy utilities to one token that stays >= 4.5:1 on the light public surfaces. */
@@ -125,8 +144,8 @@ button, input, select, textarea { font: inherit; }
 }
 
 /* P1 comment functionality predates UI-1. Keep the interaction code intact while mapping its dark utility surface into the public light shell. */
-.rw-comment-shell section { border-color: #dde2e8 !important; }
-.rw-comment-shell [class*="border-white"] { border-color: #e3e7ec !important; }
+.rw-comment-shell section { border-color: #d9d8d2 !important; }
+.rw-comment-shell [class*="border-white"] { border-color: #e3e4df !important; }
 .rw-comment-shell [class*="bg-black"],
 .rw-comment-shell [class*="bg-slate-900"],
 .rw-comment-shell [class*="bg-white/[0.0"] { background-color: #ffffff !important; }
@@ -141,23 +160,24 @@ button, input, select, textarea { font: inherit; }
 .rw-comment-shell [class*="text-indigo-100"],
 .rw-comment-shell [class*="text-indigo-200"],
 .rw-comment-shell [class*="text-indigo-300"],
-.rw-comment-shell [class*="text-indigo-400"] { color: #3457c8 !important; }
+.rw-comment-shell [class*="text-indigo-400"] { color: #3158e8 !important; }
 .rw-comment-shell textarea,
 .rw-comment-shell input,
 .rw-comment-shell select {
   background: #ffffff !important;
-  border-color: #d8dee6 !important;
+  border-color: #d1d3d0 !important;
   color: #303640 !important;
 }
 .rw-comment-shell textarea::placeholder,
 .rw-comment-shell input::placeholder { color: var(--rw-text-muted) !important; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #eef1f4; }
-::-webkit-scrollbar-thumb { background: #c7ced8; border: 2px solid #eef1f4; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #aeb8c5; }
+::-webkit-scrollbar-track { background: #ebeae5; }
+::-webkit-scrollbar-thumb { background: #c5c6c1; border: 2px solid #ebeae5; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #aeb1ac; }
 
 @media (max-width: 640px) {
   .rw-container,
   .rw-reading { width: min(100% - 24px, 1180px); }
+  .rw-hero-grid { background-size: 36px 36px; }
 }
