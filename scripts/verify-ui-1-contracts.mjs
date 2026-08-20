@@ -66,11 +66,12 @@ const methodologyIndex = ranking.indexOf('>이 순위가 만들어진 기준</h2
 expect(rankingTableIndex >= 0 && methodologyIndex >= 0 && rankingTableIndex < methodologyIndex, 'ranking table must appear before methodology')
 expectContains(ranking, '총 {ranking.entries.length}개 항목', 'ranking detail must expose entry count near primary table')
 expectContains(ranking, 'aria-label={`${source.label} 출처 열기`}', 'icon-only ranking source links must expose a discernible accessible name')
+expectContains(ranking, 'rw-comment-shell', 'ranking comments must stay inside the UI-1 light compatibility scope')
+expectContains(ranking, '<CommentSection targetType="ranking"', 'ranking comments must remain available in the article flow')
 expectContains(item, '>이 아이템이 등장하는 랭킹</h2>', 'item detail must prioritize ranking footprint')
 
 expectNotContains(rankingLayout, 'bg-[#07070a]', 'ranking interaction layout must not use legacy dark wrapper')
 expectNotContains(itemLayout, 'bg-[#07070a]', 'item interaction layout must not use legacy dark wrapper')
-expectContains(rankingLayout, 'rw-comment-shell', 'ranking comments must use UI-1 compatibility scope')
 expectContains(itemLayout, 'rw-comment-shell', 'item comments must use UI-1 compatibility scope')
 
 expectNotContains(engagement, '#101017', 'engagement bar must not use legacy dark dock')
