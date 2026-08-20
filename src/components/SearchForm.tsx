@@ -72,7 +72,9 @@ export default function SearchForm({
     }
   }, [formKey, historySync])
 
-  if (hero) {
+  const useHeroTreatment = hero || (!compact && !showFilters && !historySync)
+
+  if (useHeroTreatment) {
     return (
       <form ref={formRef} key={formKey} action="/search" method="get" role="search" className={className}>
         {facetIds.map((id) => (
