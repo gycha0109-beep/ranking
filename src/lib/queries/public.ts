@@ -1,4 +1,12 @@
 import { normalizeRouteSlug } from '@/lib/routing'
+import {
+  classifyRankingNeighbor,
+  compareRankingNeighbors,
+  explainRankingNeighbor,
+  RELATED_RANKING_LIMIT,
+  SAME_SUBCATEGORY_CANDIDATE_LIMIT,
+  SHARED_ITEM_CANDIDATE_ROW_LIMIT,
+} from '@/lib/ranking-neighborhood'
 import { createPublicClient } from '@/lib/supabase/public'
 
 const PUBLIC_MODERATION_STATUSES = ['clean', 'suggestive']
@@ -221,81 +229,120 @@ export async function getRankingsContainingItem(itemId: string) {
 }
 
 /**
- * 관련 랭킹 우선순위:
- * 공유 아이템 > 동일 서브카테고리 > 동일 카테고리 > 공유 Facet > 최신 발행일 > ID.
+ * IA-1 contextual neighborhood:
+ * same non-null subcategory / shared public Item 후보만 수집한 뒤
+ * Item Jaccard + title lexical Jaccard로 gate하고 deterministic tier로 정렬한다.
  */
 export async function getRelatedRankings(ranking: any) {
   const supabase = createPublicClient()
-  const candidates = new Map<string, RelatedCandidate>()
-  const itemIds = (ranking.entries || []).map((entry: any) => entry.item_id).filter(Boolean)
-  const facetIds = (ranking.facets || []).map((facet: any) => facet.id).filter(Boolean)
+  const candidateMap = new Map<string, any>()
+  const itemIds = [...new Set((ranking.entries || []).map((entry: any) => entry.item_id).filter(Boolean))]
 
-  if (itemIds.length > 0) {
-    const { data } = await supabase
-      .from('ranking_entries')
-      .select(`ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
-      .in('item_id', itemIds)
-      .neq('ranking_id', ranking.id)
-      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
-      .eq('rankings.status', 'published')
-      .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
-      .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
-      .limit(60)
-
-    for (const row of data || []) upsertCandidate(candidates, row.rankings, 1, '공유 아이템')
+  const addCandidate = (candidate: any) => {
+    if (!candidate?.id || candidate.id === ranking.id) return
+    if (!candidateMap.has(candidate.id)) candidateMap.set(candidate.id, candidate)
   }
+
+  const candidateQueries: PromiseLike<any>[] = []
 
   if (ranking.subcategory_id) {
-    const { data } = await supabase
-      .from('rankings')
-      .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
-      .eq('subcategory_id', ranking.subcategory_id)
-      .neq('id', ranking.id)
-      .eq('status', 'published')
-      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
-      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
-      .order('published_at', { ascending: false })
-      .limit(20)
-
-    for (const row of data || []) upsertCandidate(candidates, row, 2, '같은 세부 분류')
+    candidateQueries.push(
+      supabase
+        .from('rankings')
+        .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
+        .eq('subcategory_id', ranking.subcategory_id)
+        .neq('id', ranking.id)
+        .eq('status', 'published')
+        .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
+        .order('published_at', { ascending: false })
+        .order('id', { ascending: true })
+        .limit(SAME_SUBCATEGORY_CANDIDATE_LIMIT)
+    )
   }
 
-  if (ranking.category_id) {
-    const { data } = await supabase
-      .from('rankings')
-      .select(`${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug)`)
-      .eq('category_id', ranking.category_id)
-      .neq('id', ranking.id)
-      .eq('status', 'published')
-      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
-      .in('image_moderation_status', PUBLIC_MODERATION_STATUSES)
-      .order('published_at', { ascending: false })
-      .limit(30)
-
-    for (const row of data || []) upsertCandidate(candidates, row, 3, '같은 카테고리')
+  if (itemIds.length > 0) {
+    candidateQueries.push(
+      supabase
+        .from('ranking_entries')
+        .select(`id, ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
+        .in('item_id', itemIds)
+        .neq('ranking_id', ranking.id)
+        .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+        .eq('rankings.status', 'published')
+        .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+        .order('ranking_id', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(SHARED_ITEM_CANDIDATE_ROW_LIMIT)
+    )
   }
 
-  if (facetIds.length > 0) {
-    const { data } = await supabase
-      .from('ranking_facets')
-      .select(`ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
-      .in('facet_id', facetIds)
-      .neq('ranking_id', ranking.id)
-      .eq('rankings.status', 'published')
-      .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
-      .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
-      .limit(60)
-
-    for (const row of data || []) upsertCandidate(candidates, row.rankings, 4, '공유 태그')
+  const candidateResults = await Promise.all(candidateQueries)
+  for (const result of candidateResults) {
+    for (const row of result.data || []) {
+      addCandidate(row.rankings || row)
+    }
   }
 
-  return [...candidates.values()]
-    .sort(sortCandidates)
-    .slice(0, 6)
-    .map(candidate => ({
-      ...candidate.data,
-      related_reason: candidate.reason,
-      related_match_count: candidate.matchCount,
+  const candidateIds = [...candidateMap.keys()].sort((left, right) => left.localeCompare(right))
+  if (candidateIds.length === 0) return []
+
+  const { data: candidateEntries } = await supabase
+    .from('ranking_entries')
+    .select('id, ranking_id, item_id, position, items!inner(id)')
+    .in('ranking_id', candidateIds)
+    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+    .eq('items.status', 'active')
+    .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+    .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+    .order('ranking_id', { ascending: true })
+    .order('position', { ascending: true })
+    .order('id', { ascending: true })
+
+  const candidateItemIds = new Map<string, string[]>()
+  for (const entry of candidateEntries || []) {
+    if (!entry.ranking_id || !entry.item_id) continue
+    const ids = candidateItemIds.get(entry.ranking_id) || []
+    ids.push(entry.item_id)
+    candidateItemIds.set(entry.ranking_id, ids)
+  }
+
+  const currentNode = {
+    id: ranking.id,
+    categoryId: ranking.category_id || null,
+    subcategoryId: ranking.subcategory_id || null,
+    title: ranking.title || '',
+    itemIds,
+    publishedAt: ranking.published_at || ranking.updated_at || ranking.created_at || null,
+  }
+
+  const neighbors = []
+  for (const candidateId of candidateIds) {
+    const data = candidateMap.get(candidateId)
+    if (!data) continue
+
+    const relation = classifyRankingNeighbor(currentNode, {
+      id: data.id,
+      categoryId: data.category_id || null,
+      subcategoryId: data.subcategory_id || null,
+      title: data.title || '',
+      itemIds: candidateItemIds.get(data.id) || [],
+      publishedAt: data.published_at || data.updated_at || data.created_at || null,
+    })
+
+    if (!relation) continue
+    neighbors.push({ data, relation })
+  }
+
+  return neighbors
+    .sort((left, right) => compareRankingNeighbors(left.relation, right.relation))
+    .slice(0, RELATED_RANKING_LIMIT)
+    .map(({ data, relation }) => ({
+      ...data,
+      related_reason: explainRankingNeighbor(relation, data.subcategories?.name),
+      related_match_count: relation.sharedItemCount,
+      related_tier: relation.tier,
     }))
 }
 
