@@ -39,7 +39,7 @@ export default async function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#d9d8d2] bg-[#fbfaf7]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[#d9d8d2] bg-white/95 backdrop-blur-xl">
       <div className="rw-container flex h-[68px] items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-7">
           <Link href="/" className="group flex shrink-0 items-center gap-3" aria-label="랭킹위키 홈">
@@ -72,7 +72,7 @@ export default async function Navbar() {
               <Link href="/me/notifications" className={iconButton} title="내 알림" aria-label={`내 알림${unreadNotificationCount > 0 ? `, 읽지 않음 ${unreadNotificationCount}개` : ''}`}>
                 <Bell className="h-4 w-4" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -right-1 -top-1 min-w-5 rounded-full border-2 border-[#fbfaf7] bg-[#3158e8] px-1 text-center text-[9px] font-black leading-4 text-white">
+                  <span className="absolute -right-1 -top-1 min-w-5 rounded-full border-2 border-white bg-[#3158e8] px-1 text-center text-[9px] font-black leading-4 text-white">
                     {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                   </span>
                 )}
