@@ -1,6 +1,6 @@
 # MEASURE-1 Product Usage & Discovery Baseline / Real-User Validation Readiness
 
-Status: **ACTIVE / IMPLEMENTATION**
+Status: **SUCCESS / CLOSED**
 
 ## Objective
 
@@ -251,6 +251,30 @@ MEASURE-1 closes only after:
 10. production home/category/search/ranking/item smoke passes;
 11. runtime errors are checked;
 12. closeout evidence records the exact merged main and Production deployment.
+
+## Closeout evidence
+
+MEASURE-1 satisfied the closure contract on 2026-08-19.
+
+- implementation PR: `#49` — merged
+- exact implementation PR head: `7bfc6c1e89350ab59c2cd6de62dab0f4277e3cb4`
+- exact-head GitHub Actions: run `#227` — `SUCCESS`
+- merged implementation `main`: `6b6d4bc2b3a4162fc046797b2b5404a74c5dc7c4`
+- merged-main Vercel Production: `dpl_7dzCoMgHjDkAyU3D1xAcmfyCsKmu` — `READY`
+- canonical Production alias: `https://ranking-rho-three.vercel.app`
+- Hosted migrations applied: `measure_1_product_usage_discovery`, `measure_1_retention_maintenance`
+- retention authority: `maintain_measure_1_telemetry` / `ranking-maint-measure-1-telemetry`, daily `10 4 * * *` UTC
+- controlled retention runner validation: `no_work`, no error
+- Hosted table/RLS/grant/RPC/capability readback passed; direct `anon`/`authenticated` table access remains denied
+- controlled QA search, zero-result search, search-result click, discovery click, content view, and daily content-view dedupe passed under `qa_internal`
+- Production server-side smoke returned `200` for `/`, `/categories`, `/search?q=FIFA`, `/rankings/fifa-men-world-ranking-2026-07-top-5`, and `/items/singapore`
+- unauthenticated `/admin/measure` resolved to the login surface and did not expose the operator baseline
+- Vercel `error`/`fatal` runtime log check for the merged deployment returned no matching logs
+- smoke validation did not execute browser telemetry; post-smoke Hosted telemetry remained QA-only with `unknown=0`
+
+The baseline therefore starts prospectively from the MEASURE-1 authority. Historical `content_daily_views` / `content_view_totals` remain product display counters and are not retroactively reclassified as real-user demand.
+
+Closure does not authorize a recommendation engine, crawler/import subsystem, third-party analytics SaaS, generalized pageview system, persistent cross-day user identifier, A/B experimentation platform, or BI warehouse. The next product decision should be made only after enough baseline-eligible real-user evidence exists.
 
 ## Non-goals
 
