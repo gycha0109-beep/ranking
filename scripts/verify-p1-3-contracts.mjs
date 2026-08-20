@@ -115,10 +115,11 @@ forbid(publicQueries, /export async function getPublishedRankingsBySubcategory/,
 requireText(publicQueries, 'return a.id.localeCompare(b.id)', 'related recommendation UUID tie break')
 
 const home = read('src/app/page.tsx')
-requireText(home, '<SearchForm />', 'active home search')
-requireText(home, ".in('moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home moderation count')
-requireText(home, ".in('image_moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home image moderation count')
-requireText(home, '최근 발행 아카이브 문서', 'home latest wording')
+const homeQueries = read('src/lib/queries/home.ts')
+requireText(home, '<SearchForm hero />', 'active home search')
+requireText(homeQueries, ".in('moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home moderation boundary')
+requireText(homeQueries, ".in('image_moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home image moderation boundary')
+requireText(home, '최근 업데이트', 'home latest wording')
 forbid(home, /disabled[\s\S]{0,120}P1 준비중/, 'disabled legacy search')
 
 const navbar = read('src/components/Navbar.tsx')

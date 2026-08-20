@@ -130,6 +130,46 @@ button, input, select, textarea { font: inherit; }
 }
 .rw-button-secondary:hover { border-color: #aeb3b9; background: #f8f8f5; }
 
+/* UI-2A keeps the home energetic without turning the whole public shell into a dark theme. */
+.rw-home-hero {
+  background-image:
+    linear-gradient(to right, rgba(49, 88, 232, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(49, 88, 232, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center top;
+}
+
+.rw-media-hero {
+  isolation: isolate;
+  overflow: hidden;
+  background: #1746bd;
+}
+
+.rw-media-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 88%);
+}
+
+.rw-featured-slide { animation: rw-featured-slide-in 280ms ease-out; }
+
+@keyframes rw-featured-slide-in {
+  from { opacity: 0.68; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.rw-ranking-strip-visual { background: #f3f6ff; }
+
+.rw-scroll-row { scrollbar-width: none; }
+.rw-scroll-row::-webkit-scrollbar { display: none; }
+
 /* UI-1 used several one-off muted colors before launch accessibility verification.
    Normalize those legacy utilities to one token that stays >= 4.5:1 on the light public surfaces. */
 [class*="text-[#8a94a3]"],
@@ -176,8 +216,13 @@ button, input, select, textarea { font: inherit; }
 ::-webkit-scrollbar-thumb { background: #c5c6c1; border: 2px solid #ebeae5; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #aeb1ac; }
 
+@media (prefers-reduced-motion: reduce) {
+  .rw-featured-slide { animation: none; }
+}
+
 @media (max-width: 640px) {
   .rw-container,
   .rw-reading { width: min(100% - 24px, 1180px); }
   .rw-hero-grid { background-size: 36px 36px; }
+  .rw-home-hero { background-size: 48px 48px; }
 }

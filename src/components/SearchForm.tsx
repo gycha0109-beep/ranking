@@ -95,7 +95,7 @@ export default function SearchForm({
               className="w-full border-0 bg-transparent py-3 pl-10 pr-3 text-sm font-semibold text-[#171a1f] placeholder:font-medium placeholder:text-[#8a919a] focus:outline-none"
             />
           </div>
-          <button type="submit" className="inline-flex h-11 shrink-0 items-center gap-2 bg-[#15191f] px-4 text-xs font-extrabold text-white transition hover:bg-[#3158e8] sm:px-5">
+          <button type="submit" className="inline-flex h-11 shrink-0 items-center gap-2 bg-[#3158e8] px-4 text-xs font-extrabold text-white transition hover:bg-[#1f44c9] sm:px-5">
             검색 <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
