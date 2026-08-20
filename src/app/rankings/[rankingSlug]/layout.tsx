@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import CommentSection from '@/components/comments/CommentSection'
 import RankingHistoryPanel from '@/components/ranking-history/RankingHistoryPanel'
 import RankingVotingPanel from '@/components/voting/RankingVotingPanel'
 import { absoluteUrl, getRankingSeoSnapshot, serializeJsonLd, SITE_NAME } from '@/lib/seo'
@@ -99,11 +98,6 @@ export default async function RankingDetailLayout({ children, params }: Props) {
       {history.length > 0 && (
         <div className="bg-[#f6f7f9] px-3 pb-10 sm:px-4">
           <div className="mx-auto max-w-[860px]"><RankingHistoryPanel revisions={history} /></div>
-        </div>
-      )}
-      {ranking && (
-        <div className="rw-comment-shell bg-[#f6f7f9] px-3 pb-24 sm:px-4">
-          <div className="mx-auto max-w-[860px]"><CommentSection targetType="ranking" targetId={ranking.id} pathname={`/rankings/${ranking.slug}`} /></div>
         </div>
       )}
     </>
