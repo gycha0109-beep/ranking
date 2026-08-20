@@ -13,7 +13,7 @@ export type RankingNeighborhoodNode = {
   categoryId: string | null
   subcategoryId: string | null
   title: string
-  itemIds: readonly string[]
+  itemIds: readonly unknown[]
   publishedAt?: string | null
 }
 
@@ -28,8 +28,10 @@ export type RankingNeighborRelation = {
   publishedAt: string | null
 }
 
-function toUniqueSet(values: readonly string[]) {
-  return new Set(values.filter(Boolean))
+function toUniqueSet(values: readonly unknown[]) {
+  return new Set(
+    values.filter((value): value is string => typeof value === 'string' && value.length > 0)
+  )
 }
 
 function setJaccard(left: Set<string>, right: Set<string>) {
@@ -70,7 +72,7 @@ export function normalizeRankingTokens(title: string) {
   )]
 }
 
-export function calculateItemJaccard(leftItemIds: readonly string[], rightItemIds: readonly string[]) {
+export function calculateItemJaccard(leftItemIds: readonly unknown[], rightItemIds: readonly unknown[]) {
   return setJaccard(toUniqueSet(leftItemIds), toUniqueSet(rightItemIds))
 }
 
