@@ -19,6 +19,9 @@ const metadataModule = await import(`data:text/javascript;base64,${Buffer.from(t
 const { buildPublicItemFacts, formatItemMachineLabel } = metadataModule
 
 assert.equal(formatItemMachineLabel('sports_team'), 'Sports Team')
+assert.equal(formatItemMachineLabel('city'), '도시')
+assert.equal(formatItemMachineLabel('airport'), '공항')
+assert.equal(formatItemMachineLabel('supercomputer'), '슈퍼컴퓨터')
 assert.equal(formatItemMachineLabel('iso2'), 'ISO2')
 assert.equal(formatItemMachineLabel('oecd_code'), 'OECD 코드')
 assert.equal(formatItemMachineLabel('pisa_label'), 'PISA 표기명')
