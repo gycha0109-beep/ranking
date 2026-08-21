@@ -57,9 +57,11 @@ This demonstrates that the signal is intentionally sparse. It is useful only aft
 
 ## UX contract
 
-The original semantic editor remains authoritative. IA-2H wraps it with a bounded fallback advisory that watches the existing Subject input. The fallback becomes visible only after the lexical matcher returns zero suggestions.
+The original semantic editor remains authoritative. IA-2H adds a bounded fallback advisory alongside it and watches the existing Subject input. The fallback becomes visible only after the lexical matcher returns zero suggestions.
 
 Selecting the context candidate only writes the Canonical key into the existing Subject input. It does not save the projection, create an Alias, merge Subjects, publish content, or mutate ranking data. The administrator must still explicitly save through the existing reviewed-projection path.
+
+The operator may always ignore the fallback and save a **새 Subject** unchanged. Context evidence never turns a reuse suggestion into a requirement.
 
 Because the existing finalized-decision evidence contract validates lexical suggestions server-side, an IA-2H fallback selection is currently finalized as ordinary `existing` Canonical reuse rather than being reclassified as a lexical `suggestion`. IA-2H does not weaken the IA-2D evidence contract merely to attribute this new UI assist.
 
