@@ -3,11 +3,18 @@ import fs from 'node:fs'
 const read = (path) => fs.readFileSync(path, 'utf8')
 const migration = 'supabase/migrations/20260819010000_ops_1_editorial_quality.sql'
 const triggerFix = 'supabase/migrations/20260819010100_ops_1_trigger_return_fix.sql'
+const topCountBoundary = 'supabase/migrations/20260822071500_content_5_top_count_brand_boundary.sql'
 const checks = []
 
 function requireText(path, text, label = `${path}: ${text}`) {
   const content = read(path)
   if (!content.includes(text)) throw new Error(`OPS-1 contract failed: ${label}`)
+  checks.push(label)
+}
+
+function forbidText(path, text, label = `${path}: ${text}`) {
+  const content = read(path)
+  if (content.includes(text)) throw new Error(`OPS-1 contract failed: ${label}`)
   checks.push(label)
 }
 
@@ -30,6 +37,12 @@ requireText(migration, "r.slug = 'best-chicken-breast'", 'known noncompliant pub
 requireText(migration, "r.slug = '간편-작성-테스트'", 'known quick-create test draft is reconciled explicitly')
 requireText(migration, "i.title in ('테스트', '중입니다', '어떻게', '나올까요?')", 'known generated test items are archived explicitly')
 requireText(triggerFix, "if tg_op = 'DELETE' then", 'child trigger return path handles deletes explicitly')
+requireText(topCountBoundary, 'private.ops_1_ranking_editorial_readiness', 'TOP-count brand boundary preserves the same readiness authority')
+requireText(topCountBoundary, "(?i)(TOP|탑)[[:space:]]+([0-9]{1,3})", 'TOP-count promise requires explicit whitespace before the count')
+forbidText(topCountBoundary, "(?i)(TOP|탑)[[:space:]]*([0-9]{1,3})", 'TOP-count boundary must not reinterpret branded tokens such as TOP500')
+requireText(topCountBoundary, "'title_entry_count_mismatch'", 'TOP-count boundary preserves title/entry mismatch enforcement')
+requireText(topCountBoundary, "'missing_usable_public_source'", 'TOP-count boundary preserves source readiness enforcement')
+requireText(topCountBoundary, "'non_contiguous_positions'", 'TOP-count boundary preserves position readiness enforcement')
 requireText('src/lib/actions/editorial-quality.ts', 'publishRankingWithEditorialGate', 'publish action checks editorial readiness before legacy publish action')
 requireText('src/lib/actions/editorial-quality.ts', "admin_get_ranking_editorial_readiness", 'UI reads database readiness authority')
 requireText('src/app/admin/rankings/[id]/preview/PreviewControlPanel.tsx', 'OPS-1 Editorial Quality', 'preview exposes editorial readiness')
