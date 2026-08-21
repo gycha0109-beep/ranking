@@ -75,20 +75,20 @@ export default function CommentReportForm({
   }
 
   return (
-    <div className="mt-4 space-y-3 rounded-xl border border-rose-500/15 bg-rose-500/[0.045] p-3 sm:ml-12">
+    <div className="mt-4 space-y-3 rounded-xl border border-[#efc2ca] bg-[#fff7f8] p-3 sm:ml-12" aria-busy={submitting}>
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-200">
-          <Flag className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#a93449]">
+          <Flag className="h-3.5 w-3.5" aria-hidden="true" />
           댓글 신고
         </div>
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="text-slate-600 hover:text-white disabled:opacity-50"
+          className="rounded-md p-1 text-[#737c89] transition hover:bg-[#f8dfe4] hover:text-[#a93449] disabled:opacity-50"
           aria-label="신고 취소"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
 
@@ -96,7 +96,8 @@ export default function CommentReportForm({
         value={reason}
         onChange={(event) => setReason(event.target.value as CommentReportReason)}
         disabled={submitting}
-        className="w-full rounded-xl border border-white/10 bg-[#0c0c12] px-3 py-2.5 text-xs text-slate-200 outline-none focus:border-rose-400/30 disabled:opacity-50"
+        aria-label="댓글 신고 사유"
+        className="w-full rounded-xl border border-[#d9c6ca] bg-white px-3 py-2.5 text-xs text-[#303640] outline-none transition focus:border-[#be4057] focus:ring-4 focus:ring-[#be4057]/10 disabled:opacity-50"
       >
         {REASONS.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>
@@ -110,25 +111,26 @@ export default function CommentReportForm({
         rows={3}
         disabled={submitting}
         placeholder="운영자가 확인할 추가 설명이 있다면 입력해 주세요. 신고자 정보는 댓글 작성자에게 공개되지 않습니다."
-        className="w-full resize-y rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-slate-100 outline-none placeholder:text-slate-700 focus:border-rose-400/30 disabled:opacity-50"
+        aria-label="댓글 신고 추가 설명"
+        className="w-full resize-y rounded-xl border border-[#d9c6ca] bg-white px-3 py-2.5 text-xs text-[#303640] outline-none transition placeholder:text-[#8a94a3] focus:border-[#be4057] focus:ring-4 focus:ring-[#be4057]/10 disabled:opacity-50"
       />
 
       {error && (
-        <div className="flex items-start gap-1.5 rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-2 text-[10px] text-rose-200">
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <div role="alert" className="flex items-start gap-1.5 rounded-lg border border-[#efc2ca] bg-[#fff1f2] px-2.5 py-2 text-[10px] text-[#a93449]">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[10px] text-slate-600">{details.length.toLocaleString('ko-KR')} / 500</span>
+        <span className="text-[10px] font-medium text-[#737c89]">{details.length.toLocaleString('ko-KR')} / 500</span>
         <button
           type="button"
           onClick={() => void submit()}
           disabled={submitting}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/25 bg-rose-500/15 px-3 py-1.5 text-[10px] font-bold text-rose-100 hover:bg-rose-500/25 disabled:opacity-50"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#be4057] px-3 py-1.5 text-[10px] font-bold text-white transition hover:bg-[#a93449] disabled:opacity-50"
         >
-          {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+          {submitting ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> : <Send className="h-3 w-3" aria-hidden="true" />}
           신고 제출
         </button>
       </div>

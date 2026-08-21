@@ -183,34 +183,6 @@ button, input, select, textarea { font: inherit; }
   color: var(--rw-text-muted) !important;
 }
 
-/* P1 comment functionality predates UI-1. Keep the interaction code intact while mapping its dark utility surface into the public light shell. */
-.rw-comment-shell section { border-color: #d9d8d2 !important; }
-.rw-comment-shell [class*="border-white"] { border-color: #e3e4df !important; }
-.rw-comment-shell [class*="bg-black"],
-.rw-comment-shell [class*="bg-slate-900"],
-.rw-comment-shell [class*="bg-white/[0.0"] { background-color: #ffffff !important; }
-.rw-comment-shell [class*="text-slate-100"],
-.rw-comment-shell [class*="text-slate-200"],
-.rw-comment-shell [class*="text-slate-300"] { color: #303640 !important; }
-.rw-comment-shell [class*="text-slate-400"] { color: #5f6875 !important; }
-.rw-comment-shell [class*="text-slate-500"],
-.rw-comment-shell [class*="text-slate-600"],
-.rw-comment-shell [class*="text-slate-700"] { color: var(--rw-text-muted) !important; }
-.rw-comment-shell #comments-heading { color: #303640 !important; }
-.rw-comment-shell [class*="text-indigo-100"],
-.rw-comment-shell [class*="text-indigo-200"],
-.rw-comment-shell [class*="text-indigo-300"],
-.rw-comment-shell [class*="text-indigo-400"] { color: #3158e8 !important; }
-.rw-comment-shell textarea,
-.rw-comment-shell input,
-.rw-comment-shell select {
-  background: #ffffff !important;
-  border-color: #d1d3d0 !important;
-  color: #303640 !important;
-}
-.rw-comment-shell textarea::placeholder,
-.rw-comment-shell input::placeholder { color: var(--rw-text-muted) !important; }
-
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #ebeae5; }
 ::-webkit-scrollbar-thumb { background: #c5c6c1; border: 2px solid #ebeae5; border-radius: 9999px; }
