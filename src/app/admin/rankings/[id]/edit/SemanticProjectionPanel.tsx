@@ -1,14 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
-import { AlertTriangle, GitCompareArrows, Save, Tags, Trash2 } from 'lucide-react'
+import { useMemo, useState, useTransition } from 'react'
+import { AlertTriangle, GitCompareArrows, Link2, Save, Tags, Trash2, Unlink } from 'lucide-react'
 import {
   clearRankingSemanticProjection,
+  createRankingSubjectAlias,
+  deleteRankingSubjectAlias,
   saveRankingSemanticProjection,
   type RankingSemanticAdvisory,
   type RankingSemanticWorkspace,
 } from '@/lib/actions/ranking-semantic'
+import {
+  normalizeRankingSubjectLookup,
+  rankRankingSubjectSuggestions,
+} from '@/lib/ranking-subject-suggestions'
 
 function relationLabel(relation: RankingSemanticAdvisory['relation']) {
   switch (relation) {
@@ -49,9 +55,21 @@ export default function SemanticProjectionPanel({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const syncWorkspace = (next: RankingSemanticWorkspace) => {
+  const normalizedSubjectKey = normalizeRankingSubjectLookup(subjectKey)
+  const exactAlias = workspace.subject_aliases.find(alias => alias.alias_key === normalizedSubjectKey)
+  const effectiveCanonicalKey = exactAlias?.canonical_subject_key || normalizedSubjectKey
+  const suggestions = useMemo(
+    () => rankRankingSubjectSuggestions(subjectKey, workspace.subject_options)
+      .filter(suggestion => suggestion.subject_key !== normalizedSubjectKey),
+    [subjectKey, normalizedSubjectKey, workspace.subject_options]
+  )
+  const currentAliases = workspace.subject_aliases
+    .filter(alias => alias.canonical_subject_key === effectiveCanonicalKey)
+    .sort((left, right) => left.alias_key.localeCompare(right.alias_key))
+
+  const syncWorkspace = (next: RankingSemanticWorkspace, preserveSubject = false) => {
     setWorkspace(next)
-    setSubjectKey(next.projection?.subject_key || '')
+    if (!preserveSubject) setSubjectKey(next.projection?.subject_key || '')
     setIntentKey(next.projection?.intent_key || '')
     setMethodKey(next.projection?.method_key || '')
     setCoordinatesJson(projectionJson(next.projection?.coordinates))
@@ -77,7 +95,54 @@ export default function SemanticProjectionPanel({
       }
 
       if ('workspace' in result && result.workspace) syncWorkspace(result.workspace)
-      setMessage('Reviewed semantic projection을 저장했습니다. 발행 상태에는 영향을 주지 않습니다.')
+      if ('subject_resolution' in result && result.subject_resolution?.resolved_via_alias) {
+        setMessage(`Alias ${result.subject_resolution.input_subject_key} → ${result.subject_resolution.canonical_subject_key}로 정규화해 저장했습니다. 발행 상태에는 영향을 주지 않습니다.`)
+      } else {
+        setMessage('Reviewed semantic projection을 저장했습니다. 발행 상태에는 영향을 주지 않습니다.')
+      }
+    })
+  }
+
+  const handleUseCanonical = (canonicalSubjectKey: string) => {
+    setSubjectKey(canonicalSubjectKey)
+    setError(null)
+    setMessage(`기존 Canonical Subject ${canonicalSubjectKey}를 선택했습니다.`)
+  }
+
+  const handleCreateAlias = (canonicalSubjectKey: string) => {
+    const aliasKey = normalizeRankingSubjectLookup(subjectKey)
+    if (!aliasKey || aliasKey === canonicalSubjectKey) return
+    if (!window.confirm(`${aliasKey}를 ${canonicalSubjectKey}의 reviewed Alias로 등록하시겠습니까?`)) return
+
+    setError(null)
+    setMessage(null)
+    startTransition(async () => {
+      const result = await createRankingSubjectAlias(workspace.ranking.id, aliasKey, canonicalSubjectKey)
+      if ('error' in result && result.error) {
+        setError(result.error)
+        return
+      }
+      if ('workspace' in result && result.workspace) {
+        syncWorkspace(result.workspace, true)
+        setSubjectKey(canonicalSubjectKey)
+      }
+      setMessage(`Alias ${aliasKey} → ${canonicalSubjectKey}를 등록했습니다. 이후 exact alias 입력은 canonical key로 저장됩니다.`)
+    })
+  }
+
+  const handleDeleteAlias = (aliasKey: string) => {
+    if (!window.confirm(`${aliasKey} Alias 연결을 해제하시겠습니까? 기존 projection은 자동 변경되지 않습니다.`)) return
+
+    setError(null)
+    setMessage(null)
+    startTransition(async () => {
+      const result = await deleteRankingSubjectAlias(workspace.ranking.id, aliasKey)
+      if ('error' in result && result.error) {
+        setError(result.error)
+        return
+      }
+      if ('workspace' in result && result.workspace) syncWorkspace(result.workspace, true)
+      setMessage(`Alias ${aliasKey} 연결을 해제했습니다.`)
     })
   }
 
@@ -108,11 +173,11 @@ export default function SemanticProjectionPanel({
         <div>
           <div className="flex items-center gap-2 text-indigo-300">
             <Tags className="h-4 w-4" />
-            <span className="text-[11px] font-black uppercase tracking-[0.12em]">IA-2B Semantic Projection</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.12em]">IA-2C Canonical Subject</span>
           </div>
-          <h2 className="mt-2 text-lg font-black tracking-[-0.02em] text-white">의미 좌표 입력 · 중복 Advisory</h2>
+          <h2 className="mt-2 text-lg font-black tracking-[-0.02em] text-white">의미 좌표 · Canonical 재사용 · Alias Advisory</h2>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">
-            이 정보는 작성 원본과 분리된 discovery metadata입니다. 분류하지 않거나 projection을 삭제해도 랭킹 저장·발행은 차단되지 않습니다.
+            기존 Subject 재사용을 우선 제안하지만 새 Subject를 그대로 만드는 것도 허용합니다. 분류하지 않거나 projection을 삭제해도 랭킹 저장·발행은 차단되지 않습니다.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -131,15 +196,60 @@ export default function SemanticProjectionPanel({
       {message && <div className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs font-bold text-emerald-200">{message}</div>}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <label className="block">
-          <span className="text-[11px] font-bold text-slate-400">Subject key *</span>
+        <div className="block">
+          <label htmlFor="semantic-subject-key" className="text-[11px] font-bold text-slate-400">Subject key *</label>
           <input
+            id="semantic-subject-key"
             value={subjectKey}
             onChange={event => setSubjectKey(event.target.value)}
             placeholder="mens-fragrance"
+            autoComplete="off"
             className="mt-1.5 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2.5 text-xs text-slate-100 outline-none transition focus:border-indigo-400"
           />
-        </label>
+          {exactAlias && (
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/20 bg-sky-400/10 px-2.5 py-2 text-[10px] text-sky-200">
+              <Link2 className="h-3 w-3 shrink-0" />
+              exact Alias → <strong>{exactAlias.canonical_subject_key}</strong>
+            </div>
+          )}
+          {normalizedSubjectKey.length >= 2 && suggestions.length > 0 && (
+            <div className="mt-2 space-y-1.5 rounded-xl border border-white/[0.08] bg-black/20 p-2">
+              <p className="px-1 text-[9px] font-black uppercase tracking-[0.08em] text-slate-500">Deterministic suggestions</p>
+              {suggestions.map(suggestion => (
+                <div key={suggestion.subject_key} className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.06] bg-white/[0.025] px-2.5 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-[10px] font-black text-slate-200">{suggestion.subject_key}</p>
+                    <p className="mt-0.5 text-[9px] text-slate-500">
+                      사용 {suggestion.usage_count}회
+                      {suggestion.matched_by === 'alias' ? ` · alias ${suggestion.matched_key} 매칭` : ''}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleUseCanonical(suggestion.subject_key)}
+                      className="rounded-md border border-indigo-400/25 bg-indigo-400/10 px-2 py-1 text-[9px] font-black text-indigo-200 hover:bg-indigo-400/20 disabled:opacity-50"
+                    >
+                      사용
+                    </button>
+                    {normalizedSubjectKey && normalizedSubjectKey !== suggestion.subject_key && !exactAlias && (
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => handleCreateAlias(suggestion.subject_key)}
+                        className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] font-black text-slate-300 hover:border-sky-400/30 hover:text-sky-200 disabled:opacity-50"
+                      >
+                        Alias 연결
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <p className="px-1 pt-1 text-[9px] leading-4 text-slate-600">제안을 선택하지 않아도 입력한 새 Subject를 그대로 저장할 수 있습니다.</p>
+            </div>
+          )}
+        </div>
         <label className="block">
           <span className="text-[11px] font-bold text-slate-400">Intent key</span>
           <input
@@ -159,6 +269,31 @@ export default function SemanticProjectionPanel({
           />
         </label>
       </div>
+
+      {effectiveCanonicalKey && currentAliases.length > 0 && (
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/15 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[10px] font-black text-slate-300">{effectiveCanonicalKey} reviewed aliases</p>
+            <span className="text-[9px] text-slate-600">alias 삭제는 기존 projection을 역변환하지 않습니다.</span>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {currentAliases.map(alias => (
+              <span key={alias.alias_key} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[9px] font-bold text-slate-300">
+                {alias.alias_key}
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => handleDeleteAlias(alias.alias_key)}
+                  className="text-slate-500 hover:text-rose-300 disabled:opacity-50"
+                  aria-label={`${alias.alias_key} Alias 삭제`}
+                >
+                  <Unlink className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <label className="block">
@@ -204,7 +339,7 @@ export default function SemanticProjectionPanel({
             Projection 해제
           </button>
         )}
-        <span className="text-[10px] font-semibold text-slate-500">AI/embedding 없이 운영자가 명시적으로 검토한 좌표만 저장합니다.</span>
+        <span className="text-[10px] font-semibold text-slate-500">AI/embedding 없이 실제 사용 Subject + reviewed Alias만으로 제안합니다.</span>
       </div>
 
       <div className="mt-6 border-t border-white/[0.07] pt-5">

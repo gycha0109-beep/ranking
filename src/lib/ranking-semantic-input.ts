@@ -22,8 +22,16 @@ type ParseResult =
   | { ok: true; value: NormalizedRankingSemanticProjectionInput }
   | { ok: false; error: string }
 
+export function normalizeRankingSemanticKey(value: string | null | undefined) {
+  return (value || '').normalize('NFKC').trim().toLowerCase()
+}
+
+export function isRankingSemanticKey(value: string | null | undefined) {
+  return SEMANTIC_KEY_PATTERN.test(normalizeRankingSemanticKey(value))
+}
+
 function normalizeSemanticKey(value: string | null | undefined, label: string, required: boolean) {
-  const normalized = (value || '').normalize('NFKC').trim().toLowerCase()
+  const normalized = normalizeRankingSemanticKey(value)
 
   if (!normalized) {
     if (required) return { ok: false as const, error: `${label} 값은 필수입니다.` }
