@@ -16,6 +16,7 @@
     "verify:p2-3": "node scripts/verify-p2-3-contracts.mjs",
     "verify:ia-1": "node scripts/verify-ia-1-contracts.mjs",
     "verify:ia-2": "node scripts/verify-ia-2-contracts.mjs",
+    "verify:ia-2b": "node scripts/verify-ia-2b-contracts.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
