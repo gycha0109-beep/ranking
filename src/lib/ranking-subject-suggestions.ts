@@ -162,16 +162,16 @@ function fuzzyEligible(query: string, candidate: string) {
   // that the author introduced or removed a semantic coordinate, so abstain.
   if (queryTokens.length === 0 || queryTokens.length !== candidateTokens.length) return false
 
-  // The terminal concept may differ only by a single-character typo. This recovers
-  // quality/quaity and sales/saes without reopening battery/camera-style semantic drift.
+  // The terminal concept may differ only by one character. This recovers ordinary
+  // spelling slips without reopening semantically different terminal concepts.
   const queryTerminal = queryTokens.at(-1) || ''
   const candidateTerminal = candidateTokens.at(-1) || ''
   if (queryTerminal !== candidateTerminal && !isSingleEditTypo(queryTerminal, candidateTerminal)) {
     return false
   }
 
-  // A same-shape candidate is accepted only when every changed token looks like a typo,
-  // not a different semantic entity. county/country can pass; intangible/world cannot.
+  // Same-shape candidates are accepted only when each changed token remains within
+  // a narrow typo boundary rather than representing a different semantic entity.
   for (let index = 0; index < queryTokens.length; index += 1) {
     if (queryTokens[index] === candidateTokens[index]) continue
     if (
