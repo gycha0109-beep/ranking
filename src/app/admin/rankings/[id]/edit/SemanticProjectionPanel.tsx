@@ -71,12 +71,12 @@ export default function SemanticProjectionPanel({
         version_coordinates_json: versionCoordinatesJson,
       })
 
-      if (result.error) {
+      if ('error' in result && result.error) {
         setError(result.error)
         return
       }
 
-      if (result.workspace) syncWorkspace(result.workspace)
+      if ('workspace' in result && result.workspace) syncWorkspace(result.workspace)
       setMessage('Reviewed semantic projection을 저장했습니다. 발행 상태에는 영향을 주지 않습니다.')
     })
   }
@@ -89,12 +89,12 @@ export default function SemanticProjectionPanel({
 
     startTransition(async () => {
       const result = await clearRankingSemanticProjection(workspace.ranking.id)
-      if (result.error) {
+      if ('error' in result && result.error) {
         setError(result.error)
         return
       }
 
-      if (result.workspace) syncWorkspace(result.workspace)
+      if ('workspace' in result && result.workspace) syncWorkspace(result.workspace)
       setMessage('Semantic projection을 해제했습니다. 랭킹 원문과 발행 상태는 그대로 유지됩니다.')
     })
   }
