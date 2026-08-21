@@ -8,6 +8,7 @@ const inputPath = path.join(root, 'src/lib/ranking-semantic-input.ts')
 const actionPath = path.join(root, 'src/lib/actions/ranking-semantic.ts')
 const panelPath = path.join(root, 'src/app/admin/rankings/[id]/edit/SemanticProjectionPanel.tsx')
 const migrationPath = path.join(root, 'supabase/migrations/20260821034000_ia_2c_subject_aliases.sql')
+const creatorIndexMigrationPath = path.join(root, 'supabase/migrations/20260821034500_ia_2c_subject_alias_created_by_index.sql')
 const docPath = path.join(root, 'docs/ia-2c-canonical-subject-alias-deterministic-suggestion.md')
 
 function fail(message) {
@@ -19,7 +20,7 @@ function assert(condition, message) {
   if (!condition) fail(message)
 }
 
-for (const filePath of [suggestionPath, inputPath, actionPath, panelPath, migrationPath, docPath]) {
+for (const filePath of [suggestionPath, inputPath, actionPath, panelPath, migrationPath, creatorIndexMigrationPath, docPath]) {
   assert(fs.existsSync(filePath), `${path.relative(root, filePath)} must exist`)
 }
 
@@ -28,6 +29,7 @@ const inputSource = fs.readFileSync(inputPath, 'utf8')
 const actionSource = fs.readFileSync(actionPath, 'utf8')
 const panelSource = fs.readFileSync(panelPath, 'utf8')
 const migration = fs.readFileSync(migrationPath, 'utf8')
+const creatorIndexMigration = fs.readFileSync(creatorIndexMigrationPath, 'utf8')
 const doc = fs.readFileSync(docPath, 'utf8')
 const packageJson = fs.readFileSync(path.join(root, 'package.json'), 'utf8')
 const ci = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8')
@@ -86,6 +88,8 @@ assert(migration.includes('ENABLE ROW LEVEL SECURITY'), 'alias governance table 
 assert(migration.includes('REVOKE ALL PRIVILEGES ON TABLE public.ranking_semantic_subject_aliases FROM anon, authenticated'), 'public clients must receive no alias governance privileges')
 assert(!migration.includes('GRANT SELECT ON TABLE public.ranking_semantic_subject_aliases TO anon'), 'alias table must not become a public taxonomy endpoint')
 assert(!/ALTER TABLE\s+public\.rankings\b/i.test(migration), 'IA-2C must not add mandatory authored columns to rankings')
+assert(creatorIndexMigration.includes('idx_ranking_semantic_subject_aliases_created_by'), 'created_by foreign key must have a covering index')
+assert(creatorIndexMigration.includes('ON public.ranking_semantic_subject_aliases(created_by)'), 'creator index must cover the governance provenance foreign key')
 
 assert(actionSource.includes('SUBJECT_CATALOG_PROJECTION_LIMIT = 1000'), 'canonical catalog reads must remain bounded')
 assert(actionSource.includes('SUBJECT_ALIAS_LIMIT = 500'), 'alias catalog reads must remain bounded')
