@@ -73,8 +73,26 @@ assert(aliasExact[0]?.matched_by === 'alias', 'alias provenance must be exposed 
 const canonicalPrefix = rankRankingSubjectSuggestions('pisa', options)
 assert(canonicalPrefix[0]?.subject_key === 'pisa-country-performance', 'canonical prefix must rank deterministically')
 
-const fuzzy = rankRankingSubjectSuggestions('fifa-ranking', options)
-assert(fuzzy[0]?.subject_key === 'fifa-world-ranking', 'reviewed alias must support deterministic reuse suggestion')
+const reviewedAlias = rankRankingSubjectSuggestions('fifa-ranking', options)
+assert(reviewedAlias[0]?.subject_key === 'fifa-world-ranking', 'reviewed alias must support deterministic reuse suggestion')
+
+const semanticVariant = rankRankingSubjectSuggestions('mens-fragrance-ranking', options)
+assert(semanticVariant[0]?.subject_key === 'mens-fragrance', 'token-boundary suffix variants must preserve canonical reuse')
+
+const typoFallback = rankRankingSubjectSuggestions('pisa-county-performance', options)
+assert(typoFallback[0]?.subject_key === 'pisa-country-performance', 'same-shape typo fallback should remain available when the leaf concept agrees')
+
+const precisionOptions = [
+  { subject_key: 'nintendo-switch-rpg', usage_count: 10, aliases: ['switch-rpg', 'nintendo-rpg'] },
+  { subject_key: 'unesco-world-heritage-count', usage_count: 2, aliases: ['unesco-heritage-count'] },
+  { subject_key: 'gaming-monitor', usage_count: 4, aliases: ['gaming-display'] },
+  { subject_key: 'smartphone-camera', usage_count: 5, aliases: ['phone-camera'] },
+]
+
+assert(rankRankingSubjectSuggestions('nintendo-switch-racing', precisionOptions).length === 0, 'shared platform prefix must not imply same Subject when the leaf concept changes')
+assert(rankRankingSubjectSuggestions('unesco-intangible-heritage-count', precisionOptions).length === 0, 'inserted semantic entity modifiers must trigger abstention instead of alias-like reuse')
+assert(rankRankingSubjectSuggestions('gaming-mouse', precisionOptions).length === 0, 'shared gaming prefix must not recommend an unrelated device Subject')
+assert(rankRankingSubjectSuggestions('smartphone-battery', precisionOptions).length === 0, 'shared smartphone prefix must not recommend a camera Subject')
 
 const empty = rankRankingSubjectSuggestions('', options)
 assert(empty.length <= 5, 'empty-query canonical catalog must remain bounded')
