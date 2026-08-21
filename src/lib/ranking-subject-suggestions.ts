@@ -18,12 +18,21 @@ export type RankingSubjectSuggestion = RankingSubjectOption & {
   matched_key: string
 }
 
+const TOKEN_SEPARATOR_PATTERN = /[._/-]+/g
+const TOKEN_BOUNDARY_CHARS = new Set(['.', '_', '/', '-'])
+const FUZZY_MIN_DICE = 0.5
+const FUZZY_MIN_TOKEN_SIMILARITY = 0.5
+
 export function normalizeRankingSubjectLookup(value: string | null | undefined) {
   return (value || '').normalize('NFKC').trim().toLowerCase()
 }
 
+function tokenList(value: string) {
+  return value.split(TOKEN_SEPARATOR_PATTERN).filter(Boolean)
+}
+
 function tokens(value: string) {
-  return new Set(value.split(/[._/-]+/g).filter(Boolean))
+  return new Set(tokenList(value))
 }
 
 function trigramSet(value: string) {
@@ -60,23 +69,68 @@ function tokenSimilarity(left: string, right: string) {
   return shared / Math.max(leftTokens.size, rightTokens.size)
 }
 
+function isBoundaryCharacter(value: string | undefined) {
+  return Boolean(value && TOKEN_BOUNDARY_CHARS.has(value))
+}
+
+function hasTokenBoundaryPrefix(prefix: string, value: string) {
+  if (!value.startsWith(prefix)) return false
+  return value.length === prefix.length || isBoundaryCharacter(value[prefix.length])
+}
+
+function hasTokenBoundarySubstring(needle: string, haystack: string) {
+  let fromIndex = 0
+  while (fromIndex <= haystack.length - needle.length) {
+    const index = haystack.indexOf(needle, fromIndex)
+    if (index < 0) return false
+
+    const before = index === 0 ? undefined : haystack[index - 1]
+    const afterIndex = index + needle.length
+    const after = afterIndex >= haystack.length ? undefined : haystack[afterIndex]
+    const beforeBoundary = index === 0 || isBoundaryCharacter(before)
+    const afterBoundary = afterIndex === haystack.length || isBoundaryCharacter(after)
+
+    if (beforeBoundary && afterBoundary) return true
+    fromIndex = index + 1
+  }
+  return false
+}
+
+function fuzzyEligible(query: string, candidate: string) {
+  const queryTokens = tokenList(query)
+  const candidateTokens = tokenList(candidate)
+
+  // Fuzzy matching is only a typo/reordering safety net. Different token counts usually
+  // indicate that the author introduced or removed a semantic coordinate, so abstain.
+  if (queryTokens.length === 0 || queryTokens.length !== candidateTokens.length) return false
+
+  // Shared prefixes such as smartphone-* or gaming-* are not enough. Requiring the
+  // terminal concept token to agree avoids recommending camera for battery, RPG for racing, etc.
+  if (queryTokens.at(-1) !== candidateTokens.at(-1)) return false
+
+  const tokenScore = tokenSimilarity(query, candidate)
+  const diceScore = diceSimilarity(query, candidate)
+  return tokenScore >= FUZZY_MIN_TOKEN_SIMILARITY && diceScore >= FUZZY_MIN_DICE
+}
+
 function scoreKey(query: string, candidate: string) {
   if (!query || !candidate) return 0
   if (query === candidate) return 10_000
 
   const lengthGap = Math.abs(query.length - candidate.length)
-  if (candidate.startsWith(query) || query.startsWith(candidate)) {
+  if (hasTokenBoundaryPrefix(query, candidate) || hasTokenBoundaryPrefix(candidate, query)) {
     return 8_000 - Math.min(lengthGap, 500)
   }
-  if (candidate.includes(query) || query.includes(candidate)) {
+  if (hasTokenBoundarySubstring(query, candidate) || hasTokenBoundarySubstring(candidate, query)) {
     return 6_500 - Math.min(lengthGap, 500)
   }
+
+  if (!fuzzyEligible(query, candidate)) return 0
 
   const lexical = Math.max(
     diceSimilarity(query, candidate),
     tokenSimilarity(query, candidate)
   )
-  if (lexical < 0.34) return 0
   return Math.round(lexical * 5_000)
 }
 
