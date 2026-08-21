@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import CommentSection from '@/components/comments/CommentSection'
 import { absoluteUrl, getItemSeoSnapshot, serializeJsonLd, SITE_NAME } from '@/lib/seo'
 
 type Props = { children: ReactNode; params: Promise<{ itemSlug: string }> }
@@ -53,11 +52,6 @@ export default async function ItemDetailLayout({ children, params }: Props) {
     <>
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />}
       {children}
-      {item && (
-        <div className="rw-comment-shell bg-[#f6f7f9] px-3 pb-24 sm:px-4">
-          <div className="mx-auto max-w-[860px]"><CommentSection targetType="item" targetId={item.id} pathname={`/items/${item.slug}`} /></div>
-        </div>
-      )}
     </>
   )
 }

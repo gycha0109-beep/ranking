@@ -69,10 +69,12 @@ expectContains(ranking, 'aria-label={`${source.label} 출처 열기`}', 'icon-on
 expectContains(ranking, 'rw-comment-shell', 'ranking comments must stay inside the UI-1 light compatibility scope')
 expectContains(ranking, '<CommentSection targetType="ranking"', 'ranking comments must remain available in the article flow')
 expectContains(item, '>이 아이템이 등장하는 랭킹</h2>', 'item detail must prioritize ranking footprint')
+expectContains(item, 'rw-comment-shell', 'item comments must stay inside the UI-1 light compatibility scope')
+expectContains(item, '<CommentSection targetType="item"', 'item comments must remain available in the article flow')
 
 expectNotContains(rankingLayout, 'bg-[#07070a]', 'ranking interaction layout must not use legacy dark wrapper')
 expectNotContains(itemLayout, 'bg-[#07070a]', 'item interaction layout must not use legacy dark wrapper')
-expectContains(itemLayout, 'rw-comment-shell', 'item comments must use UI-1 compatibility scope')
+expectNotContains(itemLayout, '<CommentSection', 'item layout must not duplicate the article-flow comment section')
 
 expectNotContains(engagement, '#101017', 'engagement bar must not use legacy dark dock')
 expectContains(engagement, 'bg-white/95', 'engagement bar must use light surface')
