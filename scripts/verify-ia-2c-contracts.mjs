@@ -97,7 +97,7 @@ assert(actionSource.includes('deleteRankingSubjectAlias'), 'admin must be able t
 assert(actionSource.includes('이미 실제 projection의 Canonical Subject로 사용 중인 key는 Alias로 바꿀 수 없습니다.'), 'canonical-to-alias collision must be guarded')
 assert(actionSource.includes('alias chain은 허용하지 않습니다.'), 'alias chains must be rejected')
 assert(actionSource.includes('Canonical Subject는 먼저 실제 projection에서 사용된 key여야 합니다.'), 'new aliases must target an observed canonical concept')
-assert(actionSource.includes("projection_version: 'ia-2c-admin-manual-v1'"), 'reviewed IA-2C ingestion provenance must be explicit')
+assert(actionSource.includes("projection_version: 'ia-2b-admin-manual-v1'"), 'IA-2C alias governance must preserve reviewed ingestion provenance from IA-2B')
 assert(!actionSource.includes("status: 'published'"), 'IA-2C must never publish a ranking')
 assert(!actionSource.includes('published_at:'), 'IA-2C must never mutate publication timestamps')
 
