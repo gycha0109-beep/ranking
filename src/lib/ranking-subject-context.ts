@@ -92,6 +92,6 @@ export function rankRankingSubjectContextSuggestions(
     supporting_ranking_count: support.rankingIds.size,
     max_shared_item_count: support.maxShared,
     max_item_jaccard: support.maxJaccard,
-    reason: 'repeated_item_neighborhood',
+    reason: 'repeated_item_neighborhood' as const,
   }].slice(0, SUBJECT_CONTEXT_SUGGESTION_LIMIT)
 }
