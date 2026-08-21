@@ -10,11 +10,20 @@ import {
   type RankingSemanticProjection,
 } from '@/lib/ranking-identity'
 import {
+  isRankingSemanticKey,
+  normalizeRankingSemanticKey,
   parseRankingSemanticProjectionForm,
   type RankingSemanticProjectionFormInput,
 } from '@/lib/ranking-semantic-input'
+import type {
+  RankingSubjectAlias,
+  RankingSubjectOption,
+} from '@/lib/ranking-subject-suggestions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+
+const SUBJECT_CATALOG_PROJECTION_LIMIT = 1000
+const SUBJECT_ALIAS_LIMIT = 500
 
 export type RankingSemanticAdvisory = {
   ranking_id: string
@@ -34,6 +43,8 @@ export type RankingSemanticWorkspace = {
   }
   projection: RankingSemanticProjection | null
   advisories: RankingSemanticAdvisory[]
+  subject_options: RankingSubjectOption[]
+  subject_aliases: RankingSubjectAlias[]
 }
 
 async function ensureAdmin() {
@@ -58,10 +69,77 @@ function relationStatusRank(status: string) {
   return 2
 }
 
+async function loadSubjectCatalog(admin: ReturnType<typeof createAdminClient>) {
+  const [subjectResult, aliasResult] = await Promise.all([
+    admin
+      .from('ranking_semantic_projections')
+      .select('subject_key')
+      .order('subject_key', { ascending: true })
+      .limit(SUBJECT_CATALOG_PROJECTION_LIMIT),
+    admin
+      .from('ranking_semantic_subject_aliases')
+      .select('alias_key, canonical_subject_key, created_at')
+      .order('alias_key', { ascending: true })
+      .limit(SUBJECT_ALIAS_LIMIT),
+  ])
+
+  if (subjectResult.error) {
+    throw new Error(`Canonical Subject 조회 실패: ${subjectResult.error.message}`)
+  }
+  if (aliasResult.error) {
+    throw new Error(`Subject alias 조회 실패: ${aliasResult.error.message}`)
+  }
+
+  const usageCounts = new Map<string, number>()
+  for (const row of subjectResult.data || []) {
+    if (!row.subject_key) continue
+    usageCounts.set(row.subject_key, (usageCounts.get(row.subject_key) || 0) + 1)
+  }
+
+  const aliases = (aliasResult.data || []) as RankingSubjectAlias[]
+  const aliasesByCanonical = new Map<string, string[]>()
+  for (const alias of aliases) {
+    if (!alias.canonical_subject_key || !alias.alias_key) continue
+    const current = aliasesByCanonical.get(alias.canonical_subject_key) || []
+    current.push(alias.alias_key)
+    aliasesByCanonical.set(alias.canonical_subject_key, current)
+    if (!usageCounts.has(alias.canonical_subject_key)) {
+      usageCounts.set(alias.canonical_subject_key, 0)
+    }
+  }
+
+  const options: RankingSubjectOption[] = [...usageCounts.entries()]
+    .map(([subject_key, usage_count]) => ({
+      subject_key,
+      usage_count,
+      aliases: (aliasesByCanonical.get(subject_key) || []).sort((left, right) => left.localeCompare(right)),
+    }))
+    .sort((left, right) => {
+      if (left.usage_count !== right.usage_count) return right.usage_count - left.usage_count
+      return left.subject_key.localeCompare(right.subject_key)
+    })
+
+  return { options, aliases }
+}
+
+async function resolveCanonicalSubjectKey(
+  admin: ReturnType<typeof createAdminClient>,
+  subjectKey: string
+) {
+  const { data, error } = await admin
+    .from('ranking_semantic_subject_aliases')
+    .select('canonical_subject_key')
+    .eq('alias_key', subjectKey)
+    .maybeSingle()
+
+  if (error) throw new Error(`Subject alias 해석 실패: ${error.message}`)
+  return data?.canonical_subject_key || subjectKey
+}
+
 async function loadWorkspace(rankingId: string): Promise<RankingSemanticWorkspace> {
   const admin = createAdminClient()
 
-  const [{ data: ranking, error: rankingError }, { data: projection, error: projectionError }] = await Promise.all([
+  const [rankingResult, projectionResult, subjectCatalog] = await Promise.all([
     admin
       .from('rankings')
       .select('id, title, slug, status')
@@ -72,8 +150,11 @@ async function loadWorkspace(rankingId: string): Promise<RankingSemanticWorkspac
       .select('*')
       .eq('ranking_id', rankingId)
       .maybeSingle(),
+    loadSubjectCatalog(admin),
   ])
 
+  const { data: ranking, error: rankingError } = rankingResult
+  const { data: projection, error: projectionError } = projectionResult
   if (rankingError || !ranking) throw new Error('랭킹 문서를 찾을 수 없습니다.')
   if (projectionError) throw new Error(`Semantic projection 조회 실패: ${projectionError.message}`)
 
@@ -143,6 +224,8 @@ async function loadWorkspace(rankingId: string): Promise<RankingSemanticWorkspac
       relation: advisory.relation,
       reason: advisory.reason,
     })),
+    subject_options: subjectCatalog.options,
+    subject_aliases: subjectCatalog.aliases,
   }
 }
 
@@ -168,18 +251,25 @@ export async function saveRankingSemanticProjection(
 
   if (rankingError || !ranking) return { error: '랭킹 문서를 찾을 수 없습니다.' }
 
+  let canonicalSubjectKey: string
+  try {
+    canonicalSubjectKey = await resolveCanonicalSubjectKey(admin, parsed.value.subject_key)
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Subject alias 해석에 실패했습니다.' }
+  }
+
   const { error: upsertError } = await admin
     .from('ranking_semantic_projections')
     .upsert({
       ranking_id: rankingId,
-      subject_key: parsed.value.subject_key,
+      subject_key: canonicalSubjectKey,
       intent_key: parsed.value.intent_key,
       coordinates: parsed.value.coordinates,
       method_key: parsed.value.method_key,
       version_coordinates: parsed.value.version_coordinates,
       classification_state: 'reviewed',
       confidence: 1,
-      projection_version: 'ia-2b-admin-manual-v1',
+      projection_version: 'ia-2c-admin-manual-v1',
       claim_signature: '',
       view_signature: '',
       version_signature: '',
@@ -190,6 +280,128 @@ export async function saveRankingSemanticProjection(
   revalidatePath(`/admin/rankings/${rankingId}/edit`)
   if (ranking.slug) revalidatePath(`/rankings/${ranking.slug}`)
 
+  return {
+    success: true,
+    workspace: await loadWorkspace(rankingId),
+    subject_resolution: {
+      input_subject_key: parsed.value.subject_key,
+      canonical_subject_key: canonicalSubjectKey,
+      resolved_via_alias: canonicalSubjectKey !== parsed.value.subject_key,
+    },
+  }
+}
+
+export async function createRankingSubjectAlias(
+  rankingId: string,
+  rawAliasKey: string,
+  rawCanonicalSubjectKey: string
+) {
+  const user = await ensureAdmin()
+  const aliasKey = normalizeRankingSemanticKey(rawAliasKey)
+  const canonicalSubjectKey = normalizeRankingSemanticKey(rawCanonicalSubjectKey)
+
+  if (!isRankingSemanticKey(aliasKey)) {
+    return { error: 'Alias key 형식이 올바르지 않습니다.' }
+  }
+  if (!isRankingSemanticKey(canonicalSubjectKey)) {
+    return { error: 'Canonical Subject key 형식이 올바르지 않습니다.' }
+  }
+  if (aliasKey === canonicalSubjectKey) {
+    return { error: 'Alias와 Canonical Subject는 서로 달라야 합니다.' }
+  }
+
+  const admin = createAdminClient()
+  const [
+    existingAliasResult,
+    aliasProjectionResult,
+    canonicalProjectionResult,
+    canonicalTargetResult,
+    canonicalAliasResult,
+  ] = await Promise.all([
+    admin
+      .from('ranking_semantic_subject_aliases')
+      .select('alias_key, canonical_subject_key')
+      .eq('alias_key', aliasKey)
+      .maybeSingle(),
+    admin
+      .from('ranking_semantic_projections')
+      .select('ranking_id')
+      .eq('subject_key', aliasKey)
+      .limit(1)
+      .maybeSingle(),
+    admin
+      .from('ranking_semantic_projections')
+      .select('ranking_id')
+      .eq('subject_key', canonicalSubjectKey)
+      .limit(1)
+      .maybeSingle(),
+    admin
+      .from('ranking_semantic_subject_aliases')
+      .select('alias_key')
+      .eq('canonical_subject_key', canonicalSubjectKey)
+      .limit(1)
+      .maybeSingle(),
+    admin
+      .from('ranking_semantic_subject_aliases')
+      .select('canonical_subject_key')
+      .eq('alias_key', canonicalSubjectKey)
+      .maybeSingle(),
+  ])
+
+  const lookupError = [
+    existingAliasResult.error,
+    aliasProjectionResult.error,
+    canonicalProjectionResult.error,
+    canonicalTargetResult.error,
+    canonicalAliasResult.error,
+  ].find(Boolean)
+  if (lookupError) return { error: `Subject alias 검증 실패: ${lookupError.message}` }
+
+  if (existingAliasResult.data) {
+    if (existingAliasResult.data.canonical_subject_key === canonicalSubjectKey) {
+      return { success: true, workspace: await loadWorkspace(rankingId) }
+    }
+    return { error: `이미 ${existingAliasResult.data.canonical_subject_key}에 연결된 Alias입니다.` }
+  }
+
+  if (aliasProjectionResult.data) {
+    return { error: '이미 실제 projection의 Canonical Subject로 사용 중인 key는 Alias로 바꿀 수 없습니다.' }
+  }
+  if (canonicalAliasResult.data) {
+    return { error: 'Alias를 다시 Canonical Subject로 연결하는 alias chain은 허용하지 않습니다.' }
+  }
+  if (!canonicalProjectionResult.data && !canonicalTargetResult.data) {
+    return { error: 'Canonical Subject는 먼저 실제 projection에서 사용된 key여야 합니다.' }
+  }
+
+  const { error: insertError } = await admin
+    .from('ranking_semantic_subject_aliases')
+    .insert({
+      alias_key: aliasKey,
+      canonical_subject_key: canonicalSubjectKey,
+      created_by: user.id,
+    })
+
+  if (insertError) return { error: `Subject alias 등록 실패: ${insertError.message}` }
+
+  revalidatePath(`/admin/rankings/${rankingId}/edit`)
+  return { success: true, workspace: await loadWorkspace(rankingId) }
+}
+
+export async function deleteRankingSubjectAlias(rankingId: string, rawAliasKey: string) {
+  await ensureAdmin()
+  const aliasKey = normalizeRankingSemanticKey(rawAliasKey)
+  if (!isRankingSemanticKey(aliasKey)) return { error: 'Alias key 형식이 올바르지 않습니다.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('ranking_semantic_subject_aliases')
+    .delete()
+    .eq('alias_key', aliasKey)
+
+  if (error) return { error: `Subject alias 삭제 실패: ${error.message}` }
+
+  revalidatePath(`/admin/rankings/${rankingId}/edit`)
   return { success: true, workspace: await loadWorkspace(rankingId) }
 }
 
