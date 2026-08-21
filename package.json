@@ -19,6 +19,7 @@
     "verify:ia-2b": "node scripts/verify-ia-2b-contracts.mjs",
     "verify:ia-2c": "node scripts/verify-ia-2c-contracts.mjs",
     "verify:ia-2d": "node scripts/verify-ia-2d-contracts.mjs",
+    "verify:ia-2d-controlled": "node scripts/verify-ia-2d-controlled-benchmark.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
