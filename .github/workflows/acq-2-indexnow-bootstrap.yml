@@ -1,0 +1,50 @@
+name: ACQ-2 IndexNow Bootstrap
+
+on:
+  push:
+    branches:
+      - ops/acq-2-indexnow-submit
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    if: github.repository == 'gycha0109-beep/ranking'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Submit CONTENT-5 changed URLs
+        run: |
+          node scripts/submit-indexnow.mjs \
+            --site https://ranking-rho-three.vercel.app \
+            --url / \
+            --url /categories/technology \
+            --url /categories/travel-transport \
+            --url /categories/statistics \
+            --url /categories/technology/supercomputers \
+            --url /categories/travel-transport/airports \
+            --url /categories/statistics/world-cities \
+            --url /rankings/top500-supercomputer-hpl-rmax-2026-06-top-5 \
+            --url /rankings/world-busiest-airports-passengers-2025-top-5 \
+            --url /rankings/world-largest-cities-population-2025-top-5 \
+            --url /items/lineshine \
+            --url /items/el-capitan \
+            --url /items/frontier \
+            --url /items/aurora \
+            --url /items/jupiter-booster \
+            --url /items/hartsfield-jackson-atlanta-international-airport \
+            --url /items/dubai-international-airport \
+            --url /items/tokyo-haneda-airport \
+            --url /items/dallas-fort-worth-international-airport \
+            --url /items/shanghai-pudong-international-airport \
+            --url /items/jakarta \
+            --url /items/dhaka \
+            --url /items/tokyo \
+            --url /items/new-delhi \
+            --url /items/shanghai \
+            --submit
