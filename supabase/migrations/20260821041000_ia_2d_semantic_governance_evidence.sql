@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS public.ranking_semantic_governance_events (
 );
 
 COMMENT ON TABLE public.ranking_semantic_governance_events IS
-  'IA-2D append-only evidence for finalized admin semantic-governance decisions. It is not real-user product telemetry and stores no arbitrary JSON payload.';
+  'IA-2D append-only-by-privilege evidence for finalized admin semantic-governance decisions. It is not real-user product telemetry and stores no arbitrary JSON payload.';
 COMMENT ON COLUMN public.ranking_semantic_governance_events.suggestion_keys IS
   'Deterministic Top-N canonical Subject suggestions visible at the finalized save decision, bounded to five normalized keys.';
 COMMENT ON COLUMN public.ranking_semantic_governance_events.resolution_kind IS
@@ -113,24 +113,10 @@ CREATE INDEX IF NOT EXISTS idx_ranking_semantic_governance_ranking
 ALTER TABLE public.ranking_semantic_governance_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL PRIVILEGES ON TABLE public.ranking_semantic_governance_events FROM anon, authenticated;
 REVOKE ALL PRIVILEGES ON SEQUENCE public.ranking_semantic_governance_events_id_seq FROM anon, authenticated;
+
+-- The service-role writer can append and read evidence, but cannot mutate or delete it.
+-- FK SET NULL actions remain possible when a parent ranking/admin account is legitimately removed.
+REVOKE ALL PRIVILEGES ON TABLE public.ranking_semantic_governance_events FROM service_role;
 GRANT SELECT, INSERT ON TABLE public.ranking_semantic_governance_events TO service_role;
+REVOKE ALL PRIVILEGES ON SEQUENCE public.ranking_semantic_governance_events_id_seq FROM service_role;
 GRANT USAGE, SELECT ON SEQUENCE public.ranking_semantic_governance_events_id_seq TO service_role;
-
-CREATE OR REPLACE FUNCTION private.prevent_semantic_governance_event_mutation()
-RETURNS trigger
-LANGUAGE plpgsql
-SET search_path = public, private, pg_temp
-AS $$
-BEGIN
-  RAISE EXCEPTION 'ranking_semantic_governance_events is append-only' USING ERRCODE = '55000';
-END;
-$$;
-
-REVOKE ALL ON FUNCTION private.prevent_semantic_governance_event_mutation()
-FROM PUBLIC, anon, authenticated;
-
-DROP TRIGGER IF EXISTS trg_ranking_semantic_governance_append_only
-  ON public.ranking_semantic_governance_events;
-CREATE TRIGGER trg_ranking_semantic_governance_append_only
-BEFORE UPDATE OR DELETE ON public.ranking_semantic_governance_events
-FOR EACH ROW EXECUTE FUNCTION private.prevent_semantic_governance_event_mutation();
