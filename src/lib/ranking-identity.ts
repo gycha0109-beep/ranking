@@ -22,6 +22,10 @@ export type RankingSemanticProjection = {
   version_signature?: string | null
 }
 
+export type DiscoveryEligibleRankingProjection = RankingSemanticProjection & {
+  subject_key: string
+}
+
 export type RankingIdentityRelation = {
   kind: RankingIdentityRelationKind
   priority: number
@@ -40,7 +44,7 @@ function nonEmpty(value: unknown): value is string {
 
 export function isDiscoveryEligibleProjection(
   projection?: RankingSemanticProjection | null
-) {
+): projection is DiscoveryEligibleRankingProjection {
   if (!projection || !nonEmpty(projection.subject_key)) return false
   if (projection.classification_state === 'reviewed') return true
   return typeof projection.confidence === 'number'
@@ -51,7 +55,8 @@ export function classifyRankingIdentity(
   current?: RankingSemanticProjection | null,
   candidate?: RankingSemanticProjection | null
 ): RankingIdentityRelation | null {
-  if (!isDiscoveryEligibleProjection(current) || !isDiscoveryEligibleProjection(candidate)) return null
+  if (!isDiscoveryEligibleProjection(current)) return null
+  if (!isDiscoveryEligibleProjection(candidate)) return null
   if (current.subject_key !== candidate.subject_key) return null
 
   if (
