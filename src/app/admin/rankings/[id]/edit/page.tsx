@@ -6,7 +6,8 @@ import { listAdminCategories, listAdminSubcategories, listAdminItems, listFacetG
 import { getRankingSemanticWorkspace } from '@/lib/actions/ranking-semantic'
 import { getRankingSubjectContextSuggestions } from '@/lib/actions/ranking-semantic-context'
 import RankingEditorForm from './RankingEditorForm'
-import SemanticProjectionWithContext from './SemanticProjectionWithContext'
+import SemanticProjectionPanel from './SemanticProjectionPanel'
+import SemanticContextFallbackPanel from './SemanticContextFallbackPanel'
 import { ArrowLeft, FileSpreadsheet } from 'lucide-react'
 
 interface Props {
@@ -84,8 +85,9 @@ export default async function AdminRankingEditPage({ params }: Props) {
           </p>
         </div>
 
-        <SemanticProjectionWithContext
-          initialWorkspace={semanticWorkspace}
+        <SemanticProjectionPanel initialWorkspace={semanticWorkspace} />
+        <SemanticContextFallbackPanel
+          workspace={semanticWorkspace}
           contextSuggestions={semanticContextSuggestions}
         />
 
