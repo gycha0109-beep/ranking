@@ -22,7 +22,7 @@ assert.ok(helper.includes("'UNLABELED_CANDIDATE'"), 'unlabeled candidate state m
 const transpiled = ts.transpileModule(helper, {
   compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 },
 }).outputText
-const module = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString('base64')}`)
+const evidenceModule = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString('base64')}`)
 
 const fixture = [
   {
@@ -55,7 +55,7 @@ const fixture = [
   },
 ]
 
-const summary = module.summarizeReviewedEquivalenceEvidence(fixture)
+const summary = evidenceModule.summarizeReviewedEquivalenceEvidence(fixture)
 assert.equal(summary.subject_decisions, 4)
 assert.equal(summary.candidate_available_decisions, 3)
 assert.equal(summary.candidate_reuse_positive_decisions, 1)
@@ -66,10 +66,10 @@ assert.equal(summary.alias_equivalence_assertions, 1)
 assert.equal(summary.candidate_decision_labels, 2)
 assert.equal(summary.candidate_label_coverage_rate, 0.6667)
 assert.equal(summary.candidate_reuse_acceptance_rate, 0.5)
-assert.equal(module.classifyReviewedEquivalenceDecision(fixture[0]), 'POSITIVE_REUSE')
-assert.equal(module.classifyReviewedEquivalenceDecision(fixture[1]), 'NEGATIVE_NEW_SUBJECT')
-assert.equal(module.classifyReviewedEquivalenceDecision(fixture[2]), 'UNLABELED_CANDIDATE')
-assert.equal(module.classifyReviewedEquivalenceDecision(fixture[3]), 'NOT_CANDIDATE_DECISION')
+assert.equal(evidenceModule.classifyReviewedEquivalenceDecision(fixture[0]), 'POSITIVE_REUSE')
+assert.equal(evidenceModule.classifyReviewedEquivalenceDecision(fixture[1]), 'NEGATIVE_NEW_SUBJECT')
+assert.equal(evidenceModule.classifyReviewedEquivalenceDecision(fixture[2]), 'UNLABELED_CANDIDATE')
+assert.equal(evidenceModule.classifyReviewedEquivalenceDecision(fixture[3]), 'NOT_CANDIDATE_DECISION')
 
 assert.ok(action.includes("requireAdminCapability('audit_view'"), 'IA-2L readback must use audit_view')
 assert.ok(action.includes(".from('ranking_semantic_governance_events')"), 'IA-2D governance stream must remain IA-2L authority')
