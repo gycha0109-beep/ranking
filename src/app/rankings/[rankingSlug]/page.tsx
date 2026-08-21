@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPublishedRankingBySlug, getRelatedRankings } from '@/lib/queries/public'
 import { getRankingSponsorshipDisclosures } from '@/lib/queries/sponsorships'
+import { formatKoreanDate, formatRankingBasis } from '@/lib/ranking-display'
 import {
   Award,
   CalendarDays,
@@ -38,14 +39,6 @@ function getRankingTypeName(type: string) {
     sponsored: '스폰서십',
   }
   return map[type] || type
-}
-
-function getBasisDate(scope: Record<string, unknown> | null | undefined, fallback: string) {
-  const period = typeof scope?.period === 'string' ? scope.period : ''
-  const match = period.match(/\d{4}-\d{2}-\d{2}/)
-  const value = match?.[0] || fallback
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('ko-KR')
 }
 
 function getDisplayScores(entry: any) {
@@ -102,7 +95,7 @@ export default async function RankingDetailPage({ params }: Props) {
   const primarySource = ranking.sources.find((source: any) => source.url) || ranking.sources[0]
   const relatedVideo = ranking.sources.find((source: any) => isVideoSource(source.url))
   const publishedOrUpdated = ranking.published_at || ranking.updated_at
-  const basisDate = getBasisDate(ranking.scope_json, publishedOrUpdated)
+  const basisDate = formatRankingBasis(ranking.scope_json, publishedOrUpdated)
 
   return (
     <div className="rw-page pb-16 sm:pb-20">
@@ -130,7 +123,7 @@ export default async function RankingDetailPage({ params }: Props) {
 
               <div className="mt-6 grid gap-3 border-y border-[#e4e7eb] py-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#8a94a3]">기준일</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#8a94a3]">기준</p>
                   <p className="mt-1 text-xs font-extrabold text-[#303640]">{basisDate}</p>
                 </div>
                 <div>
@@ -139,7 +132,7 @@ export default async function RankingDetailPage({ params }: Props) {
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.08em] text-[#8a94a3]">최근 업데이트</p>
-                  <p className="mt-1 text-xs font-extrabold text-[#303640]">{new Date(ranking.updated_at).toLocaleDateString('ko-KR')}</p>
+                  <p className="mt-1 text-xs font-extrabold text-[#303640]">{formatKoreanDate(ranking.updated_at)}</p>
                 </div>
               </div>
 
