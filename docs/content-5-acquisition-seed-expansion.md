@@ -1,6 +1,6 @@
 # CONTENT-5 Acquisition Seed Expansion
 
-Status: **IN PROGRESS**
+Status: **SUCCESS / CLOSED**
 
 ## Objective
 
@@ -187,3 +187,78 @@ CONTENT-5 may close only after:
 - category/subcategory/ranking/item public routes smoke successfully;
 - sitemap includes all three ranking URLs and eligible item URLs;
 - recent Production runtime error/fatal and 5xx counts are zero.
+
+## Closure evidence — 2026-08-22
+
+### Production publication
+
+CONTENT-5 published the planned bounded seed as three `metric` rankings and 15 distinct canonical items:
+
+- `top500-supercomputer-hpl-rmax-2026-06-top-5`
+- `world-busiest-airports-passengers-2025-top-5`
+- `world-largest-cities-population-2025-top-5`
+
+The first fail-closed data transaction aborted because OPS-1 incorrectly interpreted the contiguous proper-name token `TOP500` as an entry-count promise. The transaction rolled back completely, so no partial CONTENT-5 data became public. The parser contract was then corrected from optional whitespace to required whitespace between `TOP`/`탑` and the numeric promise. PR #78 passed CI #324, the hosted migration and direct regex probe passed, and the corrected parser was deployed before publication was retried.
+
+The second fail-closed transaction succeeded atomically. Final Hosted readback confirms:
+
+- each target ranking is `published` and `metric`;
+- each ranking has exactly 5 entries and 1 complete criterion;
+- `private.ops_1_ranking_editorial_readiness()` returns `editorial_ready=true` and `blockers=[]` for all three;
+- each ranking has 2 directly usable public source rows;
+- combined CONTENT-5 entries: 15;
+- distinct CONTENT-5 item IDs: 15;
+- `editor_score IS NULL`: 15/15;
+- explicit non-empty `score_json.scores`: 15/15;
+- legacy `sponsor_flag=true`: 0/15.
+
+The ACI ranking uses the July 2026 final PVG passenger figure `84,994,548`, not the earlier preliminary `84,994,227` value.
+
+### CONTENT-3 revalidation continuity
+
+All three published rankings have an initial CONTENT-3 `verified_unchanged` revalidation event. Each event contains a two-source snapshot, for 3 revalidation events and 6 snapshotted source records in total.
+
+### Public route and structured-data smoke
+
+Production smoke passed for all three category/subcategory surfaces and ranking details. The ranking details return HTTP 200, `index, follow`, a self-canonical URL, and five-item `ItemList` structured data while retaining their published metric values and authoritative sources.
+
+Representative canonical Item detail smoke also passed:
+
+- `/items/lineshine` renders item type `슈퍼컴퓨터`;
+- `/items/hartsfield-jackson-atlanta-international-airport` renders item type `공항`;
+- `/items/jakarta` renders item type `도시`.
+
+The Production sitemap contains all 18 newly eligible CONTENT-5 URLs: 3 ranking URLs and 15 item URLs.
+
+### Ranking basis display remediation
+
+Final CONTENT-5 smoke exposed a presentation defect in the pre-existing ranking detail header: non-ISO editorial `scope.period` values were discarded in favor of publication timestamps, the field was labeled `기준일`, and timestamp rendering did not explicitly use the Korea timezone.
+
+PR #79 fixed the display contract without changing ranking data or ordering:
+
+- non-date `scope.period` values are preserved literally;
+- an ISO date inside `scope.period` renders in Korean date format;
+- timestamp fallback and `최근 업데이트` render with `Asia/Seoul`;
+- the public label is `기준` rather than `기준일`;
+- regression fixtures cover `PISA 2022`, `2025 정규시즌 최종`, `TOP500 June 2026 (67th edition)`, an ISO period, and the UTC/KST date boundary.
+
+PR #79 exact HEAD `840b60d478c1bb1e0fb6f55a55cd67f97a4e1bbc` passed CI #326 and merged without main drift. The resulting main `6c6e79e3c20e2b5389532e6d103a1e2f21edf09b` deployed as Production `dpl_JAQHfvjxJtv8CmV58QVpMhcAUcmf` and reached `READY`.
+
+Live Production readback on that exact deployment confirms:
+
+- TOP500 basis: `TOP500 June 2026 (67th edition)`;
+- ACI basis: `2025년 (2026년 7월 확정)`;
+- WUP basis: `2025. 7. 1.`;
+- all three render `최근 업데이트` as `2026. 8. 22.` under the Korea timezone.
+
+### Final corpus and runtime readback before closeout merge
+
+Hosted corpus state before the documentation-only closeout PR:
+
+- items: 57 active, 4 archived;
+- rankings: 16 published, 1 draft, 1 archived;
+- open repository PRs before the closeout PR: 0.
+
+For exact Production deployment `dpl_JAQHfvjxJtv8CmV58QVpMhcAUcmf`, post-deployment route smoke found no runtime error cluster in the recent window and no exact-deployment Production 5xx log entries.
+
+The final documentation-only closeout change introduces no runtime, database, ranking-value, taxonomy, or publication-state mutation. It is eligible to merge only after its own exact-head CI passes and `main` is revalidated for zero drift. After merge, the resulting exact `main` must again reach `READY` in Production before CONTENT-5 is considered operationally closed.
