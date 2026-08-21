@@ -20,6 +20,7 @@
     "verify:content-3": "node scripts/verify-content-3-contracts.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:ui-2c": "node scripts/verify-ui-2c-contracts.mjs",
+    "verify:ui-2d": "node scripts/verify-ui-2d-contracts.mjs",
     "verify:launch-1": "node scripts/verify-launch-1-contracts.mjs",
     "verify:measure-1": "node scripts/verify-measure-1-contracts.mjs"
   },
