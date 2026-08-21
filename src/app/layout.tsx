@@ -7,6 +7,19 @@ import LikeDock from '@/components/engagement/LikeDock'
 import ProductTelemetry from '@/components/telemetry/ProductTelemetry'
 import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo'
 
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim()
+const bingSiteVerification = process.env.BING_SITE_VERIFICATION?.trim()
+
+const searchEngineVerification: Metadata['verification'] =
+  googleSiteVerification || bingSiteVerification
+    ? {
+        ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
+        ...(bingSiteVerification
+          ? { other: { 'msvalidate.01': bingSiteVerification } }
+          : {}),
+      }
+    : undefined
+
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteOrigin()),
   title: {
@@ -29,6 +42,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   robots: { index: true, follow: true },
+  verification: searchEngineVerification,
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
