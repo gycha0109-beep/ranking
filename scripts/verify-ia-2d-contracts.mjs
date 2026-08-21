@@ -10,6 +10,9 @@ const evidenceDomain = read('src/lib/semantic-governance-evidence.ts')
 const semanticPanel = read('src/app/admin/rankings/[id]/edit/SemanticProjectionPanel.tsx')
 const measurePage = read('src/app/admin/measure/page.tsx')
 const measureMigration = read('supabase/migrations/20260819043000_measure_1_product_usage_discovery.sql')
+const controlledFixture = read('tests/fixtures/ia-2d-controlled-semantic-benchmark.json')
+const controlledRunner = read('scripts/verify-ia-2d-controlled-benchmark.mjs')
+const seed = read('supabase/seed.sql')
 
 assert.ok(migration.includes('CREATE TABLE IF NOT EXISTS public.ranking_semantic_governance_events'), 'IA-2D evidence table missing')
 assert.ok(migration.includes("'subject_decision_saved'"), 'finalized Subject decision event missing')
@@ -52,6 +55,16 @@ assert.ok(evidenceActions.includes('event_window_truncated'), 'bounded evidence 
 assert.ok(measurePage.includes('MEASURE-1 + IA-2D'), 'operator surface must expose both evidence authorities')
 assert.ok(measurePage.includes('IA-2D organic authority'), 'operator surface must state the separate IA-2D authority')
 assert.ok(measurePage.includes('SAME_CONCEPT 판정이 아닙니다'), 'controlled replay caveat missing')
+
+const parsedFixture = JSON.parse(controlledFixture)
+assert.equal(parsedFixture.provenance, 'CONTROLLED_SYNTHETIC', 'controlled fixture provenance must stay explicit')
+assert.ok(controlledRunner.includes("provenance=${fixture.provenance}"), 'controlled runner must report provenance')
+assert.ok(controlledRunner.includes('organic_evidence_rows_written=0'), 'controlled runner must declare zero organic writes')
+assert.ok(controlledRunner.includes('organic_readiness_impact=NONE'), 'controlled runner must declare no organic-readiness impact')
+assert.ok(!controlledRunner.includes(".from('ranking_semantic_governance_events')"), 'controlled benchmark must not write/read the organic event table')
+assert.ok(!controlledRunner.includes('createAdminClient'), 'controlled benchmark must remain database-free')
+assert.ok(!seed.includes('ia-2d-controlled-semantic-benchmark'), 'controlled benchmark must not enter Supabase seed data')
+assert.ok(!migration.includes('CONTROLLED_SYNTHETIC'), 'organic evidence migration must not embed controlled benchmark rows/provenance')
 
 const transpiled = ts.transpileModule(evidenceDomain, {
   compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 },
