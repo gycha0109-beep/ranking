@@ -1,9 +1,9 @@
 name: ACQ-2 IndexNow Bootstrap
 
 on:
-  push:
+  pull_request:
     branches:
-      - ops/acq-2-indexnow-submit
+      - main
 
 permissions:
   contents: read
