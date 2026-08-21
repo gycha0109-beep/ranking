@@ -1,0 +1,42 @@
+{
+  "audit_id": "ia-2k-hosted-semantic-anchor-feasibility-v1",
+  "provenance": "HOSTED_READ_ONLY_SNAPSHOT",
+  "observed_main_sha": "172d11fc17949db075f15c6001d3c08f87309cb8",
+  "observed_at_date": "2026-08-21",
+  "project_ref": "yjdubukqkcvkymabskzd",
+  "projected_rankings": 13,
+  "reviewed_alias_count": 0,
+  "pairwise": {
+    "same_subject_pairs": 8,
+    "same_subject_same_method_pairs": 8,
+    "same_subject_different_coordinates_pairs": 8,
+    "same_subject_different_criteria_pairs": 8,
+    "different_subject_pairs": 70,
+    "same_subcategory_intent_different_subject_pairs": 1,
+    "same_subcategory_method_different_subject_pairs": 1
+  },
+  "known_collision": {
+    "left_slug": "world-population-2024-top-5",
+    "right_slug": "world-nominal-gdp-2024-top-5",
+    "left_subject": "world-country-population",
+    "right_subject": "world-country-nominal-gdp",
+    "shared_intent": "metric-comparison",
+    "shared_method": "world-bank-wdi"
+  },
+  "same_subject_variation_groups": [
+    "fifa-world-ranking",
+    "kbo-team-season-performance",
+    "korea-interregional-migration-rate",
+    "pisa-country-performance"
+  ],
+  "signal_assessment": {
+    "item_overlap": "REJECTED_BY_IA_2I_AS_SUBJECT_IDENTITY_AUTHORITY",
+    "subcategory": "INSUFFICIENT",
+    "intent_key": "INSUFFICIENT",
+    "method_key": "INSUFFICIENT",
+    "coordinates_exactness": "TOO_NARROW_FOR_EXISTING_BROAD_SUBJECTS",
+    "criteria_exactness": "TOO_NARROW_FOR_EXISTING_BROAD_SUBJECTS",
+    "reviewed_alias": "SAFE_EXPLICIT_EQUIVALENCE_BUT_ZERO_HOSTED_ROWS"
+  },
+  "verdict": "NO_SAFE_AUTOMATIC_INDEPENDENT_ANCHOR_FOUND"
+}
