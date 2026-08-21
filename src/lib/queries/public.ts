@@ -1,5 +1,12 @@
 import { normalizeRouteSlug } from '@/lib/routing'
 import {
+  classifyRankingIdentity,
+  compareRankingIdentityRelations,
+  explainRankingIdentity,
+  SEMANTIC_SUBJECT_CANDIDATE_LIMIT,
+  type RankingSemanticProjection,
+} from '@/lib/ranking-identity'
+import {
   classifyRankingNeighbor,
   compareRankingNeighbors,
   explainRankingNeighbor,
@@ -141,7 +148,13 @@ export async function getPublishedRankingBySlug(slug: string) {
 
   if (!ranking) return null
 
-  const [{ data: entries }, { data: criteria }, { data: sources }, { data: facetsData }] = await Promise.all([
+  const [
+    { data: entries },
+    { data: criteria },
+    { data: sources },
+    { data: facetsData },
+    { data: semanticProjection },
+  ] = await Promise.all([
     supabase
       .from('ranking_entries')
       .select(`${PUBLIC_ENTRY_COLUMNS}, items!inner(${PUBLIC_ITEM_COLUMNS})`)
@@ -165,6 +178,11 @@ export async function getPublishedRankingBySlug(slug: string) {
       .from('ranking_facets')
       .select('facets(id, name, slug, facet_groups(name, code))')
       .eq('ranking_id', ranking.id),
+    supabase
+      .from('ranking_semantic_projections')
+      .select('*')
+      .eq('ranking_id', ranking.id)
+      .maybeSingle(),
   ])
 
   const facets = (facetsData || [])
@@ -177,6 +195,7 @@ export async function getPublishedRankingBySlug(slug: string) {
     criteria: criteria || [],
     sources: sources || [],
     facets,
+    semantic_projection: semanticProjection || null,
   }
 }
 
@@ -229,13 +248,15 @@ export async function getRankingsContainingItem(itemId: string) {
 }
 
 /**
- * IA-1 contextual neighborhood:
- * same non-null subcategory / shared public Item 후보만 수집한 뒤
- * Item Jaccard + title lexical Jaccard로 gate하고 deterministic tier로 정렬한다.
+ * IA-2 identity-first neighborhood:
+ * optional semantic projection이 있으면 같은 Subject를 bounded candidate source로 추가하고
+ * Claim → Method/View → Version identity를 IA-1 contextual similarity보다 우선한다.
+ * projection이 없거나 분류 실패면 기존 IA-1 경로가 그대로 동작한다.
  */
 export async function getRelatedRankings(ranking: any) {
   const supabase = createPublicClient()
   const candidateMap = new Map<string, any>()
+  const currentProjection = (ranking.semantic_projection || null) as RankingSemanticProjection | null
   const itemIds = [...new Set((ranking.entries || []).map((entry: any) => entry.item_id).filter(Boolean))]
 
   const addCandidate = (candidate: any) => {
@@ -244,6 +265,21 @@ export async function getRelatedRankings(ranking: any) {
   }
 
   const candidateQueries: PromiseLike<any>[] = []
+
+  if (currentProjection?.subject_key) {
+    candidateQueries.push(
+      supabase
+        .from('ranking_semantic_projections')
+        .select(`ranking_id, rankings!inner(${PUBLIC_RANKING_COLUMNS}, categories(name, slug), subcategories(name, slug))`)
+        .eq('subject_key', currentProjection.subject_key)
+        .neq('ranking_id', ranking.id)
+        .eq('rankings.status', 'published')
+        .in('rankings.moderation_status', PUBLIC_MODERATION_STATUSES)
+        .in('rankings.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+        .order('ranking_id', { ascending: true })
+        .limit(SEMANTIC_SUBJECT_CANDIDATE_LIMIT)
+    )
+  }
 
   if (ranking.subcategory_id) {
     candidateQueries.push(
@@ -288,17 +324,24 @@ export async function getRelatedRankings(ranking: any) {
   const candidateIds = [...candidateMap.keys()].sort((left, right) => left.localeCompare(right))
   if (candidateIds.length === 0) return []
 
-  const { data: candidateEntries } = await supabase
-    .from('ranking_entries')
-    .select('id, ranking_id, item_id, position, items!inner(id)')
-    .in('ranking_id', candidateIds)
-    .in('moderation_status', PUBLIC_MODERATION_STATUSES)
-    .eq('items.status', 'active')
-    .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
-    .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
-    .order('ranking_id', { ascending: true })
-    .order('position', { ascending: true })
-    .order('id', { ascending: true })
+  const [{ data: candidateEntries }, { data: candidateProjectionRows }] = await Promise.all([
+    supabase
+      .from('ranking_entries')
+      .select('id, ranking_id, item_id, position, items!inner(id)')
+      .in('ranking_id', candidateIds)
+      .in('moderation_status', PUBLIC_MODERATION_STATUSES)
+      .eq('items.status', 'active')
+      .in('items.moderation_status', PUBLIC_MODERATION_STATUSES)
+      .in('items.image_moderation_status', PUBLIC_MODERATION_STATUSES)
+      .order('ranking_id', { ascending: true })
+      .order('position', { ascending: true })
+      .order('id', { ascending: true }),
+    supabase
+      .from('ranking_semantic_projections')
+      .select('*')
+      .in('ranking_id', candidateIds)
+      .order('ranking_id', { ascending: true }),
+  ])
 
   const candidateItemIds = new Map<string, string[]>()
   for (const entry of candidateEntries || []) {
@@ -306,6 +349,12 @@ export async function getRelatedRankings(ranking: any) {
     const ids = candidateItemIds.get(entry.ranking_id) || []
     ids.push(entry.item_id)
     candidateItemIds.set(entry.ranking_id, ids)
+  }
+
+  const candidateProjections = new Map<string, RankingSemanticProjection>()
+  for (const projection of candidateProjectionRows || []) {
+    if (!projection.ranking_id) continue
+    candidateProjections.set(projection.ranking_id, projection as RankingSemanticProjection)
   }
 
   const currentNode = {
@@ -317,7 +366,7 @@ export async function getRelatedRankings(ranking: any) {
     publishedAt: ranking.published_at || ranking.updated_at || ranking.created_at || null,
   }
 
-  const neighbors = []
+  const neighbors: any[] = []
   for (const candidateId of candidateIds) {
     const data = candidateMap.get(candidateId)
     if (!data) continue
@@ -330,19 +379,42 @@ export async function getRelatedRankings(ranking: any) {
       itemIds: candidateItemIds.get(data.id) || [],
       publishedAt: data.published_at || data.updated_at || data.created_at || null,
     })
+    const identityRelation = classifyRankingIdentity(
+      currentProjection,
+      candidateProjections.get(candidateId) || null
+    )
 
-    if (!relation) continue
-    neighbors.push({ data, relation })
+    if (!identityRelation && !relation) continue
+    neighbors.push({ data, relation, identityRelation })
   }
 
   return neighbors
-    .sort((left, right) => compareRankingNeighbors(left.relation, right.relation))
+    .sort((left, right) => {
+      if (left.identityRelation && right.identityRelation) {
+        const identityOrder = compareRankingIdentityRelations(left.identityRelation, right.identityRelation)
+        if (identityOrder !== 0) return identityOrder
+      } else if (left.identityRelation) {
+        return -1
+      } else if (right.identityRelation) {
+        return 1
+      }
+
+      if (left.relation && right.relation) {
+        return compareRankingNeighbors(left.relation, right.relation)
+      }
+      if (left.relation) return -1
+      if (right.relation) return 1
+      return left.data.id.localeCompare(right.data.id)
+    })
     .slice(0, RELATED_RANKING_LIMIT)
-    .map(({ data, relation }) => ({
+    .map(({ data, relation, identityRelation }) => ({
       ...data,
-      related_reason: explainRankingNeighbor(relation, data.subcategories?.name),
-      related_match_count: relation.sharedItemCount,
-      related_tier: relation.tier,
+      related_reason: identityRelation
+        ? explainRankingIdentity(identityRelation)
+        : explainRankingNeighbor(relation, data.subcategories?.name),
+      related_match_count: relation?.sharedItemCount || 0,
+      related_tier: identityRelation ? `IA2:${identityRelation.kind}` : relation?.tier,
+      related_identity_relation: identityRelation?.kind || null,
     }))
 }
 
