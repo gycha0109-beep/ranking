@@ -4,8 +4,9 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { listAdminCategories, listAdminSubcategories, listAdminItems, listFacetGroups } from '@/lib/actions/admin'
 import { getRankingSemanticWorkspace } from '@/lib/actions/ranking-semantic'
+import { getRankingSubjectContextSuggestions } from '@/lib/actions/ranking-semantic-context'
 import RankingEditorForm from './RankingEditorForm'
-import SemanticProjectionPanel from './SemanticProjectionPanel'
+import SemanticProjectionWithContext from './SemanticProjectionWithContext'
 import { ArrowLeft, FileSpreadsheet } from 'lucide-react'
 
 interface Props {
@@ -41,7 +42,8 @@ export default async function AdminRankingEditPage({ params }: Props) {
     subcategories,
     items,
     allFacetGroups,
-    semanticWorkspace
+    semanticWorkspace,
+    semanticContextSuggestions
   ] = await Promise.all([
     supabase.from('ranking_criteria').select('*').eq('ranking_id', id).order('sort_order', { ascending: true }),
     supabase.from('ranking_sources').select('*').eq('ranking_id', id),
@@ -51,7 +53,8 @@ export default async function AdminRankingEditPage({ params }: Props) {
     listAdminSubcategories(),
     listAdminItems(),
     listFacetGroups(),
-    getRankingSemanticWorkspace(id)
+    getRankingSemanticWorkspace(id),
+    getRankingSubjectContextSuggestions(id)
   ])
 
   // 현재 매핑되어 있는 페이셋 ID 배열화
@@ -81,7 +84,10 @@ export default async function AdminRankingEditPage({ params }: Props) {
           </p>
         </div>
 
-        <SemanticProjectionPanel initialWorkspace={semanticWorkspace} />
+        <SemanticProjectionWithContext
+          initialWorkspace={semanticWorkspace}
+          contextSuggestions={semanticContextSuggestions}
+        />
 
         {/* 대형 인터랙티브 폼 마운트 */}
         <RankingEditorForm 
