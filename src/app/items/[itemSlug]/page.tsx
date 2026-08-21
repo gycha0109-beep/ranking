@@ -36,6 +36,7 @@ export default async function ItemDetailPage({ params }: Props) {
   const hasStructuredInfo = facts.length > 0 || (item.facets?.length || 0) > 0
   const itemTypeLabel = formatItemMachineLabel(item.item_type)
   const initials = item.title.trim().slice(0, 2) || 'RW'
+  const contextualRelatedItems = relatedItems.filter((related: any) => related.related_reason !== '같은 카테고리')
 
   return (
     <div className="rw-page pb-16 sm:pb-20">
@@ -186,7 +187,7 @@ export default async function ItemDetailPage({ params }: Props) {
           </div>
         </section>
 
-        {relatedItems.length > 0 && (
+        {contextualRelatedItems.length > 0 && (
           <section className="border-t border-[#d9dde3] pt-9">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -197,7 +198,7 @@ export default async function ItemDetailPage({ params }: Props) {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedItems.map((related: any) => (
+              {contextualRelatedItems.map((related: any) => (
                 <Link key={related.id} href={`/items/${related.slug}`} className="group flex min-w-0 items-center gap-3 border border-[#dfe3e8] bg-white p-4 transition hover:border-[#b8c6f4] hover:bg-[#f8faff]">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e0e4e9] bg-[#f2f4f7]">
                     {related.image_url ? (
