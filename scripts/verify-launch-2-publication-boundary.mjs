@@ -9,6 +9,8 @@ function requireCondition(condition, message) {
 }
 
 const migration = read('supabase/migrations/20260821124800_launch_2_publication_boundary.sql')
+const hardening = read('supabase/migrations/20260821130500_launch_2_publication_boundary_perf_hardening.sql')
+const allMigrations = `${migration}\n${hardening}`
 const publicClient = read('src/lib/supabase/public.ts')
 const publicQueries = read('src/lib/queries/public.ts')
 const seo = read('src/lib/seo.ts')
@@ -26,13 +28,14 @@ for (const policy of [
   requireCondition(migration.includes(`CREATE POLICY "${policy}"`), `LAUNCH-2 must recreate ${policy}`)
 }
 
-requireCondition(migration.includes("auth.role() = 'anon'"), 'Item public policy must remain explicitly anonymous')
-requireCondition(migration.includes("status = 'active'"), 'Item public policy must require active state')
-requireCondition(migration.includes("re.item_id = items.id"), 'Item public policy must bind ranking membership to the Item')
-requireCondition(migration.includes("re.moderation_status IN ('clean', 'suggestive')"), 'Item membership must require a public-safe ranking entry')
-requireCondition(migration.includes("r.status = 'published'"), 'public membership must require a published Ranking')
-requireCondition(migration.includes("r.moderation_status IN ('clean', 'suggestive')"), 'public membership must require Ranking moderation safety')
-requireCondition(migration.includes("r.image_moderation_status IN ('clean', 'suggestive')"), 'public membership must require Ranking image moderation safety')
+requireCondition(hardening.includes("(SELECT auth.role()) = 'anon'"), 'Item public policy must use an initplan-safe anonymous role lookup')
+requireCondition(hardening.includes('ALTER POLICY "Items viewable by everyone if active"'), 'performance hardening must retain the Item publication policy')
+requireCondition(allMigrations.includes("status = 'active'"), 'Item public policy must require active state')
+requireCondition(allMigrations.includes('re.item_id = items.id'), 'Item public policy must bind ranking membership to the Item')
+requireCondition(allMigrations.includes("re.moderation_status IN ('clean', 'suggestive')"), 'Item membership must require a public-safe ranking entry')
+requireCondition(allMigrations.includes("r.status = 'published'"), 'public membership must require a published Ranking')
+requireCondition(allMigrations.includes("r.moderation_status IN ('clean', 'suggestive')"), 'public membership must require Ranking moderation safety')
+requireCondition(allMigrations.includes("r.image_moderation_status IN ('clean', 'suggestive')"), 'public membership must require Ranking image moderation safety')
 
 requireCondition(migration.includes('r.category_id = categories.id'), 'Category public policy must bind a published Ranking to the Category')
 requireCondition(migration.includes('r.subcategory_id = subcategories.id'), 'Subcategory public policy must bind a published Ranking to the Subcategory')
@@ -50,6 +53,10 @@ requireCondition(migration.includes('CREATE OR REPLACE FUNCTION public.list_publ
 requireCondition(migration.includes('FROM public.item_facets itf'), 'Item Facet option discovery must remain explicit')
 requireCondition(migration.includes('WHERE re.item_id = i.id'), 'Item Facet options must require published Ranking membership')
 
+requireCondition(hardening.includes('CREATE INDEX IF NOT EXISTS idx_ranking_entries_public_item_membership'), 'LAUNCH-2 must index public Item membership lookup')
+requireCondition(hardening.includes('ON public.ranking_entries (item_id, ranking_id)'), 'membership index must lead with item_id')
+requireCondition(hardening.includes("WHERE moderation_status IN ('clean', 'suggestive')"), 'membership index must align with the public-safe entry predicate')
+
 for (const forbidden of [
   'DELETE FROM public.items',
   'DELETE FROM public.categories',
@@ -61,7 +68,7 @@ for (const forbidden of [
   'UPDATE public.rankings',
   'ALTER TABLE public.rankings',
 ]) {
-  requireCondition(!migration.includes(forbidden), `LAUNCH-2 must not mutate authoring rows or Ranking publication state: ${forbidden}`)
+  requireCondition(!allMigrations.includes(forbidden), `LAUNCH-2 must not mutate authoring rows or Ranking publication state: ${forbidden}`)
 }
 
 requireCondition(publicClient.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY'), 'public readers must remain bound to the anon Supabase authority')
@@ -74,6 +81,7 @@ for (const phrase of [
   'Item status = active',
   'Category is_visible = true',
   'draft-only Item route resolves to 404/noindex',
+  'idx_ranking_entries_public_item_membership',
   'does not claim that Google',
 ]) {
   requireCondition(docs.includes(phrase), `LAUNCH-2 docs must freeze boundary language: ${phrase}`)
