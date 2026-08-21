@@ -269,7 +269,7 @@ export async function saveRankingSemanticProjection(
       version_coordinates: parsed.value.version_coordinates,
       classification_state: 'reviewed',
       confidence: 1,
-      projection_version: 'ia-2c-admin-manual-v1',
+      projection_version: 'ia-2b-admin-manual-v1',
       claim_signature: '',
       view_signature: '',
       version_signature: '',
