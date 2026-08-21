@@ -48,6 +48,7 @@ jobs:
       - run: npm run verify:public-copy
       - run: npm run verify:content-1
       - run: npm run verify:content-3
+      - run: npm run verify:content-5
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
