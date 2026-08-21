@@ -1,6 +1,6 @@
 # ACQ-2 — IndexNow Discovery Bootstrap
 
-Status: **IMPLEMENTATION / VERIFICATION**
+Status: **SUCCESS / CLOSED**
 
 ## Objective
 
@@ -128,10 +128,113 @@ ACQ-2 may close only when:
 10. Production runtime error/fatal and 5xx checks show no regression;
 11. external search-result sampling, if performed, remains advisory and is not promoted to authoritative indexing evidence.
 
-Until those conditions pass:
+## Closure evidence
+
+### Implementation authority
+
+- implementation PR: `#81`
+- exact implementation PR head: `82e9253eb39e4f397ff15c3fc01a3065112f439b`
+- exact-head CI: `#330` / `SUCCESS`
+- historical verifier suite: `PASS`
+- ACQ-2 verifier: `PASS`
+- lint: `PASS`
+- Next production build: `PASS`
+- merged main after implementation: `81c114a7578fbc9694cd64de2603b77c43b7021b`
+
+The implementation merge occurred from the CI-verified head without observed `main` drift.
+
+### Production key reachability
+
+Exact implementation Production deployment:
 
 ```text
-ACQ_2 = NOT CLOSED
-INDEXNOW_SUBMISSION = NOT YET AUTHORITATIVE
+deployment = dpl_8C8h9YPenBigkJR6xdGz8UNdSkTh
+git_sha = 81c114a7578fbc9694cd64de2603b77c43b7021b
+state = READY
+```
+
+The IndexNow key was then read back from both:
+
+- the exact deployment URL; and
+- the canonical Production alias `https://ranking-rho-three.vercel.app`.
+
+Both returned HTTP 200 with the exact expected key text:
+
+```text
+0fc5987ce02e929b5fcd9b1223ae985e81fd8c41e9d2dc381513970419411722
+```
+
+Therefore:
+
+```text
+INDEXNOW_KEY_REACHABLE = VERIFIED
+```
+
+### Live CONTENT-5 bootstrap receipt
+
+The live submission was isolated from `main` and normal CI through one disposable operator branch and draft PR:
+
+- operator PR: `#82`
+- title boundary: `DO NOT MERGE`
+- PR outcome: `CLOSED / UNMERGED`
+- exact operator head used for the inspected run: `a02ca5750acaab42da9bf7ed670c819cb08669a1`
+- inspected workflow: `ACQ-2 IndexNow Bootstrap`
+- workflow run id: `32536319327`
+- workflow run number: `2`
+- submit job id: `96937815582`
+
+The inspected live submission returned:
+
+```text
+state = RECEIVED
+status = 200
+host = ranking-rho-three.vercel.app
+urlCount = 25
+```
+
+This is authoritative evidence only for IndexNow protocol receipt of that 25-URL request. It is not evidence of crawl, ranking, visibility, or indexing.
+
+The inspected request contained only the bounded CONTENT-5 bootstrap set documented above. It did not submit the entire historical sitemap.
+
+Operational note: the workflow numbering shows that an earlier run `#1` existed while the disposable execution vehicle was being prepared. Its outcome was not independently inspected and is not used as ACQ-2 closure evidence. The authoritative receipt evidence for closure is run `#2` above.
+
+After the inspected run:
+
+- PR `#82` was closed without merge; and
+- the disposable one-shot workflow was removed from its operator branch in commit `20024b8e5236abc1efc6fce026f0ab9f3cf85cf9`.
+
+No live-submission workflow was merged into `main`.
+
+### Runtime safety
+
+After the exact implementation deployment and key/submission checks:
+
+```text
+recent_production_runtime_errors = 0
+exact_deployment_5xx = 0
+```
+
+No database, RLS, publication-state, ranking-value, robots, sitemap, or canonical mutation was introduced by ACQ-2.
+
+### External authority remains unresolved
+
+ACQ-2 does not close ACQ-1's external ownership boundary. Google Search Console ownership, Bing Webmaster ownership, engine-side sitemap submission/readback, crawl state, and indexed state remain dependent on external search-engine authority.
+
+Therefore the following statements remain mandatory:
+
+```text
+ACQ_1_OPERATIONAL_VERIFICATION = PENDING_EXTERNAL_ENGINE_OWNERSHIP
+CRAWL_STATUS = UNCONFIRMED
 SEARCH_ENGINE_INDEXING = UNCONFIRMED
+```
+
+## Final state
+
+```text
+ACQ_2_CODE_READINESS = SUCCESS
+INDEXNOW_KEY_REACHABLE = VERIFIED
+INDEXNOW_CONTENT_5_BOOTSTRAP = RECEIVED / HTTP 200 / 25 URLs
+CRAWL_STATUS = UNCONFIRMED
+SEARCH_ENGINE_INDEXING = UNCONFIRMED
+ACQ_2 = SUCCESS / CLOSED
 ```
