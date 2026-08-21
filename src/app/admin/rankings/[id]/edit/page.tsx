@@ -18,6 +18,11 @@ interface Props {
 
 export const dynamic = 'force-dynamic'
 
+// IA-2I independently rejected Item-neighborhood consensus as a standalone semantic
+// identity signal. Preserve IA-2H code/evidence for auditability, but do not load or
+// render its operational fallback until a separate semantic anchor is validated.
+const IA_2H_CONTEXT_FALLBACK_QUARANTINED = true
+
 export default async function AdminRankingEditPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
@@ -55,7 +60,9 @@ export default async function AdminRankingEditPage({ params }: Props) {
     listAdminItems(),
     listFacetGroups(),
     getRankingSemanticWorkspace(id),
-    getRankingSubjectContextSuggestions(id)
+    IA_2H_CONTEXT_FALLBACK_QUARANTINED
+      ? Promise.resolve([])
+      : getRankingSubjectContextSuggestions(id)
   ])
 
   // 현재 매핑되어 있는 페이셋 ID 배열화
@@ -86,10 +93,12 @@ export default async function AdminRankingEditPage({ params }: Props) {
         </div>
 
         <SemanticProjectionPanel initialWorkspace={semanticWorkspace} />
-        <SemanticContextFallbackPanel
-          workspace={semanticWorkspace}
-          contextSuggestions={semanticContextSuggestions}
-        />
+        {!IA_2H_CONTEXT_FALLBACK_QUARANTINED && (
+          <SemanticContextFallbackPanel
+            workspace={semanticWorkspace}
+            contextSuggestions={semanticContextSuggestions}
+          />
+        )}
 
         {/* 대형 인터랙티브 폼 마운트 */}
         <RankingEditorForm 
