@@ -1,4 +1,5 @@
 export const SEMANTIC_SUBJECT_CANDIDATE_LIMIT = 40
+export const SEMANTIC_DISCOVERY_CONFIDENCE_MIN = 0.90
 
 export type RankingIdentityRelationKind =
   | 'same_version'
@@ -37,12 +38,20 @@ function nonEmpty(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
 }
 
+export function isDiscoveryEligibleProjection(
+  projection?: RankingSemanticProjection | null
+) {
+  if (!projection || !nonEmpty(projection.subject_key)) return false
+  if (projection.classification_state === 'reviewed') return true
+  return typeof projection.confidence === 'number'
+    && projection.confidence >= SEMANTIC_DISCOVERY_CONFIDENCE_MIN
+}
+
 export function classifyRankingIdentity(
   current?: RankingSemanticProjection | null,
   candidate?: RankingSemanticProjection | null
 ): RankingIdentityRelation | null {
-  if (!current || !candidate) return null
-  if (!nonEmpty(current.subject_key) || !nonEmpty(candidate.subject_key)) return null
+  if (!isDiscoveryEligibleProjection(current) || !isDiscoveryEligibleProjection(candidate)) return null
   if (current.subject_key !== candidate.subject_key) return null
 
   if (
