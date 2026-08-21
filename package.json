@@ -23,6 +23,7 @@
     "verify:ia-2e": "node scripts/verify-ia-2e-independent-holdout.mjs",
     "verify:ia-2f": "node scripts/verify-ia-2f-recall-calibration.mjs",
     "verify:ia-2g": "node scripts/verify-ia-2g-independent-holdout.mjs",
+    "verify:ia-2h": "node scripts/verify-ia-2h-bounded-context.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
