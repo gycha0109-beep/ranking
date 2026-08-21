@@ -40,6 +40,10 @@ function projectionJson(value: unknown) {
   return JSON.stringify(value && typeof value === 'object' ? value : {}, null, 2)
 }
 
+function evidenceSuffix(result: { evidence_warning?: string | null }) {
+  return result.evidence_warning ? ` · ${result.evidence_warning}` : ''
+}
+
 export default function SemanticProjectionPanel({
   initialWorkspace,
 }: {
@@ -51,6 +55,7 @@ export default function SemanticProjectionPanel({
   const [methodKey, setMethodKey] = useState(initialWorkspace.projection?.method_key || '')
   const [coordinatesJson, setCoordinatesJson] = useState(projectionJson(initialWorkspace.projection?.coordinates))
   const [versionCoordinatesJson, setVersionCoordinatesJson] = useState(projectionJson(initialWorkspace.projection?.version_coordinates))
+  const [selectedSuggestion, setSelectedSuggestion] = useState<{ query: string; key: string } | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -74,6 +79,7 @@ export default function SemanticProjectionPanel({
     setMethodKey(next.projection?.method_key || '')
     setCoordinatesJson(projectionJson(next.projection?.coordinates))
     setVersionCoordinatesJson(projectionJson(next.projection?.version_coordinates))
+    setSelectedSuggestion(null)
   }
 
   const handleSave = () => {
@@ -87,6 +93,9 @@ export default function SemanticProjectionPanel({
         method_key: methodKey,
         coordinates_json: coordinatesJson,
         version_coordinates_json: versionCoordinatesJson,
+      }, {
+        suggestion_query: selectedSuggestion?.query || null,
+        selected_suggestion_key: selectedSuggestion?.key || null,
       })
 
       if ('error' in result && result.error) {
@@ -95,18 +104,22 @@ export default function SemanticProjectionPanel({
       }
 
       if ('workspace' in result && result.workspace) syncWorkspace(result.workspace)
-      if ('subject_resolution' in result && result.subject_resolution?.resolved_via_alias) {
-        setMessage(`Alias ${result.subject_resolution.input_subject_key} → ${result.subject_resolution.canonical_subject_key}로 정규화해 저장했습니다. 발행 상태에는 영향을 주지 않습니다.`)
+      const suffix = evidenceSuffix(result)
+      if ('subject_resolution' in result && result.subject_resolution?.resolution_kind === 'suggestion') {
+        setMessage(`Deterministic suggestion ${result.subject_resolution.canonical_subject_key} 선택을 포함해 reviewed projection을 저장했습니다.${suffix}`)
+      } else if ('subject_resolution' in result && result.subject_resolution?.resolved_via_alias) {
+        setMessage(`Alias ${result.subject_resolution.input_subject_key} → ${result.subject_resolution.canonical_subject_key}로 정규화해 저장했습니다. 발행 상태에는 영향을 주지 않습니다.${suffix}`)
       } else {
-        setMessage('Reviewed semantic projection을 저장했습니다. 발행 상태에는 영향을 주지 않습니다.')
+        setMessage(`Reviewed semantic projection을 저장했습니다. 발행 상태에는 영향을 주지 않습니다.${suffix}`)
       }
     })
   }
 
   const handleUseCanonical = (canonicalSubjectKey: string) => {
+    setSelectedSuggestion({ query: subjectKey, key: canonicalSubjectKey })
     setSubjectKey(canonicalSubjectKey)
     setError(null)
-    setMessage(`기존 Canonical Subject ${canonicalSubjectKey}를 선택했습니다.`)
+    setMessage(`기존 Canonical Subject ${canonicalSubjectKey}를 선택했습니다. 저장 시 IA-2D finalized-decision 증거에 반영됩니다.`)
   }
 
   const handleCreateAlias = (canonicalSubjectKey: string) => {
@@ -126,7 +139,8 @@ export default function SemanticProjectionPanel({
         syncWorkspace(result.workspace, true)
         setSubjectKey(canonicalSubjectKey)
       }
-      setMessage(`Alias ${aliasKey} → ${canonicalSubjectKey}를 등록했습니다. 이후 exact alias 입력은 canonical key로 저장됩니다.`)
+      setSelectedSuggestion(null)
+      setMessage(`Alias ${aliasKey} → ${canonicalSubjectKey}를 등록했습니다. 이후 exact alias 입력은 canonical key로 저장됩니다.${evidenceSuffix(result)}`)
     })
   }
 
@@ -142,7 +156,7 @@ export default function SemanticProjectionPanel({
         return
       }
       if ('workspace' in result && result.workspace) syncWorkspace(result.workspace, true)
-      setMessage(`Alias ${aliasKey} 연결을 해제했습니다.`)
+      setMessage(`Alias ${aliasKey} 연결을 해제했습니다.${evidenceSuffix(result)}`)
     })
   }
 
@@ -160,7 +174,7 @@ export default function SemanticProjectionPanel({
       }
 
       if ('workspace' in result && result.workspace) syncWorkspace(result.workspace)
-      setMessage('Semantic projection을 해제했습니다. 랭킹 원문과 발행 상태는 그대로 유지됩니다.')
+      setMessage(`Semantic projection을 해제했습니다. 랭킹 원문과 발행 상태는 그대로 유지됩니다.${evidenceSuffix(result)}`)
     })
   }
 
@@ -201,7 +215,10 @@ export default function SemanticProjectionPanel({
           <input
             id="semantic-subject-key"
             value={subjectKey}
-            onChange={event => setSubjectKey(event.target.value)}
+            onChange={event => {
+              setSubjectKey(event.target.value)
+              setSelectedSuggestion(null)
+            }}
             placeholder="mens-fragrance"
             autoComplete="off"
             className="mt-1.5 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2.5 text-xs text-slate-100 outline-none transition focus:border-indigo-400"
@@ -339,7 +356,7 @@ export default function SemanticProjectionPanel({
             Projection 해제
           </button>
         )}
-        <span className="text-[10px] font-semibold text-slate-500">AI/embedding 없이 실제 사용 Subject + reviewed Alias만으로 제안합니다.</span>
+        <span className="text-[10px] font-semibold text-slate-500">AI/embedding 없이 실제 사용 Subject + reviewed Alias만으로 제안합니다. IA-2D는 저장된 결정만 append-only 증거로 집계합니다.</span>
       </div>
 
       <div className="mt-6 border-t border-white/[0.07] pt-5">

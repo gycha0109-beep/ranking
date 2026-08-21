@@ -15,10 +15,13 @@ import {
   parseRankingSemanticProjectionForm,
   type RankingSemanticProjectionFormInput,
 } from '@/lib/ranking-semantic-input'
-import type {
-  RankingSubjectAlias,
-  RankingSubjectOption,
+import {
+  normalizeRankingSubjectLookup,
+  rankRankingSubjectSuggestions,
+  type RankingSubjectAlias,
+  type RankingSubjectOption,
 } from '@/lib/ranking-subject-suggestions'
+import type { SemanticGovernanceResolutionKind } from '@/lib/semantic-governance-evidence'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -45,6 +48,11 @@ export type RankingSemanticWorkspace = {
   advisories: RankingSemanticAdvisory[]
   subject_options: RankingSubjectOption[]
   subject_aliases: RankingSubjectAlias[]
+}
+
+export type RankingSemanticInteractionEvidence = {
+  suggestion_query?: string | null
+  selected_suggestion_key?: string | null
 }
 
 async function ensureAdmin() {
@@ -134,6 +142,14 @@ async function resolveCanonicalSubjectKey(
 
   if (error) throw new Error(`Subject alias 해석 실패: ${error.message}`)
   return data?.canonical_subject_key || subjectKey
+}
+
+async function recordSemanticGovernanceEvidence(
+  admin: ReturnType<typeof createAdminClient>,
+  payload: Record<string, unknown>
+) {
+  const { error } = await admin.from('ranking_semantic_governance_events').insert(payload)
+  return error ? `IA-2D 증거 기록 실패: ${error.message}` : null
 }
 
 async function loadWorkspace(rankingId: string): Promise<RankingSemanticWorkspace> {
@@ -236,18 +252,23 @@ export async function getRankingSemanticWorkspace(rankingId: string) {
 
 export async function saveRankingSemanticProjection(
   rankingId: string,
-  formInput: RankingSemanticProjectionFormInput
+  formInput: RankingSemanticProjectionFormInput,
+  interaction: RankingSemanticInteractionEvidence = {}
 ) {
-  await ensureAdmin()
+  const user = await ensureAdmin()
   const parsed = parseRankingSemanticProjectionForm(formInput)
   if (!parsed.ok) return { error: parsed.error }
 
   const admin = createAdminClient()
-  const { data: ranking, error: rankingError } = await admin
-    .from('rankings')
-    .select('id, slug')
-    .eq('id', rankingId)
-    .maybeSingle()
+  const [rankingResult, subjectCatalog] = await Promise.all([
+    admin
+      .from('rankings')
+      .select('id, slug')
+      .eq('id', rankingId)
+      .maybeSingle(),
+    loadSubjectCatalog(admin),
+  ])
+  const { data: ranking, error: rankingError } = rankingResult
 
   if (rankingError || !ranking) return { error: '랭킹 문서를 찾을 수 없습니다.' }
 
@@ -256,6 +277,29 @@ export async function saveRankingSemanticProjection(
     canonicalSubjectKey = await resolveCanonicalSubjectKey(admin, parsed.value.subject_key)
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Subject alias 해석에 실패했습니다.' }
+  }
+
+  const rawSuggestionQuery = interaction.suggestion_query || parsed.value.subject_key
+  const normalizedSuggestionQuery = normalizeRankingSubjectLookup(rawSuggestionQuery)
+  const suggestionRows = rankRankingSubjectSuggestions(rawSuggestionQuery, subjectCatalog.options)
+    .filter(suggestion => suggestion.subject_key !== normalizedSuggestionQuery)
+  const suggestionKeys = suggestionRows.map(suggestion => suggestion.subject_key)
+
+  const requestedSuggestionKey = normalizeRankingSemanticKey(interaction.selected_suggestion_key)
+  const selectedSuggestionIndex = requestedSuggestionKey
+    ? suggestionRows.findIndex(suggestion => suggestion.subject_key === requestedSuggestionKey)
+    : -1
+  const selectedSuggestionValid = selectedSuggestionIndex >= 0 && requestedSuggestionKey === canonicalSubjectKey
+
+  let resolutionKind: SemanticGovernanceResolutionKind
+  if (selectedSuggestionValid) {
+    resolutionKind = 'suggestion'
+  } else if (canonicalSubjectKey !== parsed.value.subject_key) {
+    resolutionKind = 'alias'
+  } else if (subjectCatalog.options.some(option => option.subject_key === canonicalSubjectKey)) {
+    resolutionKind = 'existing'
+  } else {
+    resolutionKind = 'new'
   }
 
   const { error: upsertError } = await admin
@@ -277,16 +321,32 @@ export async function saveRankingSemanticProjection(
 
   if (upsertError) return { error: `Semantic projection 저장 실패: ${upsertError.message}` }
 
+  const workspace = await loadWorkspace(rankingId)
+  const evidenceWarning = await recordSemanticGovernanceEvidence(admin, {
+    event_type: 'subject_decision_saved',
+    ranking_id: rankingId,
+    actor_user_id: user.id,
+    input_subject_key: parsed.value.subject_key,
+    canonical_subject_key: canonicalSubjectKey,
+    resolution_kind: resolutionKind,
+    suggestion_keys: suggestionKeys,
+    selected_subject_key: selectedSuggestionValid ? canonicalSubjectKey : null,
+    selected_rank: selectedSuggestionValid ? selectedSuggestionIndex + 1 : null,
+    same_version_advisory_count: workspace.advisories.filter(item => item.relation === 'same_version').length,
+  })
+
   revalidatePath(`/admin/rankings/${rankingId}/edit`)
   if (ranking.slug) revalidatePath(`/rankings/${ranking.slug}`)
 
   return {
     success: true,
-    workspace: await loadWorkspace(rankingId),
+    workspace,
+    evidence_warning: evidenceWarning,
     subject_resolution: {
       input_subject_key: parsed.value.subject_key,
       canonical_subject_key: canonicalSubjectKey,
       resolved_via_alias: canonicalSubjectKey !== parsed.value.subject_key,
+      resolution_kind: resolutionKind,
     },
   }
 }
@@ -384,16 +444,31 @@ export async function createRankingSubjectAlias(
 
   if (insertError) return { error: `Subject alias 등록 실패: ${insertError.message}` }
 
+  const evidenceWarning = await recordSemanticGovernanceEvidence(admin, {
+    event_type: 'subject_alias_created',
+    ranking_id: rankingId,
+    actor_user_id: user.id,
+    input_subject_key: aliasKey,
+    canonical_subject_key: canonicalSubjectKey,
+  })
+
   revalidatePath(`/admin/rankings/${rankingId}/edit`)
-  return { success: true, workspace: await loadWorkspace(rankingId) }
+  return { success: true, workspace: await loadWorkspace(rankingId), evidence_warning: evidenceWarning }
 }
 
 export async function deleteRankingSubjectAlias(rankingId: string, rawAliasKey: string) {
-  await ensureAdmin()
+  const user = await ensureAdmin()
   const aliasKey = normalizeRankingSemanticKey(rawAliasKey)
   if (!isRankingSemanticKey(aliasKey)) return { error: 'Alias key 형식이 올바르지 않습니다.' }
 
   const admin = createAdminClient()
+  const { data: aliasRow, error: aliasLookupError } = await admin
+    .from('ranking_semantic_subject_aliases')
+    .select('canonical_subject_key')
+    .eq('alias_key', aliasKey)
+    .maybeSingle()
+  if (aliasLookupError) return { error: `Subject alias 조회 실패: ${aliasLookupError.message}` }
+
   const { error } = await admin
     .from('ranking_semantic_subject_aliases')
     .delete()
@@ -401,21 +476,39 @@ export async function deleteRankingSubjectAlias(rankingId: string, rawAliasKey: 
 
   if (error) return { error: `Subject alias 삭제 실패: ${error.message}` }
 
+  const evidenceWarning = aliasRow?.canonical_subject_key
+    ? await recordSemanticGovernanceEvidence(admin, {
+        event_type: 'subject_alias_deleted',
+        ranking_id: rankingId,
+        actor_user_id: user.id,
+        input_subject_key: aliasKey,
+        canonical_subject_key: aliasRow.canonical_subject_key,
+      })
+    : null
+
   revalidatePath(`/admin/rankings/${rankingId}/edit`)
-  return { success: true, workspace: await loadWorkspace(rankingId) }
+  return { success: true, workspace: await loadWorkspace(rankingId), evidence_warning: evidenceWarning }
 }
 
 export async function clearRankingSemanticProjection(rankingId: string) {
-  await ensureAdmin()
+  const user = await ensureAdmin()
   const admin = createAdminClient()
 
-  const { data: ranking, error: rankingError } = await admin
-    .from('rankings')
-    .select('id, slug')
-    .eq('id', rankingId)
-    .maybeSingle()
-
+  const [rankingResult, projectionResult] = await Promise.all([
+    admin
+      .from('rankings')
+      .select('id, slug')
+      .eq('id', rankingId)
+      .maybeSingle(),
+    admin
+      .from('ranking_semantic_projections')
+      .select('subject_key')
+      .eq('ranking_id', rankingId)
+      .maybeSingle(),
+  ])
+  const { data: ranking, error: rankingError } = rankingResult
   if (rankingError || !ranking) return { error: '랭킹 문서를 찾을 수 없습니다.' }
+  if (projectionResult.error) return { error: `Semantic projection 조회 실패: ${projectionResult.error.message}` }
 
   const { error } = await admin
     .from('ranking_semantic_projections')
@@ -424,8 +517,15 @@ export async function clearRankingSemanticProjection(rankingId: string) {
 
   if (error) return { error: `Semantic projection 해제 실패: ${error.message}` }
 
+  const evidenceWarning = await recordSemanticGovernanceEvidence(admin, {
+    event_type: 'projection_cleared',
+    ranking_id: rankingId,
+    actor_user_id: user.id,
+    canonical_subject_key: projectionResult.data?.subject_key || null,
+  })
+
   revalidatePath(`/admin/rankings/${rankingId}/edit`)
   if (ranking.slug) revalidatePath(`/rankings/${ranking.slug}`)
 
-  return { success: true, workspace: await loadWorkspace(rankingId) }
+  return { success: true, workspace: await loadWorkspace(rankingId), evidence_warning: evidenceWarning }
 }
