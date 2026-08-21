@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
-  Award,
   ChevronRight,
   ExternalLink,
   Info,
