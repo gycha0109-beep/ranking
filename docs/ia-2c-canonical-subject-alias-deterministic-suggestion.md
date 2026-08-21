@@ -43,15 +43,29 @@ This means structure follows content. IA-2C does not require creating every poss
 Suggestions are AI-independent. The browser ranks a bounded set of current canonical options using normalized lexical signals:
 
 - exact match,
-- prefix match,
-- substring match,
-- token overlap,
-- trigram Dice similarity,
+- token-boundary prefix match,
+- token-boundary substring match,
+- conservative same-shape fuzzy matching,
 - current usage count as a deterministic tie-breaker.
 
 At most five suggestions are shown. No embedding, vector database, external model, or probabilistic classifier is required.
 
 A suggestion has no write effect until the admin explicitly selects it or explicitly creates an alias.
+
+### Precision calibration and abstention
+
+Controlled IA-2D benchmarking showed that broad token/trigram similarity produced useful recall but too many suggestions for genuinely new Subjects. Shared context prefixes such as `gaming-*`, `smartphone-*`, or `nintendo-switch-*` are not semantic identity evidence by themselves.
+
+The calibrated matcher therefore prefers abstention:
+
+- exact canonical and reviewed alias matches remain strongest,
+- adding surrounding coordinate-like tokens is allowed only across semantic-key token boundaries,
+- fuzzy matching is a typo/reordering safety net rather than a general semantic matcher,
+- fuzzy candidates must preserve token count and the terminal concept token,
+- changing the terminal concept, for example `smartphone-camera` → `smartphone-battery`, yields no lexical suggestion,
+- inserted entity modifiers that change the concept, for example `unesco-world-heritage-count` → `unesco-intangible-heritage-count`, yield no fuzzy suggestion.
+
+This intentionally trades a small amount of speculative recall for substantially better precision. `no suggestion` is a valid outcome because creating a new Subject is part of the normal open-world workflow.
 
 ## Alias creation guards
 

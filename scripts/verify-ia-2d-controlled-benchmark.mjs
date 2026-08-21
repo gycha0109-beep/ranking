@@ -5,6 +5,7 @@ import ts from 'typescript'
 const FIXTURE_PATH = 'tests/fixtures/ia-2d-controlled-semantic-benchmark.json'
 const SUGGESTION_SOURCE_PATH = 'src/lib/ranking-subject-suggestions.ts'
 const IDENTITY_SOURCE_PATH = 'src/lib/ranking-identity.ts'
+const MAX_NOVEL_SUGGESTION_EXPOSURE_RATE = 0.30
 
 function importTypeScriptModule(path) {
   const source = fs.readFileSync(path, 'utf8')
@@ -126,6 +127,10 @@ assert.ok(positiveTop5Recall >= fixture.gates.minimum_positive_top5_recall, 'con
 assert.ok(positiveTop1Accuracy >= fixture.gates.minimum_positive_top1_accuracy, 'controlled positive Top-1 accuracy below gate')
 assert.ok(aliasExactTop1Accuracy >= fixture.gates.minimum_alias_exact_top1_accuracy, 'controlled alias exact Top-1 accuracy below gate')
 assert.ok(identityAccuracy >= fixture.gates.identity_case_accuracy, 'controlled identity accuracy below gate')
+assert.ok(
+  novelSuggestionExposureRate <= MAX_NOVEL_SUGGESTION_EXPOSURE_RATE,
+  `controlled novel-Subject suggestion exposure above precision gate: ${novelSuggestionExposureRate.toFixed(4)} > ${MAX_NOVEL_SUGGESTION_EXPOSURE_RATE.toFixed(4)}`
+)
 
 noisyNovelCases.sort((left, right) => {
   if (left.score !== right.score) return right.score - left.score
@@ -144,6 +149,7 @@ console.log(`positive_top5_recall=${positiveTop5Recall.toFixed(4)}`)
 console.log(`positive_top1_accuracy=${positiveTop1Accuracy.toFixed(4)}`)
 console.log(`alias_exact_top1_accuracy=${aliasExactTop1Accuracy.toFixed(4)}`)
 console.log(`novel_suggestion_exposure_rate=${novelSuggestionExposureRate.toFixed(4)}`)
+console.log(`novel_suggestion_exposure_gate_max=${MAX_NOVEL_SUGGESTION_EXPOSURE_RATE.toFixed(4)}`)
 console.log(`identity_cases=${fixture.identity_cases.length}`)
 console.log(`identity_accuracy=${identityAccuracy.toFixed(4)}`)
 console.log('organic_evidence_rows_written=0')
