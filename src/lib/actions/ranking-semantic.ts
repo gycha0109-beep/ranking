@@ -135,7 +135,14 @@ async function loadWorkspace(rankingId: string): Promise<RankingSemanticWorkspac
       status: ranking.status,
     },
     projection: currentProjection,
-    advisories: advisories.slice(0, 12).map(({ priority: _priority, ...advisory }) => advisory),
+    advisories: advisories.slice(0, 12).map(advisory => ({
+      ranking_id: advisory.ranking_id,
+      title: advisory.title,
+      slug: advisory.slug,
+      status: advisory.status,
+      relation: advisory.relation,
+      reason: advisory.reason,
+    })),
   }
 }
 
