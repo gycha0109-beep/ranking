@@ -97,6 +97,18 @@ Consequences:
 - draft-only/empty URLs disappear from sitemap output;
 - already-published Items and Rankings remain public and indexable.
 
+### 4.5 Membership lookup performance
+
+The publication predicate introduces a hot lookup from Item to `ranking_entries` by `item_id`. Existing indexes were led by `ranking_id`, so they did not cover this access pattern.
+
+LAUNCH-2 therefore adds:
+
+`idx_ranking_entries_public_item_membership (item_id, ranking_id)`
+
+as a partial index for moderation-safe entries. The Item RLS role lookup also uses `(SELECT auth.role())` so PostgreSQL can initialize it once instead of evaluating the auth helper for every candidate row.
+
+This is a performance hardening only. It does not change which authoring rows exist or which Ranking is published.
+
 ## 5. Controlled Production evidence
 
 Immediately after applying the Hosted migration, while the application deployment was otherwise unchanged:
@@ -123,16 +135,17 @@ This isolates the observed behavior change to the public DB/RPC authority bounda
 
 LAUNCH-2 may close only when all of the following are true:
 
-1. Repository migration matches the Hosted publication-boundary migration.
+1. Repository migrations match the Hosted publication-boundary migrations.
 2. Item/category/subcategory anonymous RLS requires public publication evidence as specified above.
 3. `search_public_content` cannot bypass the Item membership boundary, including when no Facet is selected.
 4. `list_public_facet_options` cannot surface Facets solely from draft-only Items.
-5. Draft-only authoring rows remain present and unchanged.
-6. Known public Item/Ranking routes remain readable and indexable.
-7. Draft-only Item routes are 404/noindex and absent from public search.
-8. Empty Category/Subcategory URLs are absent from public discovery and sitemap.
-9. Exact-head CI, all historical verifiers, lint, and production build pass.
-10. Exact merge-SHA Production deployment is READY with no new runtime error/fatal or 5xx regression.
+5. Item membership lookup is covered by `idx_ranking_entries_public_item_membership`, and the LAUNCH-2 Item role check does not retain the per-row `auth.role()` initplan warning pattern.
+6. Draft-only authoring rows remain present and unchanged.
+7. Known public Item/Ranking routes remain readable and indexable.
+8. Draft-only Item routes are 404/noindex and absent from public search.
+9. Empty Category/Subcategory URLs are absent from public discovery and sitemap.
+10. Exact-head CI, all historical verifiers, lint, and production build pass.
+11. Exact merge-SHA Production deployment is READY with no new runtime error/fatal or 5xx regression.
 
 ## 7. Non-goals
 
