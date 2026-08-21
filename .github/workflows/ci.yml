@@ -35,6 +35,7 @@ jobs:
       - run: npm run verify:ia-2c
       - run: npm run verify:ia-2d
       - run: npm run verify:ia-2d-controlled
+      - run: npm run verify:ia-2e
       - run: npm run verify:ops-1
       - run: npm run verify:public-copy
       - run: npm run verify:content-1
