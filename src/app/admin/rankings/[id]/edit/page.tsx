@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { listAdminCategories, listAdminSubcategories, listAdminItems, listFacetGroups } from '@/lib/actions/admin'
+import { getRankingSemanticWorkspace } from '@/lib/actions/ranking-semantic'
 import RankingEditorForm from './RankingEditorForm'
+import SemanticProjectionPanel from './SemanticProjectionPanel'
 import { ArrowLeft, FileSpreadsheet } from 'lucide-react'
 
 interface Props {
@@ -38,7 +40,8 @@ export default async function AdminRankingEditPage({ params }: Props) {
     categories,
     subcategories,
     items,
-    allFacetGroups
+    allFacetGroups,
+    semanticWorkspace
   ] = await Promise.all([
     supabase.from('ranking_criteria').select('*').eq('ranking_id', id).order('sort_order', { ascending: true }),
     supabase.from('ranking_sources').select('*').eq('ranking_id', id),
@@ -47,7 +50,8 @@ export default async function AdminRankingEditPage({ params }: Props) {
     listAdminCategories(),
     listAdminSubcategories(),
     listAdminItems(),
-    listFacetGroups()
+    listFacetGroups(),
+    getRankingSemanticWorkspace(id)
   ])
 
   // 현재 매핑되어 있는 페이셋 ID 배열화
@@ -76,6 +80,8 @@ export default async function AdminRankingEditPage({ params }: Props) {
             랭킹의 기본 소개 정보, 선정 평가 기준, 기사 출처 및 상세 순위표(Entries)를 일괄적으로 안전하게 수정합니다.
           </p>
         </div>
+
+        <SemanticProjectionPanel initialWorkspace={semanticWorkspace} />
 
         {/* 대형 인터랙티브 폼 마운트 */}
         <RankingEditorForm 
