@@ -5,7 +5,7 @@ import ts from 'typescript'
 const root = process.cwd()
 const helperPath = path.join(root, 'src/lib/ranking-identity.ts')
 const publicQueryPath = path.join(root, 'src/lib/queries/public.ts')
-const migrationPath = path.join(root, 'supabase/migrations/20260821022000_ia_2_ranking_identity_projection.sql')
+const migrationPath = path.join(root, 'supabase/migrations/20260821023200_ia_2_ranking_identity_projection.sql')
 
 function fail(message) {
   console.error(`IA-2 contract failed: ${message}`)
@@ -95,6 +95,7 @@ assert(migration.includes('view_signature text NOT NULL'), 'view signature must 
 assert(migration.includes('version_signature text NOT NULL'), 'version signature must exist')
 assert(migration.includes("classification_state IN ('inferred', 'reviewed')"), 'projection lifecycle must distinguish inferred and reviewed')
 assert(migration.includes('confidence >= 0 AND confidence <= 1'), 'projection confidence must be bounded')
+assert(migration.includes('BEFORE INSERT OR UPDATE ON public.ranking_semantic_projections'), 'all projection metadata updates must refresh signatures and updated_at')
 assert(migration.includes('ENABLE ROW LEVEL SECURITY'), 'semantic projections must use RLS')
 assert(migration.includes('ranking_semantic_projections_public_read'), 'public projection reads must be visibility-gated')
 assert(migration.includes("r.status = 'published'"), 'public projection RLS must require published ranking visibility')
