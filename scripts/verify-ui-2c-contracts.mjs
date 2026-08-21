@@ -63,6 +63,8 @@ assert.ok(itemPage.includes('fallbackSrc="/item-placeholder.svg"'), 'item images
 assert.ok(itemPage.includes('item.facets && item.facets.length > 0'), 'existing item facet contract must remain available')
 assert.ok(itemPage.includes('getRankingsContainingItem(item.id)'), 'ranking membership must remain reverse-derived from existing entries')
 assert.ok(itemPage.includes('getRelatedItems(item)'), 'existing related item query must remain in use')
+assert.ok(itemPage.includes("related.related_reason !== '같은 카테고리'"), 'item detail must suppress broad category-only related item fallback')
+assert.ok(itemPage.includes('contextualRelatedItems.length > 0'), 'related item surface must key off contextual results after filtering')
 assert.ok(!itemPage.includes('images.unsplash.com'), 'item detail must not hotlink a stock fallback')
 assert.ok(!safeImage.includes('images.unsplash.com'), 'shared SafeImage default must not hotlink a stock fallback')
 assert.ok(safeImage.includes("fallbackSrc = '/item-placeholder.svg'"), 'shared SafeImage default must use the local neutral fallback')
