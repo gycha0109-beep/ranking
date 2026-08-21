@@ -10,8 +10,10 @@ const HIDDEN_KEY_PATTERN = /(^_|internal|secret|token|password|moderation|audit|
 const URL_VALUE_PATTERN = /^https?:\/\//i
 
 const GENERIC_TOKEN_LABELS: Record<string, string> = {
+  airport: '공항',
   brand: '브랜드',
   category: '분류',
+  city: '도시',
   code: '코드',
   country: '국가',
   creator: '제작자',
@@ -25,6 +27,7 @@ const GENERIC_TOKEN_LABELS: Record<string, string> = {
   platform: '플랫폼',
   region: '지역',
   series: '시리즈',
+  supercomputer: '슈퍼컴퓨터',
   title: '제목',
   type: '유형',
   year: '연도',
