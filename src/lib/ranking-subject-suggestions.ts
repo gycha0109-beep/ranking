@@ -22,6 +22,7 @@ const TOKEN_SEPARATOR_PATTERN = /[._/-]+/g
 const TOKEN_BOUNDARY_CHARS = new Set(['.', '_', '/', '-'])
 const FUZZY_MIN_DICE = 0.5
 const FUZZY_MIN_TOKEN_SIMILARITY = 0.5
+const FUZZY_MIN_POSITIONAL_TOKEN_DICE = 0.6
 
 export function normalizeRankingSubjectLookup(value: string | null | undefined) {
   return (value || '').normalize('NFKC').trim().toLowerCase()
@@ -100,13 +101,22 @@ function fuzzyEligible(query: string, candidate: string) {
   const queryTokens = tokenList(query)
   const candidateTokens = tokenList(candidate)
 
-  // Fuzzy matching is only a typo/reordering safety net. Different token counts usually
-  // indicate that the author introduced or removed a semantic coordinate, so abstain.
+  // Fuzzy matching is only a typo safety net. Different token counts usually indicate
+  // that the author introduced or removed a semantic coordinate, so abstain.
   if (queryTokens.length === 0 || queryTokens.length !== candidateTokens.length) return false
 
   // Shared prefixes such as smartphone-* or gaming-* are not enough. Requiring the
   // terminal concept token to agree avoids recommending camera for battery, RPG for racing, etc.
   if (queryTokens.at(-1) !== candidateTokens.at(-1)) return false
+
+  // A same-shape candidate is accepted only when every changed token looks like a typo,
+  // not a different semantic entity. county/country can pass; intangible/world cannot.
+  for (let index = 0; index < queryTokens.length; index += 1) {
+    if (queryTokens[index] === candidateTokens[index]) continue
+    if (diceSimilarity(queryTokens[index], candidateTokens[index]) < FUZZY_MIN_POSITIONAL_TOKEN_DICE) {
+      return false
+    }
+  }
 
   const tokenScore = tokenSimilarity(query, candidate)
   const diceScore = diceSimilarity(query, candidate)
