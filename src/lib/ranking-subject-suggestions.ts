@@ -23,6 +23,7 @@ const TOKEN_BOUNDARY_CHARS = new Set(['.', '_', '/', '-'])
 const FUZZY_MIN_DICE = 0.5
 const FUZZY_MIN_TOKEN_SIMILARITY = 0.5
 const FUZZY_MIN_POSITIONAL_TOKEN_DICE = 0.6
+const SINGLE_EDIT_TYPO_MIN_TOKEN_LENGTH = 4
 
 export function normalizeRankingSubjectLookup(value: string | null | undefined) {
   return (value || '').normalize('NFKC').trim().toLowerCase()
@@ -70,6 +71,62 @@ function tokenSimilarity(left: string, right: string) {
   return shared / Math.max(leftTokens.size, rightTokens.size)
 }
 
+function isSingleEditTypo(left: string, right: string) {
+  if (left === right) return true
+  if (Math.min(left.length, right.length) < SINGLE_EDIT_TYPO_MIN_TOKEN_LENGTH) return false
+  if (Math.abs(left.length - right.length) > 1) return false
+
+  if (left.length === right.length) {
+    let mismatches = 0
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) mismatches += 1
+      if (mismatches > 1) return false
+    }
+    return mismatches === 1
+  }
+
+  const shorter = left.length < right.length ? left : right
+  const longer = left.length < right.length ? right : left
+  let shortIndex = 0
+  let longIndex = 0
+  let edits = 0
+
+  while (shortIndex < shorter.length && longIndex < longer.length) {
+    if (shorter[shortIndex] === longer[longIndex]) {
+      shortIndex += 1
+      longIndex += 1
+      continue
+    }
+
+    edits += 1
+    if (edits > 1) return false
+    longIndex += 1
+  }
+
+  if (longIndex < longer.length) edits += 1
+  return edits === 1
+}
+
+function isExactTokenRotation(left: string, right: string) {
+  const leftTokens = tokenList(left)
+  const rightTokens = tokenList(right)
+  if (leftTokens.length < 2 || leftTokens.length !== rightTokens.length) return false
+  if (leftTokens.every((token, index) => token === rightTokens[index])) return false
+
+  for (let offset = 1; offset < leftTokens.length; offset += 1) {
+    let matches = true
+    for (let index = 0; index < leftTokens.length; index += 1) {
+      if (leftTokens[index] !== rightTokens[(index + offset) % rightTokens.length]) {
+        matches = false
+        break
+      }
+    }
+    if (matches) return true
+  }
+
+  return false
+}
+
 function isBoundaryCharacter(value: string | undefined) {
   return Boolean(value && TOKEN_BOUNDARY_CHARS.has(value))
 }
@@ -101,19 +158,26 @@ function fuzzyEligible(query: string, candidate: string) {
   const queryTokens = tokenList(query)
   const candidateTokens = tokenList(candidate)
 
-  // Fuzzy matching is only a typo safety net. Different token counts usually indicate
+  // Fuzzy matching remains a typo safety net. Different token counts usually indicate
   // that the author introduced or removed a semantic coordinate, so abstain.
   if (queryTokens.length === 0 || queryTokens.length !== candidateTokens.length) return false
 
-  // Shared prefixes such as smartphone-* or gaming-* are not enough. Requiring the
-  // terminal concept token to agree avoids recommending camera for battery, RPG for racing, etc.
-  if (queryTokens.at(-1) !== candidateTokens.at(-1)) return false
+  // The terminal concept may differ only by one character. This recovers ordinary
+  // spelling slips without reopening semantically different terminal concepts.
+  const queryTerminal = queryTokens.at(-1) || ''
+  const candidateTerminal = candidateTokens.at(-1) || ''
+  if (queryTerminal !== candidateTerminal && !isSingleEditTypo(queryTerminal, candidateTerminal)) {
+    return false
+  }
 
-  // A same-shape candidate is accepted only when every changed token looks like a typo,
-  // not a different semantic entity. county/country can pass; intangible/world cannot.
+  // Same-shape candidates are accepted only when each changed token remains within
+  // a narrow typo boundary rather than representing a different semantic entity.
   for (let index = 0; index < queryTokens.length; index += 1) {
     if (queryTokens[index] === candidateTokens[index]) continue
-    if (diceSimilarity(queryTokens[index], candidateTokens[index]) < FUZZY_MIN_POSITIONAL_TOKEN_DICE) {
+    if (
+      !isSingleEditTypo(queryTokens[index], candidateTokens[index]) &&
+      diceSimilarity(queryTokens[index], candidateTokens[index]) < FUZZY_MIN_POSITIONAL_TOKEN_DICE
+    ) {
       return false
     }
   }
@@ -130,6 +194,9 @@ function scoreKey(query: string, candidate: string) {
   const lengthGap = Math.abs(query.length - candidate.length)
   if (hasTokenBoundaryPrefix(query, candidate) || hasTokenBoundaryPrefix(candidate, query)) {
     return 8_000 - Math.min(lengthGap, 500)
+  }
+  if (isExactTokenRotation(query, candidate)) {
+    return 7_200
   }
   if (hasTokenBoundarySubstring(query, candidate) || hasTokenBoundarySubstring(candidate, query)) {
     return 6_500 - Math.min(lengthGap, 500)
