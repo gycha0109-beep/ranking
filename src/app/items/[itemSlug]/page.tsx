@@ -63,7 +63,7 @@ export default async function ItemDetailPage({ params }: Props) {
     : null
   const topThreeCount = rankedMemberships.filter((ranking: any) => Number(ranking.position) <= 3).length
   const orderedRankings = [...rankings].sort((a: any, b: any) => Number(a.position) - Number(b.position))
-  const leadRanking = orderedRankings[0] || null
+  const leadRanking = orderedRankings.find((ranking: any) => Number.isFinite(Number(ranking.position))) || null
 
   return (
     <div className="rw-page bg-white pb-16 sm:pb-20">
@@ -79,6 +79,7 @@ export default async function ItemDetailPage({ params }: Props) {
             <span className="rounded-full bg-[#eff6ff] px-2.5 py-1 text-[#1d4ed8]">{itemTypeLabel}</span>
             {item.brand_or_creator && <span className="text-[#747d89]">{item.brand_or_creator}</span>}
           </div>
+
           <h1 className="rw-display mt-3 text-[2.4rem] font-black leading-[1.02] tracking-[-0.06em] text-[#111318] sm:text-[3.3rem] lg:text-[3.9rem]">{item.title}</h1>
           {item.description && <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-[#626b77] sm:text-[15px]">{item.description}</p>}
 
@@ -225,6 +226,16 @@ export default async function ItemDetailPage({ params }: Props) {
           </section>
         )}
 
+        <section id="discussion" className="border-t border-[#d9dde3] pt-9">
+          <div className="mb-1 flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 text-[#3158e8]" aria-hidden="true" />
+            <p className="rw-kicker">Discussion</p>
+          </div>
+          <div className="rw-comment-shell">
+            <CommentSection targetType="item" targetId={item.id} pathname={`/items/${item.slug}`} />
+          </div>
+        </section>
+
         {contextualRelatedItems.length > 0 && (
           <section className="border-t border-[#d9dde3] pt-9">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
@@ -259,16 +270,6 @@ export default async function ItemDetailPage({ params }: Props) {
             </div>
           </section>
         )}
-
-        <section id="discussion" className="border-t border-[#d9dde3] pt-9">
-          <div className="mb-1 flex items-center gap-2">
-            <MessageCircle className="h-4 w-4 text-[#3158e8]" aria-hidden="true" />
-            <p className="rw-kicker">Discussion</p>
-          </div>
-          <div className="rw-comment-shell">
-            <CommentSection targetType="item" targetId={item.id} pathname={`/items/${item.slug}`} />
-          </div>
-        </section>
 
         <section className="border-t border-[#d9dde3] pt-7">
           <div className="flex items-start gap-3 text-xs leading-6 text-[#737c89]">
