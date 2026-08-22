@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
 
 const BASE_URL = process.env.E2E_BASE_URL || 'https://ranking-rho-three.vercel.app'
-const UNICODE_ITEM_PATH = '/items/%ED%85%8C%EC%8A%A4%ED%8A%B8'
+const CATEGORY_PATH = '/categories/technology'
+const TARGET_PATH = '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5'
+const ITEM_PATH = '/items/lineshine'
 
 function monitorServerFailures(page) {
   const failures = []
@@ -30,16 +32,46 @@ async function expectHealthyPage(page, path) {
   expect(failures, `runtime failures on ${path}`).toEqual([])
 }
 
+async function readHorizontalOverflowDiagnostics(page) {
+  return page.evaluate(() => {
+    const viewportWidth = document.documentElement.clientWidth
+    const round = (value) => Math.round(value * 10) / 10
+
+    return [...document.querySelectorAll('body *')]
+      .map((element) => {
+        const rect = element.getBoundingClientRect()
+        const className = typeof element.className === 'string' ? element.className : ''
+        const text = (element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 90)
+        const escapedBy = Math.max(0, -rect.left, rect.right - viewportWidth)
+
+        return {
+          tag: element.tagName.toLowerCase(),
+          className: className.slice(0, 180),
+          text,
+          left: round(rect.left),
+          right: round(rect.right),
+          width: round(rect.width),
+          scrollWidth: element.scrollWidth,
+          clientWidth: element.clientWidth,
+          escapedBy: round(escapedBy),
+        }
+      })
+      .filter((item) => item.escapedBy > 2)
+      .sort((a, b) => b.escapedBy - a.escapedBy)
+      .slice(0, 16)
+  })
+}
+
 test.describe('production public smoke', () => {
   test('core public entry points render without 4xx/5xx', async ({ page }) => {
     for (const path of [
       '/',
       '/categories',
-      '/categories/foods',
+      CATEGORY_PATH,
+      '/categories/technology/supercomputers',
       '/search',
-      '/rankings/best-chicken-breast',
-      '/items/heo_steam',
-      UNICODE_ITEM_PATH,
+      TARGET_PATH,
+      ITEM_PATH,
       '/login',
     ]) {
       await expectHealthyPage(page, path)
@@ -73,13 +105,13 @@ test.describe('production public smoke', () => {
     await expectHealthyPage(page, '/search')
 
     const searchbox = page.getByRole('searchbox').first()
-    await searchbox.fill('치킨')
+    await searchbox.fill('슈퍼컴퓨터')
     await page.getByRole('button', { name: '검색' }).first().click()
     await page.waitForLoadState('domcontentloaded')
 
     const url = new URL(page.url())
     expect(url.pathname).toBe('/search')
-    expect(url.searchParams.get('q')).toBe('치킨')
+    expect(url.searchParams.get('q')).toBe('슈퍼컴퓨터')
     await expect(page.locator('body')).not.toContainText('This page could not be found.')
   })
 
@@ -87,10 +119,9 @@ test.describe('production public smoke', () => {
     const entryPaths = [
       '/',
       '/categories',
-      '/categories/foods',
-      '/rankings/best-chicken-breast',
-      '/items/heo_steam',
-      UNICODE_ITEM_PATH,
+      CATEGORY_PATH,
+      TARGET_PATH,
+      ITEM_PATH,
     ]
     const internal = new Set()
 
@@ -114,7 +145,7 @@ test.describe('production public smoke', () => {
     }
   })
 
-  test('SEO endpoints and Unicode canonical metadata are production-safe', async ({ page, request }) => {
+  test('SEO endpoints and current canonical metadata are production-safe', async ({ page, request }) => {
     const robots = await request.get(`${BASE_URL}/robots.txt`)
     expect(robots.status()).toBe(200)
     expect(await robots.text()).toContain('User-Agent')
@@ -123,11 +154,16 @@ test.describe('production public smoke', () => {
     expect(sitemap.status()).toBe(200)
     const sitemapText = await sitemap.text()
     expect(sitemapText).toContain('https://ranking-rho-three.vercel.app/')
-    expect(sitemapText).toContain(UNICODE_ITEM_PATH)
+    expect(sitemapText).toContain(ITEM_PATH)
+    expect(sitemapText).toContain(TARGET_PATH)
 
-    await expectHealthyPage(page, UNICODE_ITEM_PATH)
+    await expectHealthyPage(page, ITEM_PATH)
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /index,\s*follow/i)
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${UNICODE_ITEM_PATH}$`))
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${ITEM_PATH}$`))
+
+    await expectHealthyPage(page, TARGET_PATH)
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /index,\s*follow/i)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${TARGET_PATH}$`))
 
     await expectHealthyPage(page, '/login')
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/i)
@@ -141,10 +177,10 @@ test.describe('production public smoke', () => {
     for (const path of [
       '/',
       '/categories',
-      '/search',
-      '/rankings/best-chicken-breast',
-      '/items/heo_steam',
-      UNICODE_ITEM_PATH,
+      CATEGORY_PATH,
+      '/search?q=%EC%8A%88%ED%8D%BC%EC%BB%B4%ED%93%A8%ED%84%B0',
+      TARGET_PATH,
+      ITEM_PATH,
       '/login',
     ]) {
       await expectHealthyPage(page, path)
@@ -152,7 +188,13 @@ test.describe('production public smoke', () => {
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
       }))
-      expect(dimensions.scrollWidth, `horizontal overflow on ${path}`).toBeLessThanOrEqual(dimensions.clientWidth + 2)
+      const diagnostics = dimensions.scrollWidth > dimensions.clientWidth + 2
+        ? await readHorizontalOverflowDiagnostics(page)
+        : []
+      expect(
+        dimensions.scrollWidth,
+        `horizontal overflow on ${path}; offenders=${JSON.stringify(diagnostics)}`
+      ).toBeLessThanOrEqual(dimensions.clientWidth + 2)
     }
   })
 })

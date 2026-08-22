@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test'
 
 const EMAIL = process.env.E2E_USER_EMAIL || ''
 const PASSWORD = process.env.E2E_USER_PASSWORD || ''
-const TARGET_PATH = '/rankings/best-chicken-breast'
+const TARGET_PATH = '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5'
+const TARGET_TITLE = '2026년 6월 TOP500 슈퍼컴퓨터 성능 TOP 5'
 const COMMENT_PREFIX = 'E2E 자동화 확인 댓글'
 
 function parseCount(text) {
@@ -123,7 +124,7 @@ test.describe('production authenticated QA', () => {
 
     try {
       await page.goto(TARGET_PATH, { waitUntil: 'domcontentloaded' })
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('2026 닭가슴살 TOP 10')
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(TARGET_TITLE)
 
       await page.waitForTimeout(2_500)
       await page.reload({ waitUntil: 'domcontentloaded' })

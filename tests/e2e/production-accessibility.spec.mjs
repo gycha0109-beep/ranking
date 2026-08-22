@@ -4,9 +4,11 @@ import { expect, test } from '@playwright/test'
 const SAMPLE_PATHS = [
   '/',
   '/categories',
-  '/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4',
-  '/rankings/best-chicken-breast',
-  '/items/heo_steam',
+  '/categories/technology',
+  '/categories/technology/supercomputers',
+  '/search?q=%EC%8A%88%ED%8D%BC%EC%BB%B4%ED%93%A8%ED%84%B0',
+  '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5',
+  '/items/lineshine',
   '/login',
 ]
 

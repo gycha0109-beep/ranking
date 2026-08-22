@@ -137,7 +137,7 @@ for (const device of ['Desktop Chrome', 'Desktop Firefox', 'Desktop Safari', 'Pi
 requireCondition(productionCompatConfig.includes('production-readonly-ux.spec.mjs'), 'compatibility config must isolate the read-only UX spec')
 requireCondition(productionCompatConfig.includes('workers: 1'), 'cross-browser production compatibility must run serially')
 
-requireCondition(productionQASpec.includes("const TARGET_PATH = '/rankings/best-chicken-breast'"), 'production mutation QA must remain pinned to the approved stable target')
+requireCondition(productionQASpec.includes("const TARGET_PATH = '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5'"), 'production mutation QA must remain pinned to the current published stable target')
 requireCondition(productionQASpec.includes('이메일 또는 비밀번호가 올바르지 않습니다.'), 'production QA must verify localized invalid credentials')
 requireCondition(productionQASpec.includes('Invalid login credentials'), 'production QA must explicitly reject the raw Supabase invalid-login copy')
 requireCondition(productionQASpec.includes('ensureLikeState(page, false)'), 'production QA must normalize likes to OFF during cleanup')
@@ -149,7 +149,9 @@ requireCondition(productionQASpec.includes('same browser identity must not add a
 requireCondition(!productionQASpec.includes('CommentReportForm'), 'production QA must not automate comment reporting')
 requireCondition(!productionQASpec.includes("getByRole('button', { name: '신고'"), 'production QA must not submit user reports')
 
-requireCondition(productionReadonlyUXSpec.includes("const TARGET_PATH = '/rankings/best-chicken-breast'"), 'read-only UX QA must use the stable published ranking')
+requireCondition(productionReadonlyUXSpec.includes("const TARGET_PATH = '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5'"), 'read-only UX QA must use the current published stable ranking')
+requireCondition(productionReadonlyUXSpec.includes("const CATEGORY_PATH = '/categories/technology'"), 'read-only UX QA must use a current published category')
+requireCondition(productionReadonlyUXSpec.includes("const ITEM_PATH = '/items/lineshine'"), 'read-only UX QA must use a current published item')
 requireCondition(productionReadonlyUXSpec.includes('검색 결과가 없습니다'), 'read-only UX QA must cover the zero-result state')
 requireCondition(productionReadonlyUXSpec.includes('페이지 위치를 초기화했습니다.'), 'read-only UX QA must cover invalid cursor recovery')
 requireCondition(productionReadonlyUXSpec.includes('현재 검색 대상에 맞지 않는 Facet 필터를 제거했습니다.'), 'read-only UX QA must cover unavailable Facet canonicalization')

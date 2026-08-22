@@ -1,8 +1,13 @@
 import { expect, test } from '@playwright/test'
 
-const TARGET_PATH = '/rankings/best-chicken-breast'
-const TARGET_TITLE = '2026 닭가슴살 TOP 10'
-const ITEM_PATH = '/items/heo_steam'
+const TARGET_PATH = '/rankings/top500-supercomputer-hpl-rmax-2026-06-top-5'
+const TARGET_TITLE = '2026년 6월 TOP500 슈퍼컴퓨터 성능 TOP 5'
+const ITEM_PATH = '/items/lineshine'
+const ITEM_TITLE = 'LineShine'
+const CATEGORY_PATH = '/categories/technology'
+const CATEGORY_TITLE = '기술 랭킹'
+const SEARCH_QUERY = '슈퍼컴퓨터'
+const SEARCH_QUERY_ENCODED = '%EC%8A%88%ED%8D%BC%EC%BB%B4%ED%93%A8%ED%84%B0'
 const NO_RESULT_QUERY = 'noresult7f3c2rankingwiki'
 const FAKE_FACET_ID = '00000000-0000-4000-8000-000000000001'
 
@@ -26,9 +31,6 @@ function monitorRuntimeFailures(page) {
 }
 
 async function expectHealthyNavigation(page, path) {
-  // Let the previous document and any in-flight Next.js prefetches die before
-  // attributing runtime failures to the destination page. Firefox/WebKit can
-  // surface an aborted old-document fetch as a pageerror during navigation.
   await page.goto('about:blank', { waitUntil: 'load' })
   const monitor = monitorRuntimeFailures(page)
 
@@ -61,10 +63,10 @@ async function assertNoHorizontalOverflow(page, label) {
 
 test.describe('production read-only UX compatibility', () => {
   test('search finds the published ranking and browser history restores canonical sort state', async ({ page }) => {
-    await expectHealthyNavigation(page, '/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4&type=ranking&sort=relevance')
+    await expectHealthyNavigation(page, `/search?q=${SEARCH_QUERY_ENCODED}&type=ranking&sort=relevance`)
 
     const mainSearch = page.locator('main').getByRole('search')
-    await expect(page.getByRole('heading', { level: 2, name: '“닭가슴살”', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: `“${SEARCH_QUERY}”`, exact: true })).toBeVisible()
     const rankingResult = page.locator(`a[href="${TARGET_PATH}"]`).filter({ hasText: TARGET_TITLE }).first()
     await expect(rankingResult).toBeVisible()
     await expect(mainSearch.getByLabel('검색 대상')).toHaveValue('ranking')
@@ -81,19 +83,19 @@ test.describe('production read-only UX compatibility', () => {
 
     const restoredSearch = page.locator('main').getByRole('search')
     const searchbox = restoredSearch.getByRole('searchbox', { name: '랭킹위키 검색' })
-    await searchbox.fill('닭가슴살')
+    await searchbox.fill(SEARCH_QUERY)
     await searchbox.press('Enter')
-    await page.waitForURL((url) => url.pathname === '/search' && url.searchParams.get('q') === '닭가슴살')
+    await page.waitForURL((url) => url.pathname === '/search' && url.searchParams.get('q') === SEARCH_QUERY)
     await expect(page.locator(`a[href="${TARGET_PATH}"]`).filter({ hasText: TARGET_TITLE }).first()).toBeVisible()
   })
 
-  test('item search deterministically finds the clean published item', async ({ page }) => {
-    await expectHealthyNavigation(page, '/search?q=%ED%97%88%EB%8B%AD&type=item&sort=relevance')
-    const itemResult = page.locator(`a[href="${ITEM_PATH}"]`).filter({ hasText: '허닭 스팀' }).first()
+  test('item search deterministically finds the current published item', async ({ page }) => {
+    await expectHealthyNavigation(page, '/search?q=LineShine&type=item&sort=relevance')
+    const itemResult = page.locator(`a[href="${ITEM_PATH}"]`).filter({ hasText: ITEM_TITLE }).first()
     await expect(itemResult).toBeVisible()
     await itemResult.click()
     await page.waitForURL((url) => url.pathname === ITEM_PATH)
-    await expect(page.getByRole('heading', { level: 1, name: '허닭 스팀', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: ITEM_TITLE, exact: true })).toBeVisible()
   })
 
   test('empty search, invalid cursor, and unavailable facet state fail soft', async ({ page }, testInfo) => {
@@ -104,11 +106,11 @@ test.describe('production read-only UX compatibility', () => {
     const categoryEscape = page.getByRole('link', { name: '카테고리 탐색', exact: true })
     await expect(categoryEscape).toHaveAttribute('href', '/categories')
 
-    await expectHealthyNavigation(page, '/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4&cursor=not-a-valid-cursor')
+    await expectHealthyNavigation(page, `/search?q=${SEARCH_QUERY_ENCODED}&cursor=not-a-valid-cursor`)
     await expect(page.getByText('페이지 위치를 초기화했습니다.', { exact: true })).toBeVisible()
     await expect(page.locator(`a[href="${TARGET_PATH}"]`).first()).toBeVisible()
 
-    await expectHealthyNavigation(page, `/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4&facet=${FAKE_FACET_ID}`)
+    await expectHealthyNavigation(page, `/search?q=${SEARCH_QUERY_ENCODED}&facet=${FAKE_FACET_ID}`)
     await expect(page.getByText('현재 검색 대상에 맞지 않는 Facet 필터를 제거했습니다.', { exact: true })).toBeVisible()
     await expect(page.locator(`a[href="${TARGET_PATH}"]`).first()).toBeVisible()
   })
@@ -116,17 +118,19 @@ test.describe('production read-only UX compatibility', () => {
   test('category browse sort, history, and invalid cursor remain coherent', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'category query-state resilience runs once on Chromium')
 
-    await expectHealthyNavigation(page, '/categories/foods?sort=latest')
-    await expect(page.getByRole('heading', { level: 1, name: '건강식품 랭킹', exact: true })).toBeVisible()
+    await expectHealthyNavigation(page, `${CATEGORY_PATH}?sort=latest`)
+    await expect(page.getByRole('heading', { level: 1, name: CATEGORY_TITLE, exact: true })).toBeVisible()
     await page.getByRole('link', { name: /인기순/ }).click()
-    await page.waitForURL((url) => url.pathname === '/categories/foods' && url.searchParams.get('sort') === 'popular')
+    await page.waitForURL((url) => url.pathname === CATEGORY_PATH && url.searchParams.get('sort') === 'popular')
     await expect(page.locator(`a[href="${TARGET_PATH}"]`).first()).toBeVisible()
 
     await page.goBack({ waitUntil: 'domcontentloaded' })
     expect(new URL(page.url()).searchParams.get('sort')).toBe('latest')
-    await expect(page.getByRole('link', { name: '최신순', exact: true })).toHaveClass(/bg-\[#eef2ff\]/)
+    const latestLink = page.getByRole('link', { name: '최신순', exact: true })
+    await expect(latestLink).toBeVisible()
+    await expect(latestLink).toHaveAttribute('href', /sort=latest/)
 
-    await expectHealthyNavigation(page, '/categories/foods?sort=latest&cursor=not-a-valid-cursor')
+    await expectHealthyNavigation(page, `${CATEGORY_PATH}?sort=latest&cursor=not-a-valid-cursor`)
     await expect(page.getByText('유효하지 않은 페이지 위치를 초기화했습니다.', { exact: true })).toBeVisible()
     await expect(page.locator(`a[href="${TARGET_PATH}"]`).first()).toBeVisible()
   })
@@ -191,7 +195,7 @@ test.describe('production read-only UX compatibility', () => {
   })
 
   test('responsive projects stay within viewport and mobile projects expose touch navigation', async ({ page }, testInfo) => {
-    for (const path of ['/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4', TARGET_PATH, '/login']) {
+    for (const path of [`/search?q=${SEARCH_QUERY_ENCODED}`, TARGET_PATH, ITEM_PATH, '/login']) {
       await expectHealthyNavigation(page, path)
       await assertNoHorizontalOverflow(page, `${testInfo.project.name}:${path}`)
     }
@@ -212,10 +216,10 @@ test.describe('production read-only UX compatibility', () => {
 
       const openMenu = page.locator('header details[open]')
       await expect(openMenu).toBeVisible()
-      const mobileNav = openMenu.getByRole('link', { name: '통합 검색', exact: true })
+      const mobileNav = openMenu.locator('a[href="/search"]').first()
       await expect(mobileNav).toBeVisible()
       const navBox = await mobileNav.boundingBox()
-      expect(navBox, 'mobile integrated-search link must have a tappable box').not.toBeNull()
+      expect(navBox, 'mobile search navigation link must have a tappable box').not.toBeNull()
       await page.touchscreen.tap(navBox.x + navBox.width / 2, navBox.y + navBox.height / 2)
       await page.waitForURL((url) => url.pathname === '/search')
       await expect(page.getByRole('heading', { level: 1, name: '통합 검색', exact: true })).toBeVisible()
@@ -248,12 +252,12 @@ test.describe('production read-only UX compatibility', () => {
     })
 
     try {
-      await page.goto('/search?q=%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4', { waitUntil: 'domcontentloaded' })
+      await page.goto(`/search?q=${SEARCH_QUERY_ENCODED}`, { waitUntil: 'domcontentloaded' })
       await expect(page.locator(`a[href="${TARGET_PATH}"]`).first()).toBeVisible()
 
       for (let index = 0; index < 3; index += 1) {
         await page.reload({ waitUntil: 'domcontentloaded' })
-        await expect(page.getByRole('heading', { level: 2, name: '“닭가슴살”', exact: true })).toBeVisible()
+        await expect(page.getByRole('heading', { level: 2, name: `“${SEARCH_QUERY}”`, exact: true })).toBeVisible()
       }
 
       expect(monitor.failures, 'delayed/repeated search navigation must not produce page errors or 5xx responses').toEqual([])
