@@ -170,8 +170,8 @@ button, input, select, textarea { font: inherit; }
 .rw-scroll-row { scrollbar-width: none; }
 .rw-scroll-row::-webkit-scrollbar { display: none; }
 
-/* UI-1 used several one-off muted colors before launch accessibility verification.
-   Normalize those legacy utilities to one token that stays >= 4.5:1 on the light public surfaces. */
+/* Public-shell contrast floor: normalize muted one-off utilities so small text remains
+   >= 4.5:1 on the light canvas/surface palette used by UI-3A through UI-3E. */
 [class*="text-[#8a94a3]"],
 [class*="text-[#9aa3af]"],
 [class*="text-[#a0a8b3]"],
@@ -179,8 +179,17 @@ button, input, select, textarea { font: inherit; }
 [class*="text-[#737c89]"],
 [class*="text-[#7b8491]"],
 [class*="text-[#667085]"],
-[class*="text-[#62748e]"] {
-  color: var(--rw-text-muted) !important;
+[class*="text-[#62748e]"],
+[class*="text-[#8a929d]"],
+[class*="text-[#89919c]"],
+[class*="text-[#9299a3]"],
+[class*="text-[#9aa1aa]"],
+[class*="text-[#68717d]"],
+[class*="text-[#68717e]"],
+[class*="text-[#6b7280]"],
+[class*="text-[#6f7782]"],
+[class*="text-[#69717c]"] {
+  color: #596271 !important;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
