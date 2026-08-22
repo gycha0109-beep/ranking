@@ -2,10 +2,11 @@ import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import FacetFilterPanel from '@/components/FacetFilterPanel'
+import RankingBrowseCollectionCard from '@/components/RankingBrowseCollectionCard'
 import { getCategoryBySlug } from '@/lib/queries/public'
 import { getPublicFacetOptions, listPublicRankings } from '@/lib/queries/search'
 import { appendFacetParams, canonicalizeFacetIds, resolveFacetIds, resolveRankingBrowseSort } from '@/lib/search/contracts'
-import { CalendarDays, ChevronRight, Flame, Inbox } from 'lucide-react'
+import { ChevronRight, Flame, Inbox } from 'lucide-react'
 
 export const revalidate = 0
 
@@ -42,20 +43,27 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const nextHref = page.nextCursor ? browseHref(path, sort, facetIds, page.nextCursor) : null
 
   return (
-    <div className="rw-page pb-20">
+    <div className="rw-page bg-white pb-20">
       <header className="border-b border-[#e3e7ec] bg-white">
-        <div className="rw-container py-9 sm:py-11">
+        <div className="rw-container py-8 sm:py-11 lg:py-12">
           <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[#8a94a3]">
-            <Link href="/" className="hover:text-[#2445ad]">홈</Link><ChevronRight className="h-3.5 w-3.5" />
-            <Link href="/categories" className="hover:text-[#2445ad]">카테고리</Link><ChevronRight className="h-3.5 w-3.5" />
+            <Link href="/" className="hover:text-[#2445ad]">홈</Link><ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            <Link href="/categories" className="hover:text-[#2445ad]">카테고리</Link><ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="text-[#3457c8]">{category.name}</span>
           </div>
-          <h1 className="mt-4 text-3xl font-black tracking-[-0.04em] text-[#171a1f] sm:text-4xl">{category.name} 랭킹</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-[#6b7280]">{category.description || `${category.name} 분야의 공개 랭킹을 비교하고 탐색합니다.`}</p>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+            <div>
+              <p className="rw-kicker">Ranking collection</p>
+              <h1 className="rw-display mt-2 text-[2.7rem] font-black leading-[1.02] tracking-[-0.055em] text-[#111318] sm:text-[4rem]">{category.name} 랭킹</h1>
+            </div>
+            <p className="max-w-md text-sm font-medium leading-7 text-[#626b77] lg:pb-1">{category.description || `${category.name} 분야의 공개 랭킹을 비교하고 탐색합니다.`}</p>
+          </div>
+
           {category.subcategories && category.subcategories.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
               {category.subcategories.map((sub: any) => (
-                <Link key={sub.id} href={`/categories/${category.slug}/${sub.slug}`} className="rounded-lg border border-[#dfe4ea] bg-[#fafbfc] px-3 py-1.5 text-xs font-bold text-[#5f6875] hover:border-[#b9c5dc] hover:bg-[#eef2ff] hover:text-[#2445ad]">{sub.name}</Link>
+                <Link key={sub.id} href={`/categories/${category.slug}/${sub.slug}`} className="rounded-full border border-[#dfe4ea] bg-[#fafbfc] px-3 py-1.5 text-xs font-bold text-[#5f6875] transition hover:border-[#aebfe9] hover:bg-[#eff4ff] hover:text-[#1d4ed8]">{sub.name}</Link>
               ))}
             </div>
           )}
@@ -66,14 +74,15 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <FacetFilterPanel action={path} groups={options.groups} selectedIds={facetIds} hiddenParams={{ sort }} />
 
         <section className="min-w-0">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#dde2e8] pb-4">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#dde2e8] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[#20242a]">공개 랭킹</h2>
+              <p className="rw-kicker">Browse rankings</p>
+              <h2 className="mt-1 text-xl font-black tracking-[-0.025em] text-[#20242a]">공개 랭킹</h2>
               <p className="mt-1 text-[11px] font-semibold text-[#8a94a3]">현재 페이지 {rankings.length}건</p>
             </div>
-            <div className="inline-flex rounded-xl border border-[#dde2e8] bg-white p-1">
-              <Link href={browseHref(path, 'latest', facetIds)} className={`rounded-lg px-3 py-1.5 text-[11px] font-extrabold ${sort === 'latest' ? 'bg-[#eef2ff] text-[#2445ad]' : 'text-[#7b8491] hover:bg-[#f4f6f8]'}`}>최신순</Link>
-              <Link href={browseHref(path, 'popular', facetIds)} className={`rounded-lg px-3 py-1.5 text-[11px] font-extrabold ${sort === 'popular' ? 'bg-[#fff7e6] text-[#9a6206]' : 'text-[#7b8491] hover:bg-[#f4f6f8]'}`}><span className="inline-flex items-center gap-1"><Flame className="h-3 w-3" />인기순</span></Link>
+            <div className="inline-flex rounded-full border border-[#dde2e8] bg-white p-1">
+              <Link href={browseHref(path, 'latest', facetIds)} className={`rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition ${sort === 'latest' ? 'bg-[#1f2937] text-white' : 'text-[#7b8491] hover:bg-[#f4f6f8]'}`}>최신순</Link>
+              <Link href={browseHref(path, 'popular', facetIds)} className={`rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition ${sort === 'popular' ? 'bg-[#eff4ff] text-[#1d4ed8]' : 'text-[#7b8491] hover:bg-[#f4f6f8]'}`}><span className="inline-flex items-center gap-1"><Flame className="h-3 w-3" aria-hidden="true" />인기순</span></Link>
             </div>
           </div>
 
@@ -82,21 +91,17 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           )}
 
           {rankings.length > 0 ? (
-            <div className="mt-4 overflow-hidden rounded-2xl border border-[#dde2e8] bg-white">
-              {rankings.map((ranking, index) => (
-                <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className={`group grid gap-3 px-5 py-5 transition hover:bg-[#f8f9fb] sm:grid-cols-[1fr_auto] sm:items-center sm:px-6 ${index > 0 ? 'border-t border-[#edf0f3]' : ''}`}>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-[#8a94a3]"><span className="text-[#3457c8]">{category.name}</span>{ranking.subcategories && <><span>·</span><span>{ranking.subcategories.name}</span></>}</div>
-                    <h3 className="mt-1.5 truncate text-base font-extrabold text-[#20242a] transition group-hover:text-[#2445ad]">{ranking.title}</h3>
-                    <p className="mt-1 line-clamp-2 text-xs leading-6 text-[#6b7280]">{ranking.summary}</p>
-                    <div className="mt-2 flex gap-3 text-[10px] font-semibold text-[#929ba6]"><span>조회 {ranking.unique_view_count.toLocaleString('ko-KR')}</span><span>좋아요 {ranking.like_count.toLocaleString('ko-KR')}</span></div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] font-semibold text-[#8a94a3]"><CalendarDays className="h-3.5 w-3.5" />{new Date(ranking.published_at || ranking.sort_time).toLocaleDateString('ko-KR')}<ChevronRight className="h-4 w-4 text-[#b1b8c2] transition group-hover:translate-x-0.5 group-hover:text-[#3457c8]" /></div>
-                </Link>
+            <div className="mt-5 grid gap-4">
+              {rankings.map((ranking) => (
+                <RankingBrowseCollectionCard key={ranking.id} ranking={ranking} categoryName={category.name} />
               ))}
             </div>
           ) : (
-            <div className="mt-4 rw-surface rw-card flex flex-col items-center justify-center px-6 py-14 text-center"><Inbox className="h-7 w-7 text-[#a4acb7]" /><h3 className="mt-4 text-sm font-extrabold text-[#3f4752]">조건에 맞는 랭킹이 없습니다</h3><p className="mt-2 text-xs text-[#8a94a3]">Facet 조건을 줄이거나 다른 세부 분야를 확인해 보세요.</p></div>
+            <div className="mt-5 rw-surface rw-card flex flex-col items-center justify-center px-6 py-14 text-center">
+              <Inbox className="h-7 w-7 text-[#a4acb7]" aria-hidden="true" />
+              <h3 className="mt-4 text-sm font-extrabold text-[#3f4752]">조건에 맞는 랭킹이 없습니다</h3>
+              <p className="mt-2 text-xs text-[#8a94a3]">Facet 조건을 줄이거나 다른 세부 분야를 확인해 보세요.</p>
+            </div>
           )}
 
           {nextHref && <div className="flex justify-center pt-6"><Link href={nextHref} className="rw-button-secondary px-5 text-xs">다음 랭킹 보기</Link></div>}
