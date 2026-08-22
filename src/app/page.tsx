@@ -214,7 +214,7 @@ export default async function HomePage() {
       {moreRankings.length > 0 ? (
         <section className="rw-container mt-9 sm:mt-11">
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="text-xl font-black tracking-[-0.035em] text-[#171a1f]">지금 많이 보는 랭킹</h2>
+            <h2 className="text-xl font-black tracking-[-0.035em] text-[#171a1f]">더 둘러볼 랭킹</h2>
             <Link href="/search?type=ranking" className="inline-flex items-center gap-1 text-xs font-black text-[#576171] transition hover:text-[#2563eb]">
               전체 보기 <ArrowRight className="h-3.5 w-3.5" />
             </Link>
