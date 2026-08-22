@@ -72,7 +72,7 @@ assert.ok(!itemPage.includes('images.unsplash.com'), 'item detail must not hotli
 assert.ok(!safeImage.includes('images.unsplash.com'), 'shared SafeImage default must not hotlink a stock fallback')
 assert.ok(safeImage.includes("fallbackSrc = '/item-placeholder.svg'"), 'shared SafeImage default must use the local neutral fallback')
 assert.ok(!itemLayout.includes('<CommentSection'), 'item layout must not duplicate article-flow comments')
-assert.ok(publicQueries.includes("const PUBLIC_ITEM_COLUMNS = 'id, title, slug, description, item_type, image_url, brand_or_creator, external_url, affiliate_url, status, metadata'"), 'public item query must continue exposing the existing metadata contract')
+assert.ok(publicQueries.includes("const PUBLIC_ITEM_COLUMNS = 'id, title, slug, description, item_type, image_url, brand_or_creator, external_url, affiliate_url, status, metadata"), 'public item query must continue exposing the existing metadata contract')
 
 const firstIndex = (...needles) => {
   const indexes = needles.map((needle) => itemPage.indexOf(needle)).filter((index) => index >= 0)
