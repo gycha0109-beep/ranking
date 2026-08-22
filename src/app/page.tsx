@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, CalendarDays } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
+import SearchForm from '@/components/SearchForm'
 import { getHomePresentationData, type HomeFeaturedSlide } from '@/lib/queries/home'
 
 export const revalidate = 0
@@ -177,7 +178,11 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="rw-scroll-row mt-5 flex gap-2 overflow-x-auto pb-2">
+        <div className="mt-5 max-w-2xl">
+          <SearchForm hero />
+        </div>
+
+        <div className="rw-scroll-row mt-4 flex gap-2 overflow-x-auto pb-2">
           {visibleCategories.map((category, index) => (
             <Link
               key={category.id}
