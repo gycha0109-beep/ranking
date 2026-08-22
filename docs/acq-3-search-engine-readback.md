@@ -1,6 +1,6 @@
 # ACQ-3 — Search Engine Ownership, Sitemap Readback & Crawl/Index Observability
 
-Status: **READBACK READY / EXTERNAL ENGINE AUTHORITY BLOCKED**
+Status: **READBACK CONTRACT SUCCESS / EXTERNAL ENGINE AUTHORITY BLOCKED**
 
 ## Objective
 
@@ -187,14 +187,52 @@ ACQ-3 must not:
 - add invasive tracking, fingerprinting, or referrer logging merely to compensate for missing engine authority;
 - change canonical origin or adopt a custom domain implicitly.
 
-## Current terminal state
+## Implementation closure evidence
 
-The application-side readback contract can be implemented and CI-protected now, but the external ownership objective cannot be truthfully closed without engine-side property access.
-
-Therefore the current Stage state is:
+The application-side readback contract was implemented and merged without changing ranking data, publication state, canonical origin, database schema, RLS, or analytics identity.
 
 ```text
-ACQ_3_READBACK_CONTRACT = IMPLEMENTING
+implementation_pr = #92
+implementation_exact_head = 7aa5cb2e06feaf5b12ffa90cacce67b7f48bc466
+exact_head_ci = #363 / run 32593928418 / SUCCESS
+merged_main = 7b5a9780defc1c04ae2017762f69749802afa46d
+```
+
+The exact merged-main Production deployment is:
+
+```text
+deployment = dpl_CQy5rTtKKra24PCtsLvMkxY7EZRT
+git_sha = 7b5a9780defc1c04ae2017762f69749802afa46d
+state = READY
+canonical_alias = ranking-rho-three.vercel.app
+```
+
+Post-merge canonical readback confirmed:
+
+```text
+GET / = HTTP 200 / index, follow / canonical exact
+GET /robots.txt = HTTP 200 / Allow: / / canonical sitemap advertised
+GET /sitemap.xml = HTTP 200 / public category, subcategory, ranking, item URLs present
+GET /rankings/top500-supercomputer-hpl-rmax-2026-06-top-5 = HTTP 200 / index, follow / canonical exact
+GET /items/lineshine = HTTP 200 / index, follow / canonical exact
+```
+
+Operational safety readback after the merged deployment:
+
+```text
+recent_production_runtime_errors = 0
+exact_deployment_5xx = 0
+open_prs_before_closeout = 0
+```
+
+## Current terminal state
+
+The repository and Production now have a CI-protected, bounded application-side readback contract. The external ownership objective cannot be truthfully closed without engine-side property access.
+
+Therefore:
+
+```text
+ACQ_3_READBACK_CONTRACT = SUCCESS / CLOSED
 TECHNICAL_CRAWLABILITY = VERIFIED
 GOOGLE_VERIFICATION_TAG = ABSENT
 BING_VERIFICATION_TAG = ABSENT
@@ -203,7 +241,8 @@ BING_WEBMASTER_OWNERSHIP = UNCONFIRMED
 ENGINE_SIDE_SITEMAP_READBACK = UNCONFIRMED
 CRAWL_STATUS = UNCONFIRMED
 SEARCH_ENGINE_INDEXING = UNCONFIRMED
+ACQ_3_EXTERNAL_CLOSURE = BLOCKED_EXTERNAL_ENGINE_AUTHORITY
 EXTERNAL_ENGINE_AUTHORITY_BLOCKED
 ```
 
-After repository verification and merge, `ACQ_3_READBACK_CONTRACT` may become `SUCCESS / CLOSED`; the external engine states must remain unconfirmed until actual engine authority is obtained.
+The application-side ACQ-3 contract is closed. The external engine states must remain unconfirmed until actual engine authority is obtained.
