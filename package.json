@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "indexnow:submit": "node scripts/submit-indexnow.mjs",
+    "acq-3:readback": "node scripts/readback-acq-3-search-engine.mjs",
     "verify:p1-2": "node scripts/verify-p1-2-contracts.mjs",
     "verify:p1-3": "node scripts/verify-p1-3-contracts.mjs",
     "verify:p1-4": "node scripts/verify-p1-4-contracts.mjs",
@@ -42,6 +43,7 @@
     "verify:launch-2": "node scripts/verify-launch-2-publication-boundary.mjs",
     "verify:acq-1": "node scripts/verify-acq-1-search-engine-readiness.mjs",
     "verify:acq-2": "node scripts/verify-acq-2-indexnow-readiness.mjs",
+    "verify:acq-3": "node scripts/verify-acq-3-search-engine-readback.mjs",
     "verify:measure-1": "node scripts/verify-measure-1-contracts.mjs"
   },
   "dependencies": {
