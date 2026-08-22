@@ -225,8 +225,8 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <section className="rw-container mt-10 grid gap-5 lg:mt-12 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[14px] border border-[#e1e4e9] bg-white p-5 sm:p-6">
+      <section className="rw-container mt-10 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:mt-12 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="min-w-0 rounded-[14px] border border-[#e1e4e9] bg-white p-5 sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h2 className="text-lg font-black tracking-[-0.03em] text-[#171a1f]">최근 업데이트</h2>
             <Link href="/search?type=ranking&sort=latest" className="inline-flex items-center gap-1 text-[11px] font-black text-[#647083] hover:text-[#2563eb]">
@@ -254,7 +254,7 @@ export default async function HomePage() {
           )}
         </div>
 
-        <div className="rounded-[14px] border border-[#e1e4e9] bg-[#f7f9fc] p-5 sm:p-6">
+        <div className="min-w-0 rounded-[14px] border border-[#e1e4e9] bg-[#f7f9fc] p-5 sm:p-6">
           <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#2563eb]">Explore more</p>
           <h2 className="mt-2 text-xl font-black tracking-[-0.035em] text-[#171a1f]">원하는 주제로 바로 들어가세요</h2>
           <p className="mt-2 text-xs leading-6 text-[#6b7280]">카테고리에서 관심 있는 분야의 최신 랭킹과 항목을 한 번에 둘러볼 수 있습니다.</p>
