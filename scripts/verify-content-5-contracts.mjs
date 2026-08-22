@@ -22,8 +22,13 @@ assert.equal(formatRankingBasis({}, '2026-08-21T16:30:00Z'), '2026. 8. 22.')
 assert.equal(formatKoreanDate('2026-08-21T16:30:00Z'), '2026. 8. 22.')
 
 assert.ok(rankingPage.includes("from '@/lib/ranking-display'"), 'ranking detail must use the shared basis/date display helper')
-assert.ok(rankingPage.includes('>기준</p>'), 'ranking detail must label the field as 기준 rather than 기준일')
-assert.ok(!rankingPage.includes('>기준일</p>'), 'ranking detail must not mislabel editorial periods as a date')
+assert.ok(
+  rankingPage.includes('>기준</p>')
+    || rankingPage.includes('>기준</dt>')
+    || rankingPage.includes('>기준 시점</dt>'),
+  'ranking detail must expose a basis field rather than 기준일'
+)
+assert.ok(!rankingPage.includes('>기준일</p>') && !rankingPage.includes('>기준일</dt>'), 'ranking detail must not mislabel editorial periods as a date')
 assert.ok(rankingPage.includes('formatRankingBasis(ranking.scope_json, publishedOrUpdated)'), 'ranking detail must prefer scope.period semantics')
 assert.ok(rankingPage.includes('formatKoreanDate(ranking.updated_at)'), 'ranking updated timestamps must render in Asia/Seoul')
 
