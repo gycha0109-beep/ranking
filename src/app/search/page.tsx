@@ -129,11 +129,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     <div className="rw-page bg-white pb-20">
       <header className="border-b border-[#e3e7ec] bg-white">
         <div className="rw-container py-10 sm:py-14 lg:py-16">
-          <p className="rw-kicker flex items-center gap-2"><Search className="h-4 w-4" aria-hidden="true" /> Search & discover</p>
+          <h1 className="rw-kicker flex items-center gap-2"><Search className="h-4 w-4" aria-hidden="true" /> 통합 검색</h1>
           <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-end">
-            <h1 className="rw-display max-w-3xl text-[2.7rem] font-black leading-[1.02] tracking-[-0.055em] text-[#111318] sm:text-[4rem] lg:text-[4.7rem]">
+            <p className="rw-display max-w-3xl text-[2.7rem] font-black leading-[1.02] tracking-[-0.055em] text-[#111318] sm:text-[4rem] lg:text-[4.7rem]">
               궁금한 순위와 항목을<br />바로 찾아보세요.
-            </h1>
+            </p>
             <p className="max-w-md text-sm font-medium leading-7 text-[#626b77] lg:pb-2">
               공개 랭킹과 아이템을 제목, 브랜드, 카테고리, Facet 기준으로 찾고 결과에서 곧바로 관련 문서로 이동합니다.
             </p>
