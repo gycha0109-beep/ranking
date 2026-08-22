@@ -1,7 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Database, FileText, Inbox, Layers, Search, Sparkles } from 'lucide-react'
+import { ArrowRight, Database, Eye, FileText, Heart, Inbox, Layers, Search, Sparkles } from 'lucide-react'
 import FacetFilterPanel from '@/components/FacetFilterPanel'
+import SafeImage from '@/components/SafeImage'
 import SearchForm from '@/components/SearchForm'
 import { getPublicFacetOptions, searchPublicContent } from '@/lib/queries/search'
 import {
@@ -53,6 +54,29 @@ function resultHref(result: SearchResult) {
   return result.content_kind === 'ranking' ? `/rankings/${result.slug}` : `/items/${result.slug}`
 }
 
+function SearchResultVisual({ result }: { result: SearchResult }) {
+  if (result.image_url) {
+    return (
+      <SafeImage
+        src={result.image_url}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+        fallbackSrc="/item-placeholder.svg"
+      />
+    )
+  }
+
+  const initials = result.title.trim().slice(0, 2) || 'RW'
+  return (
+    <div className={`absolute inset-0 ${result.content_kind === 'ranking'
+      ? 'bg-[radial-gradient(circle_at_76%_18%,rgba(73,111,235,0.92),transparent_34%),linear-gradient(135deg,#111827_0%,#25324a_58%,#1d4ed8_100%)]'
+      : 'bg-[radial-gradient(circle_at_76%_18%,rgba(34,197,139,0.64),transparent_34%),linear-gradient(135deg,#111827_0%,#1f3a38_58%,#087a54_100%)]'
+    }`}>
+      <span className="absolute bottom-3 right-4 text-[4.4rem] font-black leading-none tracking-[-0.08em] text-white/10">{initials}</span>
+    </div>
+  )
+}
+
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
   const rawQuery = first(params.q) || ''
@@ -98,13 +122,23 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     return `/search?${next.toString()}`
   })()
 
+  const rankingCount = items.filter((item) => item.content_kind === 'ranking').length
+  const itemCount = items.length - rankingCount
+
   return (
-    <div className="rw-page pb-20">
+    <div className="rw-page bg-white pb-20">
       <header className="border-b border-[#e3e7ec] bg-white">
-        <div className="rw-container py-10 sm:py-12">
-          <p className="rw-kicker flex items-center gap-2"><Search className="h-4 w-4" /> Search</p>
-          <h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#171a1f] sm:text-4xl">통합 검색</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b7280]">공개 랭킹과 아이템을 제목, 브랜드, 카테고리, Facet 기준으로 찾습니다.</p>
+        <div className="rw-container py-10 sm:py-14 lg:py-16">
+          <h1 className="rw-kicker flex items-center gap-2"><Search className="h-4 w-4" aria-hidden="true" /> 통합 검색</h1>
+          <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-end">
+            <p className="rw-display max-w-3xl text-[2.7rem] font-black leading-[1.02] tracking-[-0.055em] text-[#111318] sm:text-[4rem] lg:text-[4.7rem]">
+              궁금한 순위와 항목을<br />바로 찾아보세요.
+            </p>
+            <p className="max-w-md text-sm font-medium leading-7 text-[#626b77] lg:pb-2">
+              공개 랭킹과 아이템을 제목, 브랜드, 카테고리, Facet 기준으로 찾고 결과에서 곧바로 관련 문서로 이동합니다.
+            </p>
+          </div>
+
           <SearchForm
             defaultQuery={rawQuery}
             defaultKind={kind}
@@ -112,17 +146,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             facetIds={facetIds}
             showFilters
             historySync
-            className="mt-6 max-w-4xl rounded-2xl border border-[#dde2e8] bg-[#f8f9fb] p-4"
+            className="mt-7 max-w-5xl rounded-[18px] border border-[#d9dee6] bg-[#f7f9fc] p-4 shadow-[0_14px_34px_rgba(17,24,39,0.05)] sm:p-5"
           />
         </div>
       </header>
 
-      <div className="rw-container pt-8">
+      <div className="rw-container pt-8 sm:pt-10">
         {!hasQuery && (
-          <section className="rw-surface rw-card px-6 py-16 text-center">
-            <Sparkles className="mx-auto h-7 w-7 text-[#3457c8]" />
-            <h2 className="mt-4 text-base font-extrabold text-[#20242a]">검색어를 입력해 주세요</h2>
-            <p className="mt-2 text-xs leading-6 text-[#8a94a3]">2자 이상의 제목, 아이템명, 브랜드, 카테고리 또는 태그로 검색할 수 있습니다.</p>
+          <section className="overflow-hidden rounded-[18px] border border-[#dfe3e8] bg-[#111827] px-6 py-14 text-center text-white sm:py-16">
+            <Sparkles className="mx-auto h-7 w-7 text-[#8eb0ff]" aria-hidden="true" />
+            <h2 className="mt-4 text-lg font-black tracking-[-0.025em]">검색어를 입력해 주세요</h2>
+            <p className="mx-auto mt-2 max-w-xl text-xs font-medium leading-6 text-white/62">2자 이상의 제목, 아이템명, 브랜드, 카테고리 또는 태그로 검색할 수 있습니다.</p>
+            <Link href="/categories" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#172033] transition hover:bg-[#eef3ff]">
+              <Layers className="h-4 w-4" aria-hidden="true" />카테고리부터 둘러보기
+            </Link>
           </section>
         )}
 
@@ -145,14 +182,16 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             <FacetFilterPanel action="/search" groups={facetGroups} selectedIds={facetIds} hiddenParams={{ q: query, type: kind, sort }} />
 
             <section className="min-w-0">
-              <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#dde2e8] pb-4">
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#dde2e8] pb-4">
                 <div>
-                  <p className="text-xs font-semibold text-[#8a94a3]">검색 결과</p>
-                  <h2 className="mt-1 text-xl font-black tracking-[-0.025em] text-[#171a1f]">“{query}”</h2>
+                  <p className="rw-kicker">Search results</p>
+                  <h2 className="mt-1 text-[1.7rem] font-black tracking-[-0.04em] text-[#171a1f]">“{query}”</h2>
                 </div>
-                <div className="text-right text-[11px] font-semibold text-[#8a94a3]">
-                  <span>현재 페이지 {items.length}건</span>
-                  {!cursorAccepted && <span className="ml-2 text-[#a16207]">페이지 위치를 초기화했습니다.</span>}
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-black">
+                  <span className="rounded-full bg-[#f1f3f6] px-2.5 py-1.5 text-[#68717d]">현재 페이지 {items.length}건</span>
+                  {rankingCount > 0 && <span className="rounded-full bg-[#eef3ff] px-2.5 py-1.5 text-[#1d4ed8]">랭킹 {rankingCount}</span>}
+                  {itemCount > 0 && <span className="rounded-full bg-[#edf8f3] px-2.5 py-1.5 text-[#087a54]">아이템 {itemCount}</span>}
+                  {!cursorAccepted && <span className="text-[#a16207]">페이지 위치를 초기화했습니다.</span>}
                 </div>
               </div>
 
@@ -161,41 +200,50 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               )}
 
               {items.length > 0 ? (
-                <div className="mt-4 overflow-hidden rounded-2xl border border-[#dde2e8] bg-white">
-                  {items.map((result, index) => (
+                <div className="mt-5 grid gap-4">
+                  {items.map((result) => (
                     <Link
                       key={`${result.content_kind}:${result.id}`}
                       href={resultHref(result)}
-                      className={`group grid gap-4 p-5 transition hover:bg-[#f8f9fb] sm:grid-cols-[44px_1fr_auto] sm:items-start ${index > 0 ? 'border-t border-[#edf0f3]' : ''}`}
+                      className="group grid overflow-hidden rounded-[16px] border border-[#dfe3e8] bg-white transition hover:-translate-y-0.5 hover:border-[#bcc9e4] hover:shadow-[0_16px_38px_rgba(17,24,39,0.08)] sm:grid-cols-[180px_minmax(0,1fr)]"
                     >
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${result.content_kind === 'ranking' ? 'bg-[#eef2ff] text-[#3457c8]' : 'bg-[#eef8f4] text-[#087a54]'}`}>
-                        {result.content_kind === 'ranking' ? <FileText className="h-4.5 w-4.5" /> : <Database className="h-4.5 w-4.5" />}
+                      <div className="relative min-h-[164px] overflow-hidden bg-[#151a22] sm:min-h-full">
+                        <SearchResultVisual result={result} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/48 via-transparent to-transparent" />
+                        <span className={`absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black ${result.content_kind === 'ranking' ? 'bg-white/94 text-[#1d4ed8]' : 'bg-white/94 text-[#087a54]'}`}>
+                          {result.content_kind === 'ranking' ? <FileText className="h-3 w-3" aria-hidden="true" /> : <Database className="h-3 w-3" aria-hidden="true" />}
+                          {result.content_kind === 'ranking' ? 'RANKING' : 'ITEM'}
+                        </span>
                       </div>
-                      <div className="min-w-0">
+
+                      <div className="flex min-w-0 flex-col p-5 sm:p-6">
                         <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-[#8a94a3]">
-                          <span className={result.content_kind === 'ranking' ? 'text-[#3457c8]' : 'text-[#087a54]'}>{result.content_kind === 'ranking' ? '랭킹' : '아이템'}</span>
-                          {result.category_name && <span>{result.category_name}</span>}
-                          {result.subcategory_name && <span>· {result.subcategory_name}</span>}
-                          {result.brand_or_creator && <span>· {result.brand_or_creator}</span>}
+                          {result.category_name && <span className={result.content_kind === 'ranking' ? 'text-[#2563eb]' : 'text-[#087a54]'}>{result.category_name}</span>}
+                          {result.subcategory_name && <><span>·</span><span>{result.subcategory_name}</span></>}
+                          {result.brand_or_creator && <><span>·</span><span>{result.brand_or_creator}</span></>}
                         </div>
-                        <h3 className="mt-1.5 truncate text-base font-extrabold text-[#20242a] transition group-hover:text-[#2445ad]">{result.title}</h3>
-                        {result.description && <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-[#6b7280]">{result.description}</p>}
-                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-[#8a94a3]">
-                          <span className="rounded-md bg-[#f0f2f5] px-2 py-1 text-[#5f6875]">{matchLabel(result.match_reason)}</span>
-                          <span>조회 {result.unique_view_count.toLocaleString('ko-KR')}</span>
-                          <span>좋아요 {result.like_count.toLocaleString('ko-KR')}</span>
+
+                        <h3 className="mt-2 text-lg font-black leading-6 tracking-[-0.03em] text-[#1c2026] transition group-hover:text-[#1d4ed8] sm:text-xl">{result.title}</h3>
+                        {result.description && <p className="mt-2 line-clamp-2 text-xs font-medium leading-6 text-[#69717c]">{result.description}</p>}
+
+                        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+                          <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-[#8a94a3]">
+                            <span className="rounded-full bg-[#f1f3f6] px-2.5 py-1 text-[#59616c]">{matchLabel(result.match_reason)}</span>
+                            <span className="inline-flex items-center gap-1"><Eye className="h-3.5 w-3.5" aria-hidden="true" />조회 {result.unique_view_count.toLocaleString('ko-KR')}</span>
+                            <span className="inline-flex items-center gap-1"><Heart className="h-3.5 w-3.5" aria-hidden="true" />좋아요 {result.like_count.toLocaleString('ko-KR')}</span>
+                          </div>
+                          <ArrowRight className="h-4 w-4 shrink-0 text-[#a9b1bc] transition group-hover:translate-x-0.5 group-hover:text-[#2563eb]" aria-hidden="true" />
                         </div>
                       </div>
-                      <ArrowRight className="hidden h-4 w-4 text-[#b1b8c2] transition group-hover:translate-x-0.5 group-hover:text-[#3457c8] sm:block" />
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 rw-surface rw-card px-6 py-14 text-center">
-                  <Inbox className="mx-auto h-7 w-7 text-[#a4acb7]" />
+                <div className="mt-5 rw-surface rw-card px-6 py-14 text-center">
+                  <Inbox className="mx-auto h-7 w-7 text-[#a4acb7]" aria-hidden="true" />
                   <h3 className="mt-4 text-sm font-extrabold text-[#3f4752]">검색 결과가 없습니다</h3>
                   <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-[#8a94a3]">검색어나 Facet 조건을 줄이거나 카테고리에서 직접 탐색해 보세요.</p>
-                  <Link href="/categories" className="rw-button-secondary mt-5 px-4 text-xs"><Layers className="h-4 w-4" />카테고리 탐색</Link>
+                  <Link href="/categories" className="rw-button-secondary mt-5 px-4 text-xs"><Layers className="h-4 w-4" aria-hidden="true" />카테고리 탐색</Link>
                 </div>
               )}
 
