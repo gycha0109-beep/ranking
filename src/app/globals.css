@@ -11,7 +11,7 @@
   --rw-border-strong: #c4c5c0;
   --rw-text: #15191f;
   --rw-text-soft: #3f4752;
-  --rw-text-muted: #596271;
+  --rw-text-muted: #5f6875;
   --rw-brand: #3158e8;
   --rw-brand-strong: #1f44c9;
   --rw-brand-soft: #eef2ff;
@@ -189,7 +189,7 @@ button, input, select, textarea { font: inherit; }
 [class*="text-[#6b7280]"],
 [class*="text-[#6f7782]"],
 [class*="text-[#69717c]"] {
-  color: var(--rw-text-muted) !important;
+  color: #596271 !important;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
