@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 
 function read(path) {
   return readFileSync(path, 'utf8')
@@ -8,7 +9,11 @@ function requireCondition(condition, message) {
   if (!condition) throw new Error(message)
 }
 
-const operator = read('scripts/readback-acq-3-search-engine.mjs')
+const operatorPath = 'scripts/readback-acq-3-search-engine.mjs'
+const syntaxCheck = spawnSync(process.execPath, ['--check', operatorPath], { encoding: 'utf8' })
+requireCondition(syntaxCheck.status === 0, `ACQ-3 operator syntax check failed: ${syntaxCheck.stderr || syntaxCheck.stdout}`)
+
+const operator = read(operatorPath)
 const docs = read('docs/acq-3-search-engine-readback.md')
 const packageJson = read('package.json')
 const ci = read('.github/workflows/ci.yml')
