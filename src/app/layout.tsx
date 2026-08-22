@@ -53,24 +53,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <main className="flex-grow flex flex-col relative">{children}</main>
         <LikeDock />
         <Suspense fallback={null}><ProductTelemetry /></Suspense>
-        <footer className="relative z-10 border-t border-[#2c3138] bg-[#15191f] text-white">
-          <div className="rw-container grid gap-8 py-9 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center bg-white text-[9px] font-black tracking-[-0.04em] text-[#15191f]">RW</span>
-                <div>
-                  <p className="text-sm font-black tracking-[-0.02em]">랭킹위키</p>
-                  <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#8f98a5]">Evidence ranking archive</p>
-                </div>
-              </div>
-              <p className="mt-4 max-w-lg text-xs leading-6 text-[#aeb5bf]">
-                후보 범위, 평가 기준, 선정 이유와 변경 이력을 공개해 순위가 만들어진 근거를 보존합니다.
+        <footer className="relative z-10 border-t border-[#e7e9ed] bg-white text-[#4b5563]">
+          <div className="rw-container flex flex-col gap-4 py-7 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-black tracking-[-0.04em] text-[#171a1f]">RANKINGWIKI</p>
+              <p className="mt-1 max-w-xl text-[11px] leading-5 text-[#8a929d]">
+                공개된 근거와 변경 이력을 바탕으로 다양한 순위를 한곳에서 살펴봅니다.
               </p>
             </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-bold text-[#d2d6dc] sm:justify-end">
-              <Link href="/categories" className="hover:text-white">카테고리</Link>
-              <Link href="/search" className="hover:text-white">검색</Link>
-              <span className="text-[#757e8a]">© {new Date().getFullYear()} Ranking Wiki</span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-bold text-[#6b7280]">
+              <Link href="/search" className="hover:text-[#2563eb]">탐색</Link>
+              <Link href="/categories" className="hover:text-[#2563eb]">카테고리</Link>
+              <span className="text-[#9aa1aa]">© {new Date().getFullYear()} Ranking Wiki</span>
             </div>
           </div>
         </footer>
