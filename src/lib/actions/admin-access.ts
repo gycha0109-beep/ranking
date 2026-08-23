@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 export type AdminRoleLevel = 'none' | 'moderator' | 'admin' | 'super_admin'
@@ -94,6 +95,7 @@ const ROUTE_PATTERN = /^\/admin(?:\/[a-z0-9-]+){0,4}$/
 const auditKindSet = new Set<string>(ADMIN_AUDIT_EVENT_KINDS)
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+type SecurityEventTrust = 'authenticated_self_report' | 'trusted_server'
 
 function normalizeUuid(value?: string | null) {
   const normalized = (value || '').trim()
@@ -142,9 +144,10 @@ function classifyRpcFailure(code?: string): AdminSecurityEventKind {
 async function recordAdminSecurityEventWithClient(
   supabase: SupabaseServerClient,
   context: AdminSecurityEventContext,
+  trust: SecurityEventTrust = 'authenticated_self_report',
 ) {
   try {
-    await supabase.rpc('record_admin_security_event', {
+    const event = {
       p_event_kind: context.eventKind || 'command_failed',
       p_action_key: normalizeSecurityKey(context.actionKey, 'unknown_action'),
       p_resource_key: normalizeSecurityKey(context.resourceKey, 'admin_console'),
@@ -152,7 +155,20 @@ async function recordAdminSecurityEventWithClient(
       p_route_key: normalizeSecurityRoute(context.routeKey),
       p_subject_type: normalizeSecurityKey(context.subjectType, 'none', 40),
       p_subject_ref: normalizeSecuritySubjectRef(context.subjectRef),
-    })
+    }
+
+    if (trust === 'trusted_server') {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const admin = createAdminClient()
+      await admin.rpc('record_trusted_admin_security_event', {
+        p_actor_id: user.id,
+        ...event,
+      })
+      return
+    }
+
+    await supabase.rpc('record_admin_security_event', event)
   } catch {
     // Security telemetry is best-effort and must not replace the original result.
   }
@@ -241,7 +257,7 @@ export async function requireAdminCapability(
       routeKey: context.routeKey || '/admin',
       subjectType: context.subjectType || 'none',
       subjectRef: context.subjectRef,
-    })
+    }, 'trusted_server')
     throw new Error('이 운영 작업을 수행할 권한이 없습니다.')
   }
   return supabase
@@ -269,7 +285,7 @@ export async function runAdminRpc(
       routeKey: context.routeKey || '/admin',
       subjectType: context.subjectType || 'none',
       subjectRef: context.subjectRef,
-    })
+    }, 'trusted_server')
   }
 
   return {
