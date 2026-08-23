@@ -1,0 +1,48 @@
+name: Main Ingress Audit
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  verify-merged-pr-ingress:
+    name: verify-merged-pr-ingress
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify main HEAD is associated with a merged PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+
+            const { data: pulls } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: sha,
+              per_page: 100,
+            });
+
+            const mergedIntoMain = pulls.find((pr) =>
+              pr.base?.ref === 'main' &&
+              pr.merged_at &&
+              pr.merge_commit_sha === sha
+            );
+
+            if (!mergedIntoMain) {
+              core.setFailed(
+                `main HEAD ${sha} is not the merge commit of a merged pull request into main. ` +
+                'This repository is currently missing an enforced branch protection rule; treat this as an ingress policy violation.'
+              );
+              return;
+            }
+
+            core.info(
+              `Verified main ingress via merged PR #${mergedIntoMain.number}: ${mergedIntoMain.html_url}`
+            );
