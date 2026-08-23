@@ -10,6 +10,7 @@
     "indexnow:submit": "node scripts/submit-indexnow.mjs",
     "acq-3:readback": "node scripts/readback-acq-3-search-engine.mjs",
     "verify:audit-r1": "node scripts/verify-audit-r1-contracts.mjs",
+    "verify:audit-r2": "node scripts/verify-audit-r2-contracts.mjs",
     "verify:p1-2": "node scripts/verify-p1-2-contracts.mjs",
     "verify:p1-3": "node scripts/verify-p1-3-contracts.mjs",
     "verify:p1-4": "node scripts/verify-p1-4-contracts.mjs",
