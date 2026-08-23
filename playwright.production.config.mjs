@@ -18,6 +18,9 @@ export default defineConfig({
   ],
   use: {
     baseURL,
+    extraHTTPHeaders: {
+      'x-rankingwiki-production-e2e': 'readonly-v1',
+    },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
