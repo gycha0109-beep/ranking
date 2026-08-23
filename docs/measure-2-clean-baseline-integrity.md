@@ -1,6 +1,6 @@
 # MEASURE-2 — Post-ACQ / Post-UI Real-User Evidence Readback & Investment Gate
 
-Status: **BASELINE CONTAMINATION CONFIRMED / CLEAN-BASELINE REPAIR IMPLEMENTING**
+Status: **MEASURE-2A SUCCESS / CLOSED — CLEAN BASELINE ESTABLISHED**
 
 ## Decision
 
@@ -11,8 +11,10 @@ MEASURE-2 asks one question:
 Current answer:
 
 ```text
-MEASURE_2_INVESTMENT_GATE = BLOCKED_CONTAMINATED_BASELINE
+MEASURE_2A_CLEAN_BASELINE_INTEGRITY = SUCCESS / CLOSED
+MEASURE_2_INVESTMENT_GATE = INSUFFICIENT_CLEAN_EVIDENCE
 PRODUCT_FEATURE_INVESTMENT = NO_BUILD
+OBSERVATION = CONTINUE
 ```
 
 This is not a product-feature stage. It preserves the MEASURE-1 privacy boundary and repairs a measurement-integrity defect introduced by later anonymous Production browser acceptance tests.
@@ -23,6 +25,17 @@ Authoritative starting `main`:
 
 ```text
 e260bd60e22d845938a58eb7afda7ef80c117e02
+```
+
+Repair merge authority:
+
+```text
+PR = #94
+PR_HEAD = 1d00b6a7fa235615bb2f61704cf77584da638f30
+MERGED_MAIN = fb579078619ccb0ec6d0fdfa85583193ea6b284e
+PRODUCTION_DEPLOYMENT = dpl_Cb94VtDCHiUZ59ijQkw7RvuXxPZB
+PRODUCTION_STATE = READY
+PRODUCTION_GIT_SHA = fb579078619ccb0ec6d0fdfa85583193ea6b284e
 ```
 
 Inherited authority:
@@ -47,17 +60,17 @@ Its traffic classes remain:
 - `unknown`
 - `qa_internal`
 
-The semantic boundary is now made explicit:
+The semantic boundary is explicit:
 
 ```text
 UNKNOWN != VERIFIED_REAL_USER
 ```
 
-`unknown` means only that traffic was not classified as known QA/internal at write time. It is baseline-eligible only while the operational classifier is known not to be contaminated by a later QA path.
+`unknown` means only that traffic was not classified as known QA/internal at write time.
 
 ## Hosted readback at MEASURE-2 start
 
-Hosted `public.product_usage_events` contained:
+Hosted `public.product_usage_events` initially contained:
 
 ```text
 TOTAL_EVENTS = 149
@@ -80,54 +93,44 @@ The 2026-08-22 spike is not accepted as organic demand evidence.
 
 ## Contamination evidence
 
-The 67 `unknown` search events are concentrated in exact current Production E2E fixtures:
+The `unknown` search events were concentrated in exact Production E2E fixtures:
 
 ```text
-슈퍼컴퓨터                 55 searches
-LineShine                    10 searches
-noresult7f3c2rankingwiki      2 searches
+슈퍼컴퓨터
+LineShine
+noresult7f3c2rankingwiki
 ```
 
-The synthetic no-result query is an exact repository QA fixture.
+Unknown content views were similarly concentrated in the TOP500 supercomputer ranking and LineShine item used by the Production Playwright suites.
 
-Unknown content views are similarly concentrated:
+The post-UI-3F browser suite is predominantly signed out. MEASURE-1 originally classified known authenticated E2E traffic through user metadata / reserved QA accounts, so independent anonymous Playwright contexts fell through to `traffic_class='unknown'`.
 
-```text
-TOP500 supercomputer ranking = 34
-LineShine item               = 30
-PISA 2022 reading ranking    = 1
-```
-
-The TOP500 ranking, LineShine item, technology category, `슈퍼컴퓨터` query, and `noresult7f3c2rankingwiki` query are the canonical fixtures used by the post-UI-3F Production Playwright smoke/compatibility suite.
-
-The later browser suite is predominantly signed out. MEASURE-1 originally classified known authenticated E2E traffic via user app metadata or the reserved `example.com` QA account. Signed-out browser contexts therefore received independent anonymous viewer cookies and fell through to `traffic_class='unknown'`.
-
-This explains the apparent one-day explosion in unknown daily viewers and search volume without requiring any claim about actual users.
+The contamination was reproduced again while PR #94 E2E ran against the still-old Production deployment: legacy totals rose from 149 to 210 before the repaired deployment became authoritative.
 
 ## Evidence handling
 
 MEASURE-2 does not rewrite history to manufacture a cleaner result.
 
 ```text
+LEGACY_TOTAL_EVENTS = 210
+LEGACY_UNKNOWN_EVENTS = 205
+LEGACY_QA_INTERNAL_EVENTS = 5
 LEGACY_UNKNOWN_EVENTS = PRESERVED_NOT_RECLASSIFIED
-POST_FIX_CLEAN_BASELINE = REQUIRED
 ```
 
-No existing `product_usage_events` row is deleted or relabeled.
+No existing `product_usage_events` row was deleted or relabeled.
 
-The pre-fix `unknown` population remains queryable evidence of the operational defect, but it is not used to authorize content, search, discovery, community, recommendation, ingestion, or other product investment.
-
-The three 2026-08-20 unknown events are also not promoted to verified real-user evidence. They may be genuine usage or manual anonymous internal traffic; the current authority cannot distinguish them retrospectively.
+The pre-fix `unknown` population remains evidence of the operational defect but cannot authorize content, search, discovery, community, recommendation, ingestion, or other product investment.
 
 ## Repair contract
 
-Read-only Production browser acceptance now sends one explicit marker:
+Read-only Production browser acceptance sends one explicit marker:
 
 ```text
 x-rankingwiki-production-e2e: readonly-v1
 ```
 
-The middleware recognizes this marker only for:
+Middleware recognizes it only for:
 
 ```text
 POST /api/measure-1
@@ -135,56 +138,121 @@ POST /api/measure-1
 
 and returns a successful non-inserting telemetry response before the normal MEASURE-1 writer is reached.
 
-This marker:
+The marker:
 
-- does not grant authentication or authorization;
-- does not bypass admin/product permissions;
-- does not alter product requests other than the bounded telemetry POST;
-- does not inspect or persist IP, user-agent, raw referrer, or browser fingerprint;
-- does not change the existing authenticated `qa_internal` classification contract;
+- grants no authentication or authorization;
+- bypasses no admin/product permission;
+- affects only the bounded telemetry POST;
+- adds no IP, user-agent, raw-referrer, or fingerprint storage;
+- does not change authenticated `qa_internal` classification;
 - exists only to stop read-only Production acceptance from polluting the real-user candidate baseline.
 
-The marker is not a security credential. A client that deliberately copies it can only suppress its own bounded telemetry write, not gain product authority.
+## Exact-head validation
 
-## Acceptance criteria
+PR #94 exact head:
 
-MEASURE-2A clean-baseline integrity repair closes only when:
+```text
+1d00b6a7fa235615bb2f61704cf77584da638f30
+```
 
-1. the explicit marker is present in both Production Playwright configs;
-2. middleware suppression is bounded to exact marker + `POST /api/measure-1`;
-3. the original MEASURE-1 route retains its privacy and authenticated-QA classification contract;
-4. `verify:measure-2`, all historical verifiers, lint, and Next production build pass at the exact PR head;
-5. the repair merges to `main`;
-6. merged-main Production is READY from the exact merge SHA;
-7. Production E2E passes against that merged deployment;
-8. Hosted readback shows no new E2E-fixture telemetry after the clean-baseline boundary;
-9. runtime error / 5xx checks remain clean;
-10. a new clean observation boundary is recorded.
+Validation:
+
+```text
+CI_RUN = #367 / 32621596141
+CI = SUCCESS
+verify:measure-1 = SUCCESS
+verify:measure-2 = SUCCESS
+ALL_HISTORICAL_VERIFIERS = SUCCESS
+LINT = SUCCESS
+NEXT_PRODUCTION_BUILD = SUCCESS
+
+PRODUCTION_E2E_RUN = #24 / 32621596101
+PR_ATTEMPT = SUCCESS
+MERGED_PRODUCTION_RERUN = SUCCESS
+DEEP_CHROMIUM = SUCCESS
+ACCESSIBILITY_AXE = SUCCESS
+CROSS_BROWSER_DEVICE_MATRIX = SUCCESS
+```
+
+## Clean baseline boundary
+
+Merged-main Production became READY at:
+
+```text
+CLEAN_BASELINE_START_UTC = 2026-08-23T06:04:41.988Z
+CLEAN_BASELINE_START_KST = 2026-08-23T15:04:41.988+09:00
+```
+
+The exact Production deployment is:
+
+```text
+dpl_Cb94VtDCHiUZ59ijQkw7RvuXxPZB
+```
+
+with exact Git SHA:
+
+```text
+fb579078619ccb0ec6d0fdfa85583193ea6b284e
+```
+
+After the repaired Production was authoritative, the same Production E2E suite was rerun in full. Final Hosted readback after that completed run showed:
+
+```text
+POST_BOUNDARY_EVENTS = 0
+POST_BOUNDARY_UNKNOWN = 0
+POST_BOUNDARY_QA_INTERNAL = 0
+POST_BOUNDARY_KNOWN_FIXTURE_SEARCHES = 0
+```
+
+The global table remained:
+
+```text
+TOTAL_EVENTS = 210
+UNKNOWN_TOTAL = 205
+QA_INTERNAL_TOTAL = 5
+LAST_EVENT_AT = 2026-08-23T06:02:47.882305Z
+```
+
+The last stored event precedes the clean boundary. This proves the repaired Production E2E no longer contaminates MEASURE-1 storage.
+
+## Acceptance criteria result
+
+1. Production Playwright marker in both configs — **PASS**
+2. suppression bounded to marker + `POST /api/measure-1` — **PASS**
+3. MEASURE-1 privacy/authenticated-QA contract retained — **PASS**
+4. exact-head verifiers/lint/build — **PASS**
+5. merge to main — **PASS**
+6. exact merged-main Production READY — **PASS**
+7. Production E2E against merged deployment — **PASS**
+8. no E2E-fixture telemetry after boundary — **PASS**
+9. acceptance suite exposes no 5xx/runtime regression — **PASS**
+10. clean observation boundary recorded — **PASS**
 
 ## Investment gate after repair
 
-The repair itself does not authorize another feature.
+The repair does not authorize another feature.
 
-After the clean boundary:
+Future investment requires post-boundary evidence:
 
-- expand content only if eligible views/search/discovery show repeatable topic demand;
-- improve search only if meaningful clean search volume shows high zero-result rate or weak result CTR;
-- improve category/discovery only if clean content usage exists and internal discovery is demonstrably weak;
-- invest in community/voting only if non-QA authenticated engagement grows;
-- consider ingestion only if demonstrated demand and editorial throughput expose a sourcing bottleneck;
+- expand content only when clean views/search/discovery show repeatable topic demand;
+- improve search only when meaningful clean search volume shows a real zero-result/CTR problem;
+- improve category/discovery only when clean usage demonstrates weak internal discovery;
+- invest in community/voting only when non-QA authenticated engagement grows;
+- consider ingestion only when demand plus editorial throughput exposes a sourcing bottleneck;
 - otherwise keep `NO_BUILD`.
 
-Because Search Console/Bing engine authority remains unavailable, MEASURE-2 also must not infer organic-search acquisition from IndexNow receipt or public search sampling.
+Search Console/Bing authority remains unavailable, so MEASURE-2 must not infer organic-search acquisition from IndexNow receipt or public search sampling.
 
-## Current terminal state
-
-Until post-fix evidence is collected:
+## Terminal state
 
 ```text
-MEASURE_2_INVESTMENT_GATE = BLOCKED_CONTAMINATED_BASELINE
-PRODUCT_FEATURE_INVESTMENT = NO_BUILD
-CLEAN_BASELINE_INTEGRITY_REPAIR = IMPLEMENTING
+MEASURE_2A = SUCCESS / CLOSED
+CLEAN_BASELINE_INTEGRITY_REPAIR = VERIFIED
+CLEAN_BASELINE_START = 2026-08-23T06:04:41.988Z
 LEGACY_UNKNOWN_EVENTS = PRESERVED_NOT_RECLASSIFIED
-POST_FIX_CLEAN_BASELINE = REQUIRED
+POST_BOUNDARY_SYNTHETIC_CONTAMINATION = 0
+MEASURE_2_INVESTMENT_GATE = INSUFFICIENT_CLEAN_EVIDENCE
+PRODUCT_FEATURE_INVESTMENT = NO_BUILD
+OBSERVATION = CONTINUE
 SEARCH_ENGINE_ACQUISITION_ATTRIBUTION = UNAVAILABLE
 ```
