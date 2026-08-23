@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PRODUCTION_E2E_HEADER = 'x-rankingwiki-production-e2e'
+const PRODUCTION_E2E_MARKER = 'readonly-v1'
+
 function requiredCapability(pathname: string) {
   if (pathname === '/admin' || pathname === '/admin/') return 'admin_console_access'
   if (pathname.startsWith('/admin/comments')) return 'moderation_review'
@@ -23,7 +26,19 @@ function applyRobotsHeader(response: NextResponse, request: NextRequest) {
   return response
 }
 
+function suppressReadOnlyProductionE2ETelemetry(request: NextRequest) {
+  if (request.method !== 'POST' || request.nextUrl.pathname !== '/api/measure-1') return null
+  if (request.headers.get(PRODUCTION_E2E_HEADER) !== PRODUCTION_E2E_MARKER) return null
+
+  const response = NextResponse.json({ inserted: false, suppressed: true }, { status: 200 })
+  response.headers.set('X-RankingWiki-Telemetry', 'suppressed-production-e2e')
+  return response
+}
+
 export async function middleware(request: NextRequest) {
+  const suppressedTelemetry = suppressReadOnlyProductionE2ETelemetry(request)
+  if (suppressedTelemetry) return suppressedTelemetry
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
