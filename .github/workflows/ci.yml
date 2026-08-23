@@ -23,6 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify:audit-r1
+      - run: npm run verify:audit-r2
       - run: npm run verify:p1-2
       - run: npm run verify:p1-3
       - run: npm run verify:p1-4
