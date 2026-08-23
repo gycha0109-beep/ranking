@@ -8,7 +8,15 @@ MEASURE-2 asks one question:
 
 > Does current real-user product/discovery evidence justify another product investment now?
 
-Current answer:
+Initial diagnosis before the repair was:
+
+```text
+MEASURE_2_INVESTMENT_GATE = BLOCKED_CONTAMINATED_BASELINE
+POST_FIX_CLEAN_BASELINE = REQUIRED
+PRODUCT_FEATURE_INVESTMENT = NO_BUILD
+```
+
+After the repair, exact merged-Production E2E rerun, and Hosted readback, the current answer is:
 
 ```text
 MEASURE_2A_CLEAN_BASELINE_INTEGRITY = SUCCESS / CLOSED
