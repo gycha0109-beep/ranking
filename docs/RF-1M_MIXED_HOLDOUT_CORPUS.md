@@ -2,11 +2,42 @@
 
 ## Status
 
-`CORPUS_GENERATION_AND_FREEZE_ONLY`
+`CORPUS_FROZEN_PRE_EVALUATION`
 
 This stage creates and seals a fresh RankingWiki-like holdout corpus **before any RF-1M evaluator exists**.
 
 The evaluation stage is intentionally deferred to a separate branch and pull request created only after this corpus is merged into `main`.
+
+## Frozen corpus identity
+
+The first structurally valid pre-evaluation corpus was generated without loading RF-1, Neighborhood, IA-2 identity, or RF-1J policy implementation.
+
+```text
+corpus_id = rf1m-independent-mixed-holdout-v1
+generator_seed = rf1m-independent-mixed-holdout-v1:2026-08-24
+sha256 = 90925ae61ff1978e5c8dd873fb4314d46b2e56faec2ceb7e8b9241fadf4edfda
+evaluation_state = NOT_EXECUTED
+```
+
+Any later mutation of the ranking corpus changes this hash and fails CI.
+
+## Pre-evaluation structural observation
+
+These are corpus-shape facts only. They are **not recommendation outputs**.
+
+```text
+total_rankings = 229
+world_count = 26
+category_count = 15
+subcategory_count = 90
+metric_rankings = 197
+user_vote_rankings = 32
+world_size_range = 4..13
+item_count_range = 3..12
+zero_view_rankings = 129
+```
+
+No candidate depth, Neighborhood tier, IA-2 protected ratio, reorder rate, movement distance, or RF-1 score has been computed at this stage.
 
 ## Purpose
 
@@ -23,7 +54,7 @@ This corpus is not calibrated to produce any desired:
 - movement distance
 - final ranking order
 
-Those values are unknown at corpus-generation time and must not be observed until the evaluator is introduced after the frozen corpus lands on `main`.
+Those values remain unknown until the evaluator is introduced after the frozen corpus lands on `main`.
 
 ## Generator authority boundary
 
@@ -37,7 +68,7 @@ The generator may use only content-world facts needed to construct RankingWiki-s
 - raw engagement state
 - semantic subject/claim/view/version projection
 
-The generator must not import or reference:
+The generator does not import or reference:
 
 - `rf1-core`
 - `rf1-initial-policy-calibration`
@@ -46,7 +77,7 @@ The generator must not import or reference:
 - `rf1-related-adapter`
 - `rf1-shadow`
 
-It must not encode expected rank, expected Neighborhood tier, target candidate depth, or target reorder behavior.
+It does not encode expected rank, expected Neighborhood tier, target candidate depth, or target reorder behavior.
 
 ## World construction
 
@@ -70,12 +101,12 @@ These ranges describe the content generator only. They are not candidate-generat
 1. Commit corpus generator and integrity verifier only.
 2. Run the integrity verifier without loading any recommendation or Neighborhood implementation.
 3. Record the generated corpus SHA-256.
-4. Replace the temporary freeze marker with that exact hash.
+4. Freeze that exact hash in CI.
 5. Re-run full CI.
 6. Merge the corpus-only PR into `main`.
 7. Only then create the separate RF-1M evaluation PR.
 
-Any subsequent corpus mutation changes the hash and fails CI.
+The first structurally valid corpus completed steps 1–4 with hash `90925ae61ff1978e5c8dd873fb4314d46b2e56faec2ceb7e8b9241fadf4edfda`.
 
 ## Evidence interpretation
 
@@ -90,5 +121,13 @@ It is not:
 - user-visible content
 - authority to activate RF-1 publicly
 - authority to modify RF-1J numeric policy
+
+At freeze time:
+
+```text
+recommendation_implementation_imported_by_generator = false
+organic_evidence_claimed = false
+production_activation_authorized = false
+```
 
 Production activation remains explicitly unauthorized.
