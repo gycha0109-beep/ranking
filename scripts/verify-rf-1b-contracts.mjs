@@ -42,6 +42,7 @@ assert(adapterSource.includes("'IA2_PROTECTED' | 'RF1_RERANKED'"), 'adapter must
 assert(adapterSource.includes('contiguous prefix'), 'adapter must fail closed if IA-2 identity authority is not a source prefix')
 assert(adapterSource.includes('contextual Neighborhood evidence'), 'non-identity candidates must retain contextual Neighborhood evidence')
 assert(adapterSource.includes('sourceRank'), 'adapter must retain original source rank')
+assert(adapterSource.includes('sourceRankingId'), 'adapter exposure records must retain source ranking provenance')
 assert(adapterSource.includes('policyBundleVersion'), 'adapter exposure records must retain policy bundle version')
 assert(adapterSource.includes('scoreBreakdown'), 'adapter exposure records must retain RF-1 score breakdown')
 assert(adapterSource.includes("surface: 'related_rankings'"), 'RF-1B must bind evidence to the related-rankings surface')
@@ -49,6 +50,7 @@ assert(adapterSource.includes("surface: 'related_rankings'"), 'RF-1B must bind e
 assert(serverSource.includes('classifyRankingNeighbor'), 'server adapter must recompute contextual Neighborhood evidence from current governed logic')
 assert(serverSource.includes("admin.rpc('get_rf1_candidate_signals'"), 'server adapter must hydrate candidate signals through the governed RF-1 read RPC')
 assert(serverSource.includes("admin.rpc('record_rf1_recommendation_exposures'"), 'server adapter must persist exposure evidence through the governed RF-1 write RPC')
+assert(serverSource.includes('source_ranking_id: record.sourceRankingId'), 'server persistence payload must carry source ranking provenance')
 assert(serverSource.includes('missing RF-1 candidate signal row'), 'missing candidate signal evidence must fail closed')
 assert(serverSource.includes('createAdminClient'), 'RF-1 persistence must remain server-only through the admin client')
 
@@ -176,6 +178,7 @@ assert(merged.candidates[2].sourceRank === 5 && merged.candidates[2].finalRank =
 
 const exposures = adapter.createRf1RelatedExposureRecords({
   recommendationRunId: 'run-fixture',
+  sourceRankingId: 'source-ranking',
   profile: { profileVersion: 'profile-policy-v1', fingerprint: 'rf1-profile-fixture' },
   session: { fingerprint: 'rf1-session-fixture' },
   result: merged,
@@ -184,16 +187,27 @@ const exposures = adapter.createRf1RelatedExposureRecords({
 
 assert(exposures.length === 5, 'one exposure evidence row must be created per final candidate')
 assert(exposures[0].exposureId === 'run-fixture:ranking-1', 'exposure ID must deterministically bind run and ranking')
+assert(exposures[0].sourceRankingId === 'source-ranking', 'exposure evidence must bind the source ranking')
 assert(exposures[0].rankingMode === 'IA2_PROTECTED' && exposures[0].scoreBreakdown === null, 'IA-2 exposure must remain scoreless and explicit')
 assert(exposures[2].rankingMode === 'RF1_RERANKED' && exposures[2].scoreBreakdown.finalScore === 0.7, 'RF-1 exposure must retain component breakdown')
 assert(exposures[2].diversityRelaxations.join(',') === 'subcategory', 'diversity relaxation provenance must persist')
 
 expectThrow(() => adapter.createRf1RelatedExposureRecords({
   recommendationRunId: 'run-fixture',
+  sourceRankingId: 'source-ranking',
   profile: { profileVersion: 'profile-policy-v1', fingerprint: 'wrong-profile' },
   session: { fingerprint: 'rf1-session-fixture' },
   result: merged,
   exposedAt: '2026-08-24T01:00:01.000Z',
 }), 'exposure creation must fail when profile fingerprint does not bind the ranking result')
+
+expectThrow(() => adapter.createRf1RelatedExposureRecords({
+  recommendationRunId: 'run-fixture',
+  sourceRankingId: 'ranking-1',
+  profile: { profileVersion: 'profile-policy-v1', fingerprint: 'rf1-profile-fixture' },
+  session: { fingerprint: 'rf1-session-fixture' },
+  result: merged,
+  exposedAt: '2026-08-24T01:00:01.000Z',
+}), 'exposure creation must reject a self-target source ranking')
 
 console.log('RF-1B persistence and related-adapter contracts: PASS')
