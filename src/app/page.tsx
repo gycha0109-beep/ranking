@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, CalendarDays, Clock3, Flame, Grid3X3, Sparkles } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
-import SearchForm from '@/components/SearchForm'
 import { getHomePresentationData, type HomeFeaturedSlide, type HomeRankingSummary } from '@/lib/queries/home'
 
 export const revalidate = 0
@@ -20,7 +19,7 @@ function RankingVisual({ ranking, className = '' }: { ranking: HomeFeaturedSlide
 
 function ScanPanel({ icon, title, tone, rows }: { icon: React.ReactNode; title: string; tone: string; rows: HomeRankingSummary[] }) {
   return (
-    <div className="min-w-[270px] flex-1 rounded-[16px] border border-[#e3e6ec] bg-white p-4 shadow-[0_8px_24px_rgba(29,46,78,0.04)]">
+    <div className="min-w-[280px] flex-1 p-4 sm:p-5">
       <div className={`flex items-center gap-2 text-sm font-black tracking-[-0.025em] ${tone}`}>{icon}<span>{title}</span></div>
       <div className="mt-3 space-y-2.5">
         {rows.slice(0, 3).map((ranking, index) => (
@@ -90,12 +89,10 @@ export default async function HomePage() {
     <div className="rw-page bg-[#fbfcfe] pb-16 sm:pb-20">
       <section className="rw-container pt-5 sm:pt-7">
         <div className="flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-[1.7rem] font-black tracking-[-0.05em] text-[#141820] sm:text-[2rem]">지금 랭킹 한눈에</h1><p className="mt-1.5 text-xs font-medium text-[#7d8693]">지금 볼 순위와 새 업데이트를 빠르게 훑어보세요.</p></div><Link href="/search?type=ranking" className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe4ec] bg-white px-3.5 py-2 text-[10px] font-black text-[#4d5663]">전체 랭킹 보기 <ArrowRight className="h-3.5 w-3.5" /></Link></div>
-        <div className="mt-4 max-w-2xl"><SearchForm hero /></div>
-        <div className="rw-scroll-row mt-4 flex gap-3 overflow-x-auto pb-2">
+        <div className="rw-scroll-row mt-4 flex overflow-x-auto rounded-[18px] border border-[#e3e6ec] bg-white shadow-[0_8px_24px_rgba(29,46,78,0.035)] [&>*+*]:border-l [&>*+*]:border-[#edf0f4]">
           <ScanPanel icon={<Flame className="h-4 w-4" />} title="지금 볼 랭킹" tone="text-[#ef4444]" rows={featuredSlides.slice(0, 3)} />
-          <ScanPanel icon={<Sparkles className="h-4 w-4" />} title="새로 추가된 랭킹" tone="text-[#2563eb]" rows={recentRankings.slice(0, 3)} />
-          <ScanPanel icon={<Clock3 className="h-4 w-4" />} title="최근 업데이트" tone="text-[#7c3aed]" rows={recentRankings.slice(3, 6)} />
-          <div className="min-w-[270px] flex-1 rounded-[16px] border border-[#e3e6ec] bg-white p-4 shadow-[0_8px_24px_rgba(29,46,78,0.04)]"><div className="flex items-center gap-2 text-sm font-black text-[#0f9f6e]"><Grid3X3 className="h-4 w-4" />카테고리별 랭킹</div><div className="mt-3 space-y-2.5">{categoryLeaders.map((category, index) => <Link key={category.id} href={`/categories/${category.slug}`} className="group flex items-center gap-2.5"><span className="w-4 text-right text-[11px] font-black text-[#9aa2ad]">{index + 1}</span><span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#303743] group-hover:text-[#2563eb]">{category.name}</span><span className="text-[9px] font-black tabular-nums text-[#0f9f6e]">{category.ranking_count}개</span></Link>)}</div></div>
+          <ScanPanel icon={<Sparkles className="h-4 w-4" />} title="새로 업데이트" tone="text-[#6d4aff]" rows={recentRankings.slice(0, 3)} />
+          <div className="min-w-[280px] flex-1 p-4 sm:p-5"><div className="flex items-center gap-2 text-sm font-black text-[#0f9f6e]"><Grid3X3 className="h-4 w-4" />카테고리별 랭킹</div><div className="mt-3 space-y-2.5">{categoryLeaders.map((category, index) => <Link key={category.id} href={`/categories/${category.slug}`} className="group flex items-center gap-2.5"><span className="w-4 text-right text-[11px] font-black text-[#9aa2ad]">{index + 1}</span><span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#303743] group-hover:text-[#2563eb]">{category.name}</span><span className="text-[9px] font-black tabular-nums text-[#0f9f6e]">{category.ranking_count}개</span></Link>)}</div></div>
         </div>
       </section>
 
