@@ -10,6 +10,7 @@ const VIEWER_COOKIE = 'rw_viewer_v1'
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const TARGET_PATTERN = /^\/(rankings|items)\/([^/?#]+)$/
 const CATEGORY_PATTERN = /^\/categories\/([^/?#]+)(?:\/[^/?#]+)?$/
+const VISIBILITY_END_REASONS = new Set(['out_of_view', 'page_hidden', 'page_exit', 'unmount'])
 const SENSITIVE_QUERY_PATTERNS = [
   /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i,
   /(?:https?:\/\/|www\.)/i,
@@ -83,6 +84,20 @@ function normalizePosition(value: unknown) {
 function normalizeResultCount(value: unknown) {
   const count = Number(value)
   return Number.isInteger(count) && count >= 0 && count <= 1000 ? count : null
+}
+
+function normalizeNonNegativeSafeInteger(value: unknown) {
+  const number = Number(value)
+  return Number.isSafeInteger(number) && number >= 0 ? number : null
+}
+
+function normalizeIntersectionRatioPpm(value: unknown) {
+  const number = Number(value)
+  return Number.isInteger(number) && number >= 1 && number <= 1_000_000 ? number : null
+}
+
+function normalizeVisibilityEndReason(value: unknown) {
+  return typeof value === 'string' && VISIBILITY_END_REASONS.has(value) ? value : null
 }
 
 async function resolveTarget(path: string): Promise<Target | null> {
@@ -253,6 +268,11 @@ export async function POST(request: NextRequest) {
     p_source_ranking_id: null,
     p_source_item_id: null,
     p_source_category_id: null,
+    p_observation_id: null,
+    p_visible_duration_ms: null,
+    p_entry_intersection_ratio_ppm: null,
+    p_visibility_end_reason: null,
+    p_recommendation_exposure_id: null,
   }
 
   if (kind === 'search') {
@@ -302,6 +322,14 @@ export async function POST(request: NextRequest) {
     ])
     if (!target || !source || source.discoverySource === 'search') return jsonError('unsupported discovery path', 400)
 
+    if (body.observationId !== undefined) {
+      const observationId = normalizeUuid(body.observationId)
+      if (!observationId || source.discoverySource !== 'related_ranking') {
+        return jsonError('observation correlation requires a related-ranking click', 400)
+      }
+      args.p_observation_id = observationId
+    }
+
     if (body.recommendationExposureId !== undefined) {
       recommendationExposureId = normalizeRecommendationExposureId(body.recommendationExposureId)
       if (!recommendationExposureId) return jsonError('invalid recommendation exposure id', 400)
@@ -317,11 +345,48 @@ export async function POST(request: NextRequest) {
     args.p_source_ranking_id = source.sourceRankingId
     args.p_source_item_id = source.sourceItemId
     args.p_source_category_id = source.sourceCategoryId
+  } else if (kind === 'related_ranking_impression' || kind === 'related_ranking_visibility') {
+    const targetPath = normalizePath(body.targetPath)
+    const sourcePath = normalizePath(body.sourcePath)
+    const observationId = normalizeUuid(body.observationId)
+    const entryIntersectionRatioPpm = normalizeIntersectionRatioPpm(body.entryIntersectionRatioPpm)
+    if (!targetPath || !sourcePath || targetPath === sourcePath || !observationId || entryIntersectionRatioPpm === null) {
+      return jsonError('invalid related-ranking observation', 400)
+    }
+
+    const [target, source] = await Promise.all([
+      resolveTarget(targetPath),
+      resolveSource(sourcePath, targetPath),
+    ])
+    if (!target?.rankingId || !source?.sourceRankingId || source.discoverySource !== 'related_ranking') {
+      return jsonError('related-ranking observation requires a public ranking-to-ranking surface', 400)
+    }
+
+    if (body.recommendationExposureId !== undefined) {
+      recommendationExposureId = normalizeRecommendationExposureId(body.recommendationExposureId)
+      if (!recommendationExposureId) return jsonError('invalid recommendation exposure id', 400)
+    }
+
+    args.p_event_type = kind === 'related_ranking_impression' ? 'content_impression' : 'content_visibility'
+    args.p_ranking_id = target.rankingId
+    args.p_discovery_source = 'related_ranking'
+    args.p_source_ranking_id = source.sourceRankingId
+    args.p_observation_id = observationId
+    args.p_entry_intersection_ratio_ppm = entryIntersectionRatioPpm
+    args.p_recommendation_exposure_id = recommendationExposureId
+
+    if (kind === 'related_ranking_visibility') {
+      const visibleDurationMs = normalizeNonNegativeSafeInteger(body.visibleDurationMs)
+      const visibilityEndReason = normalizeVisibilityEndReason(body.visibilityEndReason)
+      if (visibleDurationMs === null || !visibilityEndReason) return jsonError('invalid raw visibility measurement', 400)
+      args.p_visible_duration_ms = visibleDurationMs
+      args.p_visibility_end_reason = visibilityEndReason
+    }
   } else {
     return jsonError('unsupported event kind', 400)
   }
 
-  if (recommendationExposureId) {
+  if (recommendationExposureId && kind === 'content_discovery_click') {
     const { data, error } = await admin.rpc('record_rf1_related_discovery_click', {
       p_client_event_id: clientEventId,
       p_traffic_class: viewer.trafficClass,
@@ -330,6 +395,7 @@ export async function POST(request: NextRequest) {
       p_ranking_id: args.p_ranking_id,
       p_source_ranking_id: args.p_source_ranking_id,
       p_exposure_id: recommendationExposureId,
+      p_observation_id: args.p_observation_id,
     })
     if (error) {
       console.error('RF-1E attributed telemetry write failed', { code: error.code, eventType: args.p_event_type })
