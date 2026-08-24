@@ -70,6 +70,11 @@ function normalizeUuid(value: unknown) {
   return UUID_PATTERN.test(normalized) ? normalized : null
 }
 
+function normalizeRecommendationExposureId(value: unknown) {
+  if (typeof value !== 'string' || value.length < 1 || value.length > 320 || value.trim() !== value) return null
+  return value
+}
+
 function normalizePosition(value: unknown) {
   const position = Number(value)
   return Number.isInteger(position) && position >= 1 && position <= 100 ? position : null
@@ -229,6 +234,7 @@ export async function POST(request: NextRequest) {
 
   const viewer = await getViewerContext(secret)
   const admin = createAdminClient()
+  let recommendationExposureId: string | null = null
   const args: Record<string, unknown> = {
     p_client_event_id: clientEventId,
     p_event_type: null,
@@ -295,6 +301,15 @@ export async function POST(request: NextRequest) {
       resolveSource(sourcePath, targetPath),
     ])
     if (!target || !source || source.discoverySource === 'search') return jsonError('unsupported discovery path', 400)
+
+    if (body.recommendationExposureId !== undefined) {
+      recommendationExposureId = normalizeRecommendationExposureId(body.recommendationExposureId)
+      if (!recommendationExposureId) return jsonError('invalid recommendation exposure id', 400)
+      if (source.discoverySource !== 'related_ranking' || !target.rankingId || !source.sourceRankingId) {
+        return jsonError('RF-1 exposure attribution requires a ranking-to-ranking discovery click', 400)
+      }
+    }
+
     args.p_event_type = 'content_discovery_click'
     args.p_ranking_id = target.rankingId
     args.p_item_id = target.itemId
@@ -304,6 +319,23 @@ export async function POST(request: NextRequest) {
     args.p_source_category_id = source.sourceCategoryId
   } else {
     return jsonError('unsupported event kind', 400)
+  }
+
+  if (recommendationExposureId) {
+    const { data, error } = await admin.rpc('record_rf1_related_discovery_click', {
+      p_client_event_id: clientEventId,
+      p_traffic_class: viewer.trafficClass,
+      p_viewer_key_hash: viewer.viewerKeyHash,
+      p_occurred_on: viewer.occurredOn,
+      p_ranking_id: args.p_ranking_id,
+      p_source_ranking_id: args.p_source_ranking_id,
+      p_exposure_id: recommendationExposureId,
+    })
+    if (error) {
+      console.error('RF-1E attributed telemetry write failed', { code: error.code, eventType: args.p_event_type })
+      return jsonError('telemetry write failed', 500)
+    }
+    return NextResponse.json(data || { inserted: false, attributed: false }, { status: 200 })
   }
 
   const { data, error } = await admin.rpc('record_product_usage_event', args)
