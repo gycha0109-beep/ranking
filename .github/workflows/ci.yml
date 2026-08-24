@@ -56,6 +56,7 @@ jobs:
       - run: npm run verify:rf-1f
       - run: npm run verify:rf-1g
       - run: npm run verify:rf-1h
+      - run: npm run verify:rf-1i
       - run: npm run verify:ops-1
       - run: npm run verify:public-copy
       - run: npm run verify:content-1
