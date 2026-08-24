@@ -6,7 +6,7 @@ import ts from 'typescript'
 const root = process.cwd()
 const corpusPath = path.join(root, 'src/lib/recommendation/rf1m-mixed-holdout-corpus.ts')
 const publicPagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
-const EXPECTED_CORPUS_SHA256 = 'TO_BE_FROZEN_BEFORE_RF1M_EVALUATION'
+const EXPECTED_CORPUS_SHA256 = '90925ae61ff1978e5c8dd873fb4314d46b2e56faec2ceb7e8b9241fadf4edfda'
 
 function fail(message) {
   console.error(`RF-1M corpus integrity failed: ${message}`)
@@ -127,10 +127,6 @@ const report = {
 console.log('RF-1M pre-evaluation corpus integrity result:')
 console.log(JSON.stringify(report, null, 2))
 
-assert(
-  EXPECTED_CORPUS_SHA256 !== 'TO_BE_FROZEN_BEFORE_RF1M_EVALUATION',
-  `corpus must be frozen before any RF-1M evaluator exists; observed sha256=${corpusSha256}`,
-)
 assert(corpusSha256 === EXPECTED_CORPUS_SHA256, `corpus freeze mismatch: expected ${EXPECTED_CORPUS_SHA256}, observed ${corpusSha256}`)
 
 console.log(`RF-1M mixed holdout corpus integrity: PASS (${corpusSha256.slice(0, 16)})`)
