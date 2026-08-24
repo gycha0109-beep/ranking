@@ -50,7 +50,7 @@ It must not encode expected rank, expected Neighborhood tier, target candidate d
 
 ## World construction
 
-The corpus contains 24 content worlds spanning sports, economy, geography, technology, mobility, travel, education, health, media, local discovery, outdoors, beauty, commerce, games, and culture.
+The corpus contains 26 content worlds spanning sports, economy, geography, technology, mobility, travel, education, health, media, local discovery, outdoors, beauty, commerce, games, and culture.
 
 Each world independently derives from the frozen generator seed:
 
