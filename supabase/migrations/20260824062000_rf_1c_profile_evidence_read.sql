@@ -32,6 +32,15 @@ BEGIN
   END IF;
 
   RETURN QUERY
+  WITH selected_events AS (
+    SELECT e.*
+    FROM public.content_bookmark_events e
+    WHERE e.user_id = v_user_id
+      AND e.changed = TRUE
+      AND e.created_at >= p_since
+    ORDER BY e.created_at DESC, e.id DESC
+    LIMIT v_limit
+  )
   SELECT
     'bookmark:' || e.id::TEXT AS event_id,
     CASE WHEN e.requested_bookmarked THEN 'SAVE'::TEXT ELSE 'UNSAVE'::TEXT END AS event_type,
@@ -45,7 +54,7 @@ BEGIN
       WHEN e.ranking_id IS NOT NULL THEN COALESCE(items.item_ids, ARRAY[]::UUID[])
       ELSE ARRAY[]::UUID[]
     END AS ranking_item_ids
-  FROM public.content_bookmark_events e
+  FROM selected_events e
   LEFT JOIN public.rankings r
     ON r.id = e.ranking_id
     AND r.status = 'published'
@@ -61,16 +70,12 @@ BEGIN
       AND i.moderation_status IN ('clean', 'suggestive')
       AND i.image_moderation_status IN ('clean', 'suggestive')
   ) items ON TRUE
-  WHERE e.user_id = v_user_id
-    AND e.changed = TRUE
-    AND e.created_at >= p_since
-    AND (
-      (e.ranking_id IS NOT NULL AND r.id IS NOT NULL)
-      OR
-      (e.item_id IS NOT NULL AND private.is_public_item(e.item_id))
-    )
-  ORDER BY e.created_at ASC, e.id ASC
-  LIMIT v_limit;
+  WHERE (
+    (e.ranking_id IS NOT NULL AND r.id IS NOT NULL)
+    OR
+    (e.item_id IS NOT NULL AND private.is_public_item(e.item_id))
+  )
+  ORDER BY e.created_at ASC, e.id ASC;
 END;
 $$;
 
