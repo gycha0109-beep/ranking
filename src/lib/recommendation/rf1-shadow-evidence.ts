@@ -33,7 +33,9 @@ export function createRf1ShadowEvidenceRecord(result: Rf1ShadowResult): Rf1Shado
   if (result.sessionFingerprint) assertTrimmed(result.sessionFingerprint, 'sessionFingerprint')
   assertTrimmed(result.seed, 'seed')
   if (!Number.isFinite(Date.parse(result.referenceTime))) throw new Error('referenceTime must be an ISO-compatible timestamp')
-  if (!Number.isInteger(result.candidateCount) || result.candidateCount < 0) throw new Error('candidateCount must be a non-negative integer')
+  if (!Number.isInteger(result.candidateCount) || result.candidateCount < 1) {
+    throw new Error('RF-1F durable SHADOW candidateCount must be a positive integer')
+  }
   if (result.baselineRankingIds.length !== result.candidateCount || result.shadowRankingIds.length !== result.candidateCount) {
     throw new Error('RF-1D candidate count must match baseline and shadow arrays')
   }
@@ -54,6 +56,10 @@ export function createRf1ShadowEvidenceRecord(result: Rf1ShadowResult): Rf1Shado
   })
   assertUnique(baselineRankingIds, 'baselineRankingIds')
   assertUnique(shadowRankingIds, 'shadowRankingIds')
+
+  if (baselineRankingIds.includes(result.currentRankingId) || shadowRankingIds.includes(result.currentRankingId)) {
+    throw new Error('RF-1F source ranking must not appear in SHADOW candidate orderings')
+  }
 
   const baselineSet = [...baselineRankingIds].sort()
   const shadowSet = [...shadowRankingIds].sort()
