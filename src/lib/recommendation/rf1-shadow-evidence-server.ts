@@ -1,5 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { Rf1BehaviorEvent, Rf1PolicyBundle } from './rf1-core'
+import type { Rf1BehaviorEvent } from './rf1-core'
+import {
+  validateRf1ReviewedShadowPolicyHypothesis,
+  type Rf1ReviewedShadowPolicyHypothesis,
+} from './rf1-policy-hypothesis'
 import { createRf1ShadowEvidenceRecord, type Rf1ShadowEvidenceRecord } from './rf1-shadow-evidence'
 import { runRf1RelatedShadow, type Rf1ShadowResult } from './rf1-shadow'
 
@@ -27,6 +31,7 @@ export type Rf1CalibrationEvidenceSummary = {
 }
 
 export type Rf1ShadowCaptureResult = {
+  policyHypothesisFingerprint: string
   shadow: Rf1ShadowResult
   evidence: Rf1ShadowEvidenceRecord
   persistence: unknown
@@ -40,6 +45,9 @@ export async function recordRf1ShadowEvidence(record: Rf1ShadowEvidenceRecord) {
   if (record.baselineRankingIds.includes(record.currentRankingId) || record.shadowRankingIds.includes(record.currentRankingId)) {
     throw new Error('RF-1F durable SHADOW evidence must exclude the source ranking from candidate orderings')
   }
+  if (!record.policyHypothesisFingerprint || record.policyHypothesisFingerprint.trim() !== record.policyHypothesisFingerprint) {
+    throw new Error('RF-1H durable SHADOW evidence requires a reviewed policy hypothesis fingerprint')
+  }
 
   const admin = createAdminClient()
   const { data, error } = await admin.rpc('record_rf1_shadow_run', {
@@ -47,6 +55,7 @@ export async function recordRf1ShadowEvidence(record: Rf1ShadowEvidenceRecord) {
       shadow_run_id: record.shadowRunId,
       current_ranking_id: record.currentRankingId,
       policy_bundle_version: record.policyBundleVersion,
+      policy_hypothesis_fingerprint: record.policyHypothesisFingerprint,
       profile_maturity: record.profileMaturity,
       profile_fingerprint: record.profileFingerprint,
       session_fingerprint: record.sessionFingerprint,
@@ -74,29 +83,46 @@ export async function getRf1CalibrationEvidenceSummary(): Promise<Rf1Calibration
 /**
  * Server-only evidence harness.
  *
- * The caller must supply the complete RF-1 policy bundle. This function has no
- * embedded/default production tuning values and does not authorize activation.
- * It executes SHADOW ordering, converts the result to deterministic durable
- * evidence, persists it through the service-role RPC, then reads readiness.
+ * Durable SHADOW evidence requires an explicitly reviewed SHADOW-only policy
+ * hypothesis. The hypothesis contains the complete caller-supplied RF-1 policy,
+ * per-family rationale, evidence-document references, and a deterministic
+ * fingerprint of the actual numeric policy content. It cannot authorize public
+ * activation. No default production tuning values are embedded here.
  */
 export async function runAndRecordRf1RelatedShadowEvidence(input: {
   currentRanking: any
   referenceTime: string
   seed: string
-  policy: Rf1PolicyBundle
+  hypothesis: Rf1ReviewedShadowPolicyHypothesis
   sessionEvents?: Rf1BehaviorEvent[]
   profileEventLimit?: number
 }): Promise<Rf1ShadowCaptureResult> {
-  const shadow = await runRf1RelatedShadow(input)
+  const reviewedHypothesis = validateRf1ReviewedShadowPolicyHypothesis(input.hypothesis)
+  const shadow = await runRf1RelatedShadow({
+    currentRanking: input.currentRanking,
+    referenceTime: input.referenceTime,
+    seed: input.seed,
+    policy: reviewedHypothesis.policy,
+    sessionEvents: input.sessionEvents,
+    profileEventLimit: input.profileEventLimit,
+  })
   if (shadow.candidateCount < 1) {
     throw new Error('RF-1F will not persist an empty SHADOW candidate ordering as evidence')
   }
 
-  const evidence = createRf1ShadowEvidenceRecord(shadow)
+  if (shadow.policyBundleVersion !== reviewedHypothesis.policy.policyBundleVersion) {
+    throw new Error('RF-1H SHADOW result policy version must match the reviewed hypothesis')
+  }
+
+  const evidence = createRf1ShadowEvidenceRecord(
+    shadow,
+    reviewedHypothesis.hypothesisFingerprint,
+  )
   const persistence = await recordRf1ShadowEvidence(evidence)
   const readiness = await getRf1CalibrationEvidenceSummary()
 
   return {
+    policyHypothesisFingerprint: reviewedHypothesis.hypothesisFingerprint,
     shadow,
     evidence,
     persistence,
