@@ -288,13 +288,14 @@ export function canonicalStringify(value: unknown) {
 
 export function stableFingerprint(value: unknown) {
   const text = canonicalStringify(value)
-  let hash = 0xcbf29ce484222325n
-  const prime = 0x100000001b3n
+  let first = 2166136261
+  let second = 2246822519
   for (const character of text) {
-    hash ^= BigInt(character.codePointAt(0) ?? 0)
-    hash = BigInt.asUintN(64, hash * prime)
+    const codePoint = character.codePointAt(0) ?? 0
+    first = Math.imul(first ^ codePoint, 16777619) >>> 0
+    second = Math.imul(second ^ codePoint, 1597334677) >>> 0
   }
-  return `rf1-${hash.toString(16).padStart(16, '0')}`
+  return `rf1-${first.toString(16).padStart(8, '0')}${second.toString(16).padStart(8, '0')}`
 }
 
 export function featureKey(feature: Rf1Feature) {
