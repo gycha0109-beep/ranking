@@ -51,12 +51,17 @@ export async function runRf1RelatedShadow(input: {
   const referenceTime = new Date(referenceMs).toISOString()
   const profileSince = new Date(referenceMs - policy.behavior.lookbackMs).toISOString()
   const exposureSince = new Date(referenceMs - policy.score.lowExposureWindowMs).toISOString()
+  const requestedProfileLimit = input.profileEventLimit ?? policy.behavior.maximumEvents
+  if (!Number.isInteger(requestedProfileLimit) || requestedProfileLimit < 1) {
+    throw new Error('RF-1 SHADOW profileEventLimit must be a positive integer')
+  }
+  const profileEventLimit = Math.min(requestedProfileLimit, policy.behavior.maximumEvents, 1000)
 
   const [relatedRankings, profileEvents] = await Promise.all([
     getRelatedRankings(input.currentRanking),
     loadOptionalMyRf1ProfileEvents({
       since: profileSince,
-      limit: input.profileEventLimit,
+      limit: profileEventLimit,
     }),
   ])
 
