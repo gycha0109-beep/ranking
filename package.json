@@ -37,6 +37,7 @@
     "verify:ia-2m": "node scripts/verify-ia-2m-organic-evidence-readiness.mjs",
     "verify:rf-1": "node scripts/verify-rf-1-contracts.mjs",
     "verify:rf-1b": "node scripts/verify-rf-1b-contracts.mjs",
+    "verify:rf-1c": "node scripts/verify-rf-1c-contracts.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
