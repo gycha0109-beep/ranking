@@ -6,6 +6,7 @@ const root = process.cwd()
 const calibrationPath = path.join(root, 'src/lib/recommendation/rf1-calibration-evidence.ts')
 const corePath = path.join(root, 'src/lib/recommendation/rf1-core.ts')
 const shadowServerPath = path.join(root, 'src/lib/recommendation/rf1-shadow-evidence-server.ts')
+const hypothesisPath = path.join(root, 'src/lib/recommendation/rf1-policy-hypothesis.ts')
 const rankingPagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
 
 function fail(message) {
@@ -27,13 +28,14 @@ function expectThrow(fn, message) {
   assert(threw, message)
 }
 
-for (const requiredPath of [calibrationPath, corePath, shadowServerPath, rankingPagePath]) {
+for (const requiredPath of [calibrationPath, corePath, shadowServerPath, hypothesisPath, rankingPagePath]) {
   assert(fs.existsSync(requiredPath), `${path.relative(root, requiredPath)} must exist`)
 }
 
 const source = fs.readFileSync(calibrationPath, 'utf8')
 const coreSource = fs.readFileSync(corePath, 'utf8')
 const shadowServerSource = fs.readFileSync(shadowServerPath, 'utf8')
+const hypothesisSource = fs.readFileSync(hypothesisPath, 'utf8')
 const rankingPageSource = fs.readFileSync(rankingPagePath, 'utf8')
 
 assert(source.includes("productionPolicyAuthorized: false"), 'RF-1G worksheet must never authorize production policy')
@@ -57,7 +59,9 @@ assert(!source.includes('rankRf1Feed('), 'calibration worksheet construction mus
 assert(!source.includes('recordRf1ShadowEvidence('), 'calibration worksheet construction must not fabricate SHADOW evidence')
 assert(!source.includes('recordRf1RelatedExposureRecords('), 'calibration worksheet construction must not fabricate exposure evidence')
 assert(coreSource.includes('export type Rf1PolicyBundle'), 'governed RF-1 policy bundle contract must remain defined in the core')
-assert(shadowServerSource.includes('policy: Rf1PolicyBundle'), 'actual SHADOW capture must continue requiring a caller-supplied policy bundle')
+assert(hypothesisSource.includes('policy: Rf1PolicyBundle'), 'reviewed SHADOW hypothesis must still contain the complete caller-supplied RF-1 policy bundle')
+assert(shadowServerSource.includes('hypothesis: Rf1ReviewedShadowPolicyHypothesis'), 'actual durable SHADOW capture must require an explicit reviewed hypothesis rather than deriving policy from RF-1G')
+assert(shadowServerSource.includes('policy: reviewedHypothesis.policy'), 'actual SHADOW execution must receive the exact complete policy from the reviewed hypothesis')
 assert(!rankingPageSource.includes('buildRf1CalibrationWorksheet'), 'public ranking page must remain outside RF-1G calibration logic')
 
 const transpiled = ts.transpileModule(source, {
