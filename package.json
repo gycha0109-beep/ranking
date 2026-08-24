@@ -12,6 +12,7 @@
     "verify:audit-r1": "node scripts/verify-audit-r1-contracts.mjs",
     "verify:audit-r2": "node scripts/verify-audit-r2-contracts.mjs",
     "verify:audit-r3": "node scripts/verify-audit-r3-auth-contracts.mjs",
+    "verify:audit-r4": "node scripts/verify-audit-r4-contracts.mjs",
     "verify:p1-2": "node scripts/verify-p1-2-contracts.mjs",
     "verify:p1-3": "node scripts/verify-p1-3-contracts.mjs",
     "verify:p1-4": "node scripts/verify-p1-4-contracts.mjs",
