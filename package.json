@@ -48,6 +48,7 @@
     "verify:rf-1k": "node scripts/verify-rf-1k-contracts.mjs",
     "verify:rf-1l": "node scripts/verify-rf-1l-evaluation-corpus.mjs",
     "verify:rf-1m-corpus": "node scripts/verify-rf-1m-corpus-integrity.mjs",
+    "verify:rf-1m": "node scripts/verify-rf-1m-mixed-holdout.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
