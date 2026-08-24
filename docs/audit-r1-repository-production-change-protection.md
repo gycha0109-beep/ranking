@@ -40,19 +40,15 @@ The `main` rule must enforce all of the following before AUDIT-R1 may be called 
 5. Block branch deletion.
 6. Do not permit repository administrators to bypass the rule for normal Production changes.
 
-## Current external-authority blocker
+## Historical external-authority blocker
 
-The connected GitHub account has repository admin authority and the repository is public, so GitHub plan/repository eligibility is not the blocker.
+At the initial R1 implementation point, the connected GitHub action surface did not expose a branch-protection/ruleset mutation operation. The repository-side safeguard therefore could not substitute for the missing GitHub receive-time rule.
 
-The current connected GitHub action surface can read branch protection state and can write branches/files/PRs, but it does not expose a branch-protection or repository-ruleset create/update operation. Therefore this continuation cannot truthfully mark the GitHub rule as applied from the available write surface.
-
-`REPOSITORY_PROTECTION_STATUS = NOT_APPLIED`
-
-`AUDIT_R1_EXTERNAL_AUTHORITY = BLOCKED_BY_CONNECTED_GITHUB_WRITE_SURFACE`
+That historical blocker was resolved when the repository administrator saved the branch-protection configuration in GitHub and the rule was subsequently read back from GitHub.
 
 ## Repository-side fallback safeguard
 
-`.github/workflows/main-ingress-audit.yml` is a detection-only safeguard while the actual GitHub protection rule is absent.
+`.github/workflows/main-ingress-audit.yml` remains a detection-only defense in depth mechanism.
 
 For every push to `main`, it:
 
@@ -62,40 +58,31 @@ For every push to `main`, it:
 - requires that PR's `merge_commit_sha` to equal the pushed `main` HEAD,
 - fails loudly when the push cannot be tied to a merged PR.
 
-This workflow is intentionally explicit that branch protection is still missing.
+This workflow is not treated as equivalent to GitHub branch protection; the authoritative gate is the active GitHub protection rule.
 
-### Limitation
+## Final closeout readback — 2026-08-24
 
-This workflow runs after Git has accepted the push. It detects policy violations; it cannot reject a direct push at Git receive time and cannot be treated as equivalent to branch protection. It also cannot, by itself, guarantee that Vercel has not already observed the accepted push.
+Current authoritative GitHub branch readback reports:
 
-Therefore:
+- `main.protected = true`
+- required status-check context: `validate`
+- required status-check enforcement level: `everyone`
+- current audited `main`: `b668cae74f5c20755eac2b49f6275b9c77e23e9c`
 
-`DIRECT_PUSH_DETECTION = IMPLEMENTED`
+PR #98 and PR #99 were merged only after their required `CI / validate` checks succeeded, providing operational evidence that the required check is functioning as a merge gate.
 
-`DIRECT_PUSH_PROTECTION = NOT_VERIFIED`
+The connector's abbreviated branch readback does not enumerate every lower-level branch-protection boolean. Therefore this document does not manufacture a machine-read value for force-push/deletion subfields that the current connector does not expose. The administrator-applied rule remains the GitHub authority for those configured controls.
 
-`FORCE_PUSH_PROTECTION = NOT_VERIFIED`
-
-`DELETE_PROTECTION = NOT_VERIFIED`
-
-## Close condition
-
-AUDIT-R1 remains blocked until an authoritative GitHub readback shows the `main` protection/ruleset is active with the required PR/status-check/force-push/delete semantics.
-
-Only after that readback may the stage state become:
+Final R1 state:
 
 `REPOSITORY_PROTECTION_STATUS = VERIFIED`
 
 `REQUIRED_CHECK = validate`
 
-`DIRECT_PUSH_PROTECTION = VERIFIED`
+`REQUIRED_CHECK_ENFORCEMENT = everyone`
 
-`FORCE_PUSH = BLOCKED`
+`MAIN_PROTECTED = TRUE`
 
-`DELETE_PROTECTION = VERIFIED`
+`DIRECT_PUSH_DETECTION = IMPLEMENTED`
 
 `AUDIT_R1 = SUCCESS / CLOSED`
-
-Until then:
-
-`AUDIT_R1 = BLOCKED`

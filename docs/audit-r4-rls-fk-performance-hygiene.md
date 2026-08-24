@@ -129,17 +129,35 @@ These counts are a regression witness. The same values must be observed after th
 
 The migration deliberately contains no `DROP INDEX` statement and creates only the two justified indexes above.
 
-## Required closeout verification
+## Closeout verification
 
-AUDIT-R4 is not closed by the migration file alone. After CI and merge:
+After CI and merge, the migration was applied to the hosted Supabase project and the scoped acceptance contract was read back.
 
-1. Apply the migration to the hosted Supabase project.
-2. Read `pg_policies` and verify the targeted Auth calls use initplan-safe scalar subqueries.
-3. Verify the targeted mutation authorities no longer use `cmd = ALL` and explicit mutation policies exist.
-4. Re-run the anonymous visibility witness.
-5. Verify both ranking child FK indexes exist.
-6. Re-run Performance Advisor and confirm the targeted warnings disappeared while accepting justified residual warnings.
-7. Run regression CI and Production readback.
+Hosted migration history records:
+
+- version `20260824004213`
+- name `audit_r4_rls_fk_performance_hygiene`
+
+The post-migration verification established:
+
+1. targeted Auth helper policies use initplan-safe scalar subqueries;
+2. targeted mutation authorities no longer rely on overlapping `cmd = ALL` read participation;
+3. the anonymous visibility witness remained `6 / 9 / 16 / 55 / 76 / 16 / 29` for categories, subcategories, rankings, items, ranking entries, ranking criteria, and ranking sources respectively;
+4. both targeted indexes exist in the hosted database;
+5. current Performance Advisor no longer reports `auth_rls_initplan` or `multiple_permissive_policies` for the remediated scope;
+6. current Performance Advisor no longer reports the `ranking_criteria.ranking_id` or `ranking_sources.ranking_id` foreign keys as unindexed;
+7. unrelated low-volume `unindexed_foreign_keys` and `unused_index` notices remain intentionally visible rather than being optimized away without evidence.
+
+The two newly added ranking child indexes can currently appear under `unused_index`. At the present low row volume this does not invalidate their query-path justification and is not a reason to delete them.
+
+R4 repository/Production authority:
+
+- PR #99
+- merged `main` SHA: `b668cae74f5c20755eac2b49f6275b9c77e23e9c`
+- required `CI / validate`: passed before merge
+- Vercel Production deployment: `dpl_5iUzZenjT2rNstLisYSpL7EGYCTh`
+- Production state: `READY`
+- current 24-hour runtime error readback: `0`
 
 ## Non-goals
 
@@ -149,6 +167,18 @@ AUDIT-R4 is not closed by the migration file alone. After CI and merge:
 - No advisor-score maximization.
 - No speculative indexing of every FK.
 - No deletion of indexes solely because the advisor reports them unused.
+
+Final R4 state:
+
+`TARGETED_RLS_OVERHEAD = REMEDIATED / VERIFIED`
+
+`TARGETED_DUPLICATE_PERMISSIVE_POLICIES = REMEDIATED / VERIFIED`
+
+`TARGETED_FK_INDEXES = PRESENT / VERIFIED`
+
+`RESIDUAL_ADVISOR_INFO = ACCEPTED_BY_SCOPE`
+
+`AUDIT_R4 = SUCCESS / CLOSED`
 
 `PRODUCT_FEATURE_INVESTMENT = NO_BUILD`
 
