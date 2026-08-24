@@ -1,73 +1,32 @@
 import Link from 'next/link'
-import {
-  ArrowRight,
-  CalendarDays,
-  Clock3,
-  Flame,
-  Grid3X3,
-  Sparkles,
-  Trophy,
-} from 'lucide-react'
+import { ArrowRight, CalendarDays, Clock3, Flame, Grid3X3, Sparkles } from 'lucide-react'
 import SafeImage from '@/components/SafeImage'
+import SearchForm from '@/components/SearchForm'
 import { getHomePresentationData, type HomeFeaturedSlide, type HomeRankingSummary } from '@/lib/queries/home'
 
 export const revalidate = 0
 
-function formatDate(value: string | null) {
-  if (!value) return '날짜 확인'
-  return new Date(value).toLocaleDateString('ko-KR')
-}
-
-function formatShortDate(value: string | null) {
+function shortDate(value: string | null) {
   if (!value) return '업데이트'
   return new Date(value).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
 }
 
 function RankingVisual({ ranking, className = '' }: { ranking: HomeFeaturedSlide; className?: string }) {
   if (!ranking.visual_image_url) {
-    return (
-      <div
-        className={`absolute inset-0 bg-[linear-gradient(135deg,#dfe9ff_0%,#eff4ff_48%,#e6e0ff_100%)] ${className}`}
-        aria-hidden="true"
-      />
-    )
+    return <div className={`absolute inset-0 bg-[linear-gradient(135deg,#dfe9ff_0%,#f3f6ff_50%,#eee8ff_100%)] ${className}`} aria-hidden="true" />
   }
-
-  return (
-    <SafeImage
-      src={ranking.visual_image_url}
-      alt=""
-      fallbackSrc="/globe.svg"
-      className={`absolute inset-0 h-full w-full object-cover ${className}`}
-    />
-  )
+  return <SafeImage src={ranking.visual_image_url} alt="" fallbackSrc="/globe.svg" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
 }
 
-function FlowPanel({
-  icon,
-  title,
-  accent,
-  rankings,
-}: {
-  icon: React.ReactNode
-  title: string
-  accent: string
-  rankings: HomeRankingSummary[]
-}) {
+function ScanPanel({ icon, title, tone, rows }: { icon: React.ReactNode; title: string; tone: string; rows: HomeRankingSummary[] }) {
   return (
     <div className="min-w-[270px] flex-1 rounded-[16px] border border-[#e3e6ec] bg-white p-4 shadow-[0_8px_24px_rgba(29,46,78,0.04)]">
-      <div className="flex items-center justify-between gap-3">
-        <div className={`flex items-center gap-2 text-sm font-black tracking-[-0.025em] ${accent}`}>
-          {icon}
-          <span>{title}</span>
-        </div>
-        <Link href="/search?type=ranking" className="text-[10px] font-black text-[#9aa2ad] hover:text-[#2563eb]">더 보기</Link>
-      </div>
+      <div className={`flex items-center gap-2 text-sm font-black tracking-[-0.025em] ${tone}`}>{icon}<span>{title}</span></div>
       <div className="mt-3 space-y-2.5">
-        {rankings.slice(0, 3).map((ranking, index) => (
+        {rows.slice(0, 3).map((ranking, index) => (
           <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group flex min-w-0 items-center gap-2.5">
             <span className="w-4 shrink-0 text-right text-[11px] font-black tabular-nums text-[#9aa2ad]">{index + 1}</span>
-            <span className="min-w-0 flex-1 truncate text-[12px] font-black tracking-[-0.02em] text-[#303743] group-hover:text-[#2563eb]">{ranking.title}</span>
+            <span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#303743] group-hover:text-[#2563eb]">{ranking.title}</span>
             <span className="shrink-0 text-[9px] font-bold text-[#a0a7b0]">{ranking.categories?.name || '랭킹'}</span>
           </Link>
         ))}
@@ -77,250 +36,74 @@ function FlowPanel({
 }
 
 function TodayPick({ ranking }: { ranking: HomeFeaturedSlide }) {
-  const first = ranking.entries.find((entry) => entry.position === 1)
-  const second = ranking.entries.find((entry) => entry.position === 2)
-  const third = ranking.entries.find((entry) => entry.position === 3)
-
+  const [first, second, third] = ranking.entries
   return (
-    <Link
-      href={`/rankings/${ranking.slug}`}
-      className="group relative min-h-[360px] overflow-hidden rounded-[20px] border border-[#e0e4ec] bg-[#eef3ff] shadow-[0_16px_40px_rgba(36,56,96,0.09)] sm:min-h-[410px]"
-    >
+    <Link href={`/rankings/${ranking.slug}`} className="group relative min-h-[380px] overflow-hidden rounded-[20px] border border-[#e0e4ec] bg-[#eef3ff] shadow-[0_16px_40px_rgba(36,56,96,0.09)]">
       <RankingVisual ranking={ranking} className="transition duration-500 group-hover:scale-[1.02]" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.98)_0%,rgba(255,255,255,0.93)_46%,rgba(255,255,255,0.20)_78%,rgba(255,255,255,0.08)_100%)]" />
-      <div className="relative z-10 flex min-h-[360px] max-w-[720px] flex-col p-5 sm:min-h-[410px] sm:p-7">
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-[#6d4aff] px-3 py-1.5 text-[10px] font-black text-white">TODAY&apos;S PICK</span>
-          <span className="text-[10px] font-black text-[#77808d]">{ranking.categories?.name || '랭킹'}</span>
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.98)_0%,rgba(255,255,255,0.93)_48%,rgba(255,255,255,0.18)_82%)]" />
+      <div className="relative z-10 flex min-h-[380px] max-w-[720px] flex-col p-5 sm:p-7">
+        <div className="flex items-center gap-2"><span className="rounded-full bg-[#6d4aff] px-3 py-1.5 text-[10px] font-black text-white">TODAY&apos;S PICK</span><span className="text-[10px] font-black text-[#7f8793]">{ranking.categories?.name || '랭킹'}</span></div>
+        <div className="mt-6 grid grid-cols-[auto_minmax(0,1fr)] gap-5">
+          <span className="rw-rank-number text-[6rem] font-black leading-[0.8] tracking-[-0.08em] text-[#6d4aff]">01</span>
+          <div className="min-w-0 pt-1"><p className="text-[11px] font-black text-[#7f8793]">오늘 먼저 볼 1위</p><h2 className="mt-2 line-clamp-2 text-[1.65rem] font-black leading-[1.15] tracking-[-0.045em] text-[#171a1f] sm:text-[2rem]">{ranking.title}</h2><p className="mt-5 truncate text-[1.45rem] font-black tracking-[-0.04em] text-[#111827]">{first?.item.title || '1위 확인하기'}</p></div>
         </div>
-
-        <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-5">
-          <span className="rw-rank-number text-[5.7rem] font-black leading-[0.8] tracking-[-0.08em] text-[#6d4aff] sm:text-[7rem]">01</span>
-          <div className="min-w-0 pt-1">
-            <p className="text-[11px] font-black text-[#7f8793]">오늘 먼저 볼 1위</p>
-            <h2 className="mt-2 line-clamp-2 text-[1.55rem] font-black leading-[1.18] tracking-[-0.045em] text-[#171a1f] sm:text-[2rem]">{ranking.title}</h2>
-            <p className="mt-5 truncate text-[1.35rem] font-black tracking-[-0.04em] text-[#111827] sm:text-[1.75rem]">{first?.item.title || '1위 확인하기'}</p>
-            {first?.item.brand_or_creator ? <p className="mt-1 text-xs font-bold text-[#7b8491]">{first.item.brand_or_creator}</p> : null}
-          </div>
-        </div>
-
         <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-2">
-          {[second, third].filter(Boolean).map((entry) => (
-            <div key={entry!.position} className="flex min-w-0 items-center gap-3 rounded-[12px] border border-white/90 bg-white/88 px-3.5 py-3 shadow-sm backdrop-blur-sm">
-              <span className="rw-rank-number text-2xl font-black text-[#2563eb]">{String(entry!.position).padStart(2, '0')}</span>
-              <span className="truncate text-xs font-black text-[#303743]">{entry!.item.title}</span>
-            </div>
-          ))}
+          {[second, third].filter(Boolean).map((entry) => <div key={entry!.position} className="flex items-center gap-3 rounded-[12px] border border-white/90 bg-white/88 px-3.5 py-3 shadow-sm"><span className="rw-rank-number text-2xl font-black text-[#2563eb]">{String(entry!.position).padStart(2, '0')}</span><span className="truncate text-xs font-black text-[#303743]">{entry!.item.title}</span></div>)}
         </div>
       </div>
-      <span className="absolute bottom-5 right-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/92 px-3.5 py-2 text-[10px] font-black text-[#2f3743] shadow-sm backdrop-blur-sm sm:bottom-7 sm:right-7">
-        전체 랭킹 보기 <ArrowRight className="h-3.5 w-3.5" />
-      </span>
+      <span className="absolute bottom-6 right-6 z-20 inline-flex items-center gap-1 rounded-full bg-white/92 px-3.5 py-2 text-[10px] font-black text-[#303743]">전체 랭킹 보기 <ArrowRight className="h-3.5 w-3.5" /></span>
     </Link>
   )
 }
 
-function TopThreeCard({ ranking }: { ranking: HomeFeaturedSlide }) {
+function TopThree({ ranking }: { ranking: HomeFeaturedSlide }) {
   return (
-    <Link href={`/rankings/${ranking.slug}`} className="group overflow-hidden rounded-[18px] border border-[#e3e6ec] bg-white shadow-[0_10px_30px_rgba(29,46,78,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(29,46,78,0.08)]">
-      <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
-        <div className="min-w-0">
-          <p className="text-[10px] font-black text-[#7f8793]">TOP 3 한눈에</p>
-          <h3 className="mt-1 truncate text-sm font-black tracking-[-0.025em] text-[#252a32]">{ranking.title}</h3>
-        </div>
-        <ArrowRight className="h-4 w-4 text-[#a2a9b2] transition group-hover:translate-x-0.5 group-hover:text-[#2563eb]" />
-      </div>
-      <div className="grid min-h-[260px] grid-cols-[1.05fr_0.95fr]">
-        <div className="p-5">
-          <div className="space-y-4">
-            {ranking.entries.slice(0, 3).map((entry) => (
-              <div key={entry.position} className="flex min-w-0 items-center gap-3">
-                <span className={`rw-rank-number w-8 shrink-0 text-2xl font-black ${entry.position === 1 ? 'text-[#6d4aff]' : 'text-[#8e98a6]'}`}>{String(entry.position).padStart(2, '0')}</span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-[#262c35]">{entry.item.title}</p>
-                  {entry.item.brand_or_creator ? <p className="mt-0.5 truncate text-[10px] font-bold text-[#98a0aa]">{entry.item.brand_or_creator}</p> : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="relative overflow-hidden bg-[#eef2f8]">
-          <RankingVisual ranking={ranking} className="transition duration-500 group-hover:scale-[1.04]" />
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white/10" />
-        </div>
+    <Link href={`/rankings/${ranking.slug}`} className="group overflow-hidden rounded-[18px] border border-[#e3e6ec] bg-white shadow-[0_10px_30px_rgba(29,46,78,0.05)]">
+      <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4"><div className="min-w-0"><p className="text-[10px] font-black text-[#8a929d]">TOP 3 한눈에</p><h3 className="mt-1 truncate text-sm font-black text-[#252a32]">{ranking.title}</h3></div><ArrowRight className="h-4 w-4 text-[#a2a9b2]" /></div>
+      <div className="grid min-h-[280px] grid-cols-[1.05fr_0.95fr]">
+        <div className="space-y-4 p-5">{ranking.entries.slice(0, 3).map((entry) => <div key={entry.position} className="flex min-w-0 items-center gap-3"><span className={`rw-rank-number w-8 text-2xl font-black ${entry.position === 1 ? 'text-[#6d4aff]' : 'text-[#8e98a6]'}`}>{String(entry.position).padStart(2, '0')}</span><p className="truncate text-sm font-black text-[#262c35]">{entry.item.title}</p></div>)}</div>
+        <div className="relative overflow-hidden bg-[#eef2f8]"><RankingVisual ranking={ranking} className="transition duration-500 group-hover:scale-[1.04]" /></div>
       </div>
     </Link>
   )
 }
 
-function SurpriseCard({ ranking }: { ranking: HomeFeaturedSlide }) {
+function AnotherNumberOne({ ranking }: { ranking: HomeFeaturedSlide }) {
   const first = ranking.entries[0]
   return (
-    <Link href={`/rankings/${ranking.slug}`} className="group relative min-h-[300px] overflow-hidden rounded-[18px] border border-[#e9e0fb] bg-[#fbf8ff] p-5 shadow-[0_10px_30px_rgba(91,61,150,0.05)] sm:p-6">
-      <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[#eadfff] blur-2xl" />
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f0e8ff] px-3 py-1.5 text-[10px] font-black text-[#7c3aed]"><Sparkles className="h-3.5 w-3.5" /> 또 다른 1위</span>
-          <ArrowRight className="h-4 w-4 text-[#a397b5] transition group-hover:translate-x-0.5 group-hover:text-[#7c3aed]" />
-        </div>
-        <p className="mt-5 text-[11px] font-black text-[#9a90a8]">{ranking.categories?.name || '랭킹'} · {ranking.title}</p>
-        <div className="mt-4 flex items-end gap-3">
-          <span className="rw-rank-number text-[4.4rem] font-black leading-none text-[#8b5cf6]">01</span>
-          <p className="min-w-0 pb-1 text-[1.5rem] font-black leading-tight tracking-[-0.04em] text-[#211a2d]">{first?.item.title || '1위 확인하기'}</p>
-        </div>
-        {ranking.summary ? <p className="mt-auto line-clamp-3 pt-5 text-xs font-medium leading-5 text-[#756d80]">{ranking.summary}</p> : <p className="mt-auto pt-5 text-xs font-bold text-[#8b8492]">왜 1위인지 근거와 전체 순위를 확인해보세요.</p>}
-      </div>
+    <Link href={`/rankings/${ranking.slug}`} className="group relative min-h-[300px] overflow-hidden rounded-[18px] border border-[#e9e0fb] bg-[#fbf8ff] p-6 shadow-[0_10px_30px_rgba(91,61,150,0.05)]">
+      <div className="relative z-10 flex h-full flex-col"><span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#f0e8ff] px-3 py-1.5 text-[10px] font-black text-[#7c3aed]"><Sparkles className="h-3.5 w-3.5" /> 또 다른 1위</span><p className="mt-5 text-[11px] font-black text-[#9a90a8]">{ranking.categories?.name || '랭킹'} · {ranking.title}</p><div className="mt-4 flex items-end gap-3"><span className="rw-rank-number text-[4.5rem] font-black leading-none text-[#8b5cf6]">01</span><p className="min-w-0 pb-1 text-[1.45rem] font-black leading-tight tracking-[-0.04em] text-[#211a2d]">{first?.item.title || '1위 확인하기'}</p></div><p className="mt-auto pt-5 text-xs font-bold leading-5 text-[#8b8492]">전체 순위와 선정 근거를 바로 확인해보세요.</p></div>
     </Link>
-  )
-}
-
-function RankingList({ rankings }: { rankings: HomeRankingSummary[] }) {
-  return (
-    <div className="overflow-hidden rounded-[18px] border border-[#e3e6ec] bg-white shadow-[0_10px_30px_rgba(29,46,78,0.04)]">
-      <div className="flex items-center justify-between gap-4 border-b border-[#edf0f4] px-5 py-4">
-        <div>
-          <p className="text-[10px] font-black text-[#8a929d]">SCAN & OPEN</p>
-          <h2 className="mt-1 text-lg font-black tracking-[-0.035em] text-[#171a1f]">지금 볼 랭킹</h2>
-        </div>
-        <Link href="/search?type=ranking" className="inline-flex items-center gap-1 text-[10px] font-black text-[#737d8a] hover:text-[#2563eb]">전체 보기 <ArrowRight className="h-3.5 w-3.5" /></Link>
-      </div>
-      <div className="divide-y divide-[#edf0f4]">
-        {rankings.slice(0, 8).map((ranking, index) => (
-          <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 px-5 py-3.5 transition hover:bg-[#f8faff]">
-            <span className={`rw-rank-number text-lg font-black ${index < 3 ? 'text-[#6d4aff]' : 'text-[#9aa2ad]'}`}>{String(index + 1).padStart(2, '0')}</span>
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-black tracking-[-0.02em] text-[#2a3038] group-hover:text-[#2563eb]">{ranking.title}</p>
-              <p className="mt-1 truncate text-[9px] font-bold text-[#a0a7b0]">{ranking.categories?.name || '랭킹'}{ranking.subcategories?.name ? ` · ${ranking.subcategories.name}` : ''}</p>
-            </div>
-            <span className="shrink-0 text-[9px] font-bold tabular-nums text-[#9aa2ad]">{formatShortDate(ranking.published_at || ranking.updated_at)}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
   )
 }
 
 export default async function HomePage() {
   const { featuredSlides, recentRankings, categories } = await getHomePresentationData()
-  const populatedCategories = categories.filter((category) => category.ranking_count > 0)
-  const visibleCategories = (populatedCategories.length > 0 ? populatedCategories : categories).slice(0, 9)
+  const populated = categories.filter((category) => category.ranking_count > 0)
+  const visibleCategories = (populated.length ? populated : categories).slice(0, 9)
+  const categoryLeaders = [...populated].sort((a, b) => b.ranking_count - a.ranking_count).slice(0, 3)
   const hero = featuredSlides[0]
   const topThree = featuredSlides[1]
-  const surprise = featuredSlides[2] || featuredSlides[1]
-  const fresh = recentRankings.slice(0, 3)
-  const nextFresh = recentRankings.slice(3, 6)
-  const categoryLeaders = [...populatedCategories].sort((a, b) => b.ranking_count - a.ranking_count).slice(0, 3)
+  const another = featuredSlides[2] || featuredSlides[1]
 
   return (
     <div className="rw-page bg-[#fbfcfe] pb-16 sm:pb-20">
       <section className="rw-container pt-5 sm:pt-7">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[1.65rem] font-black tracking-[-0.05em] text-[#141820] sm:text-[2rem]">지금 랭킹 한눈에</h1>
-              <span className="hidden text-xs font-bold text-[#9aa2ad] sm:inline">오늘 먼저 볼 순위와 새 업데이트</span>
-            </div>
-            <p className="mt-1.5 text-xs font-medium text-[#7d8693]">많은 설명보다, 지금 볼 랭킹부터 빠르게 훑어보세요.</p>
-          </div>
-          <Link href="/search?type=ranking" className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe4ec] bg-white px-3.5 py-2 text-[10px] font-black text-[#4d5663] transition hover:border-[#b8c7ed] hover:text-[#2563eb]">전체 랭킹 보기 <ArrowRight className="h-3.5 w-3.5" /></Link>
-        </div>
-
+        <div className="flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-[1.7rem] font-black tracking-[-0.05em] text-[#141820] sm:text-[2rem]">지금 랭킹 한눈에</h1><p className="mt-1.5 text-xs font-medium text-[#7d8693]">지금 볼 순위와 새 업데이트를 빠르게 훑어보세요.</p></div><Link href="/search?type=ranking" className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe4ec] bg-white px-3.5 py-2 text-[10px] font-black text-[#4d5663]">전체 랭킹 보기 <ArrowRight className="h-3.5 w-3.5" /></Link></div>
+        <div className="mt-4 max-w-2xl"><SearchForm hero /></div>
         <div className="rw-scroll-row mt-4 flex gap-3 overflow-x-auto pb-2">
-          <FlowPanel icon={<Flame className="h-4 w-4" />} title="지금 볼 랭킹" accent="text-[#ef4444]" rankings={featuredSlides.slice(0, 3)} />
-          <FlowPanel icon={<Sparkles className="h-4 w-4" />} title="새로 추가된 랭킹" accent="text-[#2563eb]" rankings={fresh} />
-          <FlowPanel icon={<Clock3 className="h-4 w-4" />} title="최근 업데이트" accent="text-[#7c3aed]" rankings={nextFresh.length > 0 ? nextFresh : fresh} />
-          <div className="min-w-[270px] flex-1 rounded-[16px] border border-[#e3e6ec] bg-white p-4 shadow-[0_8px_24px_rgba(29,46,78,0.04)]">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-sm font-black tracking-[-0.025em] text-[#0f9f6e]"><Grid3X3 className="h-4 w-4" /><span>카테고리별 랭킹</span></div>
-              <Link href="/categories" className="text-[10px] font-black text-[#9aa2ad] hover:text-[#2563eb]">더 보기</Link>
-            </div>
-            <div className="mt-3 space-y-2.5">
-              {categoryLeaders.map((category, index) => (
-                <Link key={category.id} href={`/categories/${category.slug}`} className="group flex items-center gap-2.5">
-                  <span className="w-4 text-right text-[11px] font-black text-[#9aa2ad]">{index + 1}</span>
-                  <span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#303743] group-hover:text-[#2563eb]">{category.name}</span>
-                  <span className="text-[9px] font-black tabular-nums text-[#0f9f6e]">{category.ranking_count}개</span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <ScanPanel icon={<Flame className="h-4 w-4" />} title="지금 볼 랭킹" tone="text-[#ef4444]" rows={featuredSlides.slice(0, 3)} />
+          <ScanPanel icon={<Sparkles className="h-4 w-4" />} title="새로 추가된 랭킹" tone="text-[#2563eb]" rows={recentRankings.slice(0, 3)} />
+          <ScanPanel icon={<Clock3 className="h-4 w-4" />} title="최근 업데이트" tone="text-[#7c3aed]" rows={recentRankings.slice(3, 6)} />
+          <div className="min-w-[270px] flex-1 rounded-[16px] border border-[#e3e6ec] bg-white p-4 shadow-[0_8px_24px_rgba(29,46,78,0.04)]"><div className="flex items-center gap-2 text-sm font-black text-[#0f9f6e]"><Grid3X3 className="h-4 w-4" />카테고리별 랭킹</div><div className="mt-3 space-y-2.5">{categoryLeaders.map((category, index) => <Link key={category.id} href={`/categories/${category.slug}`} className="group flex items-center gap-2.5"><span className="w-4 text-right text-[11px] font-black text-[#9aa2ad]">{index + 1}</span><span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#303743] group-hover:text-[#2563eb]">{category.name}</span><span className="text-[9px] font-black tabular-nums text-[#0f9f6e]">{category.ranking_count}개</span></Link>)}</div></div>
         </div>
       </section>
 
-      <section className="rw-container mt-4">
-        {hero ? (
-          <div className="grid gap-3 xl:grid-cols-[1.08fr_0.72fr_0.6fr]">
-            <TodayPick ranking={hero} />
-            {topThree ? <TopThreeCard ranking={topThree} /> : null}
-            {surprise ? <SurpriseCard ranking={surprise} /> : null}
-          </div>
-        ) : (
-          <div className="rounded-[18px] border border-[#e2e5ea] bg-white px-6 py-16 text-center text-sm font-bold text-[#6b7280]">공개 랭킹을 준비 중입니다.</div>
-        )}
-      </section>
+      <section className="rw-container mt-4">{hero ? <div className="grid gap-3 xl:grid-cols-[1.08fr_0.72fr_0.6fr]"><TodayPick ranking={hero} />{topThree ? <TopThree ranking={topThree} /> : null}{another ? <AnotherNumberOne ranking={another} /> : null}</div> : <div className="rounded-[18px] border border-[#e2e5ea] bg-white px-6 py-16 text-center text-sm font-bold text-[#6b7280]">공개 랭킹을 준비 중입니다.</div>}</section>
 
-      <section className="rw-container mt-5 grid min-w-0 gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <RankingList rankings={recentRankings} />
-
-        <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <div className="rounded-[18px] border border-[#e3e6ec] bg-white p-5 shadow-[0_10px_30px_rgba(29,46,78,0.04)]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-black text-[#8a929d]">CATEGORY SHORTCUT</p>
-                <h2 className="mt-1 text-lg font-black tracking-[-0.035em] text-[#171a1f]">카테고리 핫 랭킹</h2>
-              </div>
-              <Trophy className="h-5 w-5 text-[#f59e0b]" />
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {visibleCategories.map((category) => (
-                <Link key={category.id} href={`/categories/${category.slug}`} className="rounded-[12px] border border-[#e6e9ee] bg-[#fbfcfe] px-3 py-3 text-center transition hover:border-[#bdc9e7] hover:bg-[#f5f8ff]">
-                  <span className="block truncate text-[11px] font-black text-[#343b46]">{category.name}</span>
-                  <span className="mt-1 block text-[9px] font-bold tabular-nums text-[#9aa2ad]">랭킹 {category.ranking_count}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[18px] border border-[#e3e6ec] bg-white p-5 shadow-[0_10px_30px_rgba(29,46,78,0.04)]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-black text-[#8a929d]">LATEST</p>
-                <h2 className="mt-1 text-lg font-black tracking-[-0.035em] text-[#171a1f]">방금 업데이트된 랭킹</h2>
-              </div>
-              <Clock3 className="h-5 w-5 text-[#7c3aed]" />
-            </div>
-            <div className="mt-3 divide-y divide-[#edf0f4]">
-              {recentRankings.slice(0, 4).map((ranking) => (
-                <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group flex items-center justify-between gap-3 py-3 first:pt-1 last:pb-1">
-                  <div className="min-w-0">
-                    <p className="truncate text-[12px] font-black text-[#343b46] group-hover:text-[#2563eb]">{ranking.title}</p>
-                    <p className="mt-1 truncate text-[9px] font-bold text-[#9aa2ad]">{ranking.categories?.name || '랭킹'}</p>
-                  </div>
-                  <span className="flex shrink-0 items-center gap-1 text-[9px] font-bold tabular-nums text-[#9aa2ad]"><CalendarDays className="h-3 w-3" />{formatDate(ranking.published_at || ranking.updated_at)}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rw-container mt-5">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-black tracking-[-0.035em] text-[#171a1f]">오늘 새로 업데이트된 랭킹</h2>
-          <Link href="/search?type=ranking&sort=latest" className="inline-flex items-center gap-1 text-[10px] font-black text-[#737d8a] hover:text-[#2563eb]">전체 보기 <ArrowRight className="h-3.5 w-3.5" /></Link>
-        </div>
-        <div className="rw-scroll-row mt-3 flex gap-3 overflow-x-auto pb-2">
-          {recentRankings.slice(0, 8).map((ranking) => (
-            <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group min-w-[220px] flex-1 rounded-[14px] border border-[#e3e6ec] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#c6d1eb] hover:shadow-[0_10px_24px_rgba(29,46,78,0.06)]">
-              <div className="flex items-center justify-between gap-2">
-                <span className="rounded-full bg-[#f1f5ff] px-2 py-1 text-[9px] font-black text-[#2563eb]">{ranking.categories?.name || '랭킹'}</span>
-                <span className="text-[9px] font-bold text-[#a0a7b0]">{formatShortDate(ranking.published_at || ranking.updated_at)}</span>
-              </div>
-              <h3 className="mt-3 line-clamp-2 min-h-10 text-[13px] font-black leading-5 tracking-[-0.02em] text-[#303743] group-hover:text-[#2563eb]">{ranking.title}</h3>
-              <div className="mt-4 inline-flex items-center gap-1 text-[10px] font-black text-[#8a929d]">바로 보기 <ArrowRight className="h-3 w-3" /></div>
-            </Link>
-          ))}
-        </div>
+      <section className="rw-container mt-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="overflow-hidden rounded-[18px] border border-[#e3e6ec] bg-white shadow-[0_10px_30px_rgba(29,46,78,0.04)]"><div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4"><div><p className="text-[10px] font-black text-[#8a929d]">SCAN & OPEN</p><h2 className="mt-1 text-lg font-black tracking-[-0.035em] text-[#171a1f]">지금 볼 랭킹</h2></div><Link href="/search?type=ranking" className="text-[10px] font-black text-[#737d8a]">전체 보기 →</Link></div><div className="divide-y divide-[#edf0f4]">{recentRankings.slice(0, 8).map((ranking, index) => <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 px-5 py-3.5 hover:bg-[#f8faff]"><span className={`rw-rank-number text-lg font-black ${index < 3 ? 'text-[#6d4aff]' : 'text-[#9aa2ad]'}`}>{String(index + 1).padStart(2, '0')}</span><div className="min-w-0"><p className="truncate text-[13px] font-black text-[#2a3038] group-hover:text-[#2563eb]">{ranking.title}</p><p className="mt-1 truncate text-[9px] font-bold text-[#a0a7b0]">{ranking.categories?.name || '랭킹'}{ranking.subcategories?.name ? ` · ${ranking.subcategories.name}` : ''}</p></div><span className="text-[9px] font-bold text-[#9aa2ad]">{shortDate(ranking.published_at || ranking.updated_at)}</span></Link>)}</div></div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1"><div className="rounded-[18px] border border-[#e3e6ec] bg-white p-5 shadow-[0_10px_30px_rgba(29,46,78,0.04)]"><h2 className="text-lg font-black tracking-[-0.035em] text-[#171a1f]">카테고리 핫 랭킹</h2><div className="mt-4 grid grid-cols-3 gap-2">{visibleCategories.map((category) => <Link key={category.id} href={`/categories/${category.slug}`} className="rounded-[12px] border border-[#e6e9ee] bg-[#fbfcfe] px-3 py-3 text-center hover:border-[#bdc9e7]"><span className="block truncate text-[11px] font-black text-[#343b46]">{category.name}</span><span className="mt-1 block text-[9px] font-bold text-[#9aa2ad]">랭킹 {category.ranking_count}</span></Link>)}</div></div><div className="rounded-[18px] border border-[#e3e6ec] bg-white p-5 shadow-[0_10px_30px_rgba(29,46,78,0.04)]"><div className="flex items-center justify-between"><h2 className="text-lg font-black tracking-[-0.035em] text-[#171a1f]">방금 업데이트된 랭킹</h2><Clock3 className="h-5 w-5 text-[#7c3aed]" /></div><div className="mt-3 divide-y divide-[#edf0f4]">{recentRankings.slice(0, 4).map((ranking) => <Link key={ranking.id} href={`/rankings/${ranking.slug}`} className="group flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate text-[12px] font-black text-[#343b46] group-hover:text-[#2563eb]">{ranking.title}</p><p className="mt-1 text-[9px] font-bold text-[#9aa2ad]">{ranking.categories?.name || '랭킹'}</p></div><span className="flex shrink-0 items-center gap-1 text-[9px] font-bold text-[#9aa2ad]"><CalendarDays className="h-3 w-3" />{shortDate(ranking.published_at || ranking.updated_at)}</span></Link>)}</div></div></div>
       </section>
     </div>
   )
