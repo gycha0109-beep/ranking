@@ -42,6 +42,7 @@
     "verify:rf-1e": "node scripts/verify-rf-1e-contracts.mjs",
     "verify:rf-1f": "node scripts/verify-rf-1f-contracts.mjs",
     "verify:rf-1g": "node scripts/verify-rf-1g-contracts.mjs",
+    "verify:rf-1h": "node scripts/verify-rf-1h-contracts.mjs",
     "verify:ops-1": "node scripts/verify-ops-1-contracts.mjs",
     "verify:public-copy": "node scripts/verify-public-copy-hygiene-contracts.mjs",
     "verify:content-1": "node scripts/verify-content-1-contracts.mjs",
