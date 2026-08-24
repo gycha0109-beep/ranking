@@ -25,6 +25,7 @@ jobs:
       - run: npm run verify:audit-r1
       - run: npm run verify:audit-r2
       - run: npm run verify:audit-r3
+      - run: npm run verify:audit-r4
       - run: npm run verify:p1-2
       - run: npm run verify:p1-3
       - run: npm run verify:p1-4
