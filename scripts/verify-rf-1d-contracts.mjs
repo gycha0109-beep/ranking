@@ -42,7 +42,8 @@ const rankingPageSource = fs.readFileSync(rankingPagePath, 'utf8')
 
 assert(shadowSource.includes('currentRankingId'), 'SHADOW result must bind evidence to the source ranking')
 assert(shadowSource.includes('candidateCount'), 'SHADOW result must retain candidate count')
-assert(evidenceSource.includes("domain: 'rankingwiki:rf1-shadow-run:v1'"), 'shadow run ID must use an explicit fingerprint domain')
+assert(evidenceSource.includes("domain: 'rankingwiki:rf1-shadow-run:v2'"), 'shadow run ID must use the policy-provenance-aware fingerprint domain')
+assert(evidenceSource.includes('policyHypothesisFingerprint'), 'shadow evidence must bind the reviewed policy hypothesis fingerprint')
 assert(evidenceSource.includes('stableFingerprint'), 'shadow run ID must be deterministic')
 assert(evidenceSource.includes('complete baseline candidate set'), 'shadow evidence must reject candidate-set mutation')
 assert(evidenceSource.includes('changedPositionCount must match'), 'shadow evidence must validate reported ordering delta')
@@ -103,30 +104,37 @@ const shadowFixture = {
   referenceTime: '2026-08-24T05:00:00.000Z',
   seed: 'shadow-seed',
 }
+const hypothesisFingerprint = 'rf1-policy-hypothesis-fixture'
 
-const first = evidenceModule.createRf1ShadowEvidenceRecord(shadowFixture)
-const second = evidenceModule.createRf1ShadowEvidenceRecord({ ...shadowFixture })
+const first = evidenceModule.createRf1ShadowEvidenceRecord(shadowFixture, hypothesisFingerprint)
+const second = evidenceModule.createRf1ShadowEvidenceRecord({ ...shadowFixture }, hypothesisFingerprint)
 assert(first.shadowRunId === second.shadowRunId, 'identical SHADOW evidence must produce the same deterministic run ID')
+assert(first.policyHypothesisFingerprint === hypothesisFingerprint, 'policy hypothesis fingerprint must survive materialization')
 assert(first.changedPositionCount === 2 && first.candidateCount === 3, 'SHADOW counts must survive materialization')
 assert(first.baselineRankingIds.join(',') === 'ranking-a,ranking-b,ranking-c', 'baseline order must be preserved verbatim')
 assert(first.shadowRankingIds.join(',') === 'ranking-a,ranking-c,ranking-b', 'shadow order must be preserved verbatim')
 
-const changedSeed = evidenceModule.createRf1ShadowEvidenceRecord({ ...shadowFixture, seed: 'different-seed' })
+const changedSeed = evidenceModule.createRf1ShadowEvidenceRecord({ ...shadowFixture, seed: 'different-seed' }, hypothesisFingerprint)
 assert(changedSeed.shadowRunId !== first.shadowRunId, 'material evidence changes must change the deterministic run ID')
+
+const changedHypothesis = evidenceModule.createRf1ShadowEvidenceRecord(shadowFixture, 'rf1-policy-hypothesis-different')
+assert(changedHypothesis.shadowRunId !== first.shadowRunId, 'policy hypothesis changes must change the deterministic run ID')
+
+expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord(shadowFixture, ''), 'missing policy hypothesis fingerprint must fail closed')
 
 expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord({
   ...shadowFixture,
   shadowRankingIds: ['ranking-a', 'ranking-c', 'ranking-x'],
-}), 'candidate-set mutation must fail closed')
+}, hypothesisFingerprint), 'candidate-set mutation must fail closed')
 
 expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord({
   ...shadowFixture,
   changedPositionCount: 1,
-}), 'incorrect changed-position count must fail closed')
+}, hypothesisFingerprint), 'incorrect changed-position count must fail closed')
 
 expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord({
   ...shadowFixture,
   baselineRankingIds: ['ranking-a', 'ranking-a', 'ranking-c'],
-}), 'duplicate baseline ranking IDs must fail closed')
+}, hypothesisFingerprint), 'duplicate baseline ranking IDs must fail closed')
 
 console.log('RF-1D durable SHADOW evidence and readiness contracts: PASS')
