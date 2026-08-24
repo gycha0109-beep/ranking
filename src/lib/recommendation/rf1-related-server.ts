@@ -170,6 +170,7 @@ export async function recordRf1RelatedExposureRecords(records: Rf1RelatedExposur
     exposure_id: record.exposureId,
     recommendation_run_id: record.recommendationRunId,
     surface: record.surface,
+    source_ranking_id: record.sourceRankingId,
     ranking_id: record.rankingId,
     ranking_mode: record.rankingMode,
     identity_relation: record.identityRelation,
