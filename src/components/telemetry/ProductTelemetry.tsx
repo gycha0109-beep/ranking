@@ -114,10 +114,12 @@ export default function ProductTelemetry() {
       }
 
       if (!isDiscoverySource(pathname)) return
+      const recommendationExposureId = anchor.dataset.rf1ExposureId
       postEvent({
         kind: 'content_discovery_click',
         sourcePath: pathname,
         targetPath: url.pathname,
+        ...(recommendationExposureId ? { recommendationExposureId } : {}),
       })
     }
 
