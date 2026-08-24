@@ -4,6 +4,17 @@ import { useEffect, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 const CONTENT_PATH = /^\/(rankings|items)\/[^/?#]+$/
+const RANKING_PATH = /^\/rankings\/[^/?#]+$/
+
+type VisibilityEndReason = 'out_of_view' | 'page_hidden' | 'page_exit' | 'unmount'
+
+type ActiveRelatedObservation = {
+  observationId: string
+  startedAt: number
+  entryIntersectionRatioPpm: number
+  targetPath: string
+  recommendationExposureId?: string
+}
 
 function eventId() {
   return crypto.randomUUID()
@@ -25,11 +36,24 @@ function resultLinks() {
   )).filter((link) => CONTENT_PATH.test(new URL(link.href, window.location.origin).pathname))
 }
 
+function relatedRankingLinks(pathname: string) {
+  if (!RANKING_PATH.test(pathname)) return []
+  return Array.from(document.querySelectorAll<HTMLAnchorElement>('main a[href^="/rankings/"]'))
+    .filter((link) => {
+      const targetPath = new URL(link.href, window.location.origin).pathname
+      return RANKING_PATH.test(targetPath) && targetPath !== pathname
+    })
+}
+
 function isDiscoverySource(pathname: string) {
   return pathname === '/'
     || pathname.startsWith('/categories/')
     || pathname.startsWith('/rankings/')
     || pathname.startsWith('/items/')
+}
+
+function intersectionRatioPpm(ratio: number) {
+  return Math.max(1, Math.min(1_000_000, Math.round(ratio * 1_000_000)))
 }
 
 export default function ProductTelemetry() {
@@ -75,6 +99,108 @@ export default function ProductTelemetry() {
   }, [pathname, searchParams])
 
   useEffect(() => {
+    const anchors = relatedRankingLinks(pathname)
+    if (anchors.length === 0) return
+
+    const active = new Map<HTMLAnchorElement, ActiveRelatedObservation>()
+    let observer: IntersectionObserver | null = null
+    let pageExited = false
+
+    function startObservation(anchor: HTMLAnchorElement, ratio: number) {
+      if (document.visibilityState !== 'visible' || active.has(anchor) || ratio <= 0) return
+
+      const targetPath = new URL(anchor.href, window.location.origin).pathname
+      const observationId = eventId()
+      const entryIntersectionRatioPpm = intersectionRatioPpm(ratio)
+      const recommendationExposureId = anchor.dataset.rf1ExposureId
+      const state: ActiveRelatedObservation = {
+        observationId,
+        startedAt: performance.now(),
+        entryIntersectionRatioPpm,
+        targetPath,
+        ...(recommendationExposureId ? { recommendationExposureId } : {}),
+      }
+      active.set(anchor, state)
+      anchor.dataset.measureObservationId = observationId
+
+      postEvent({
+        kind: 'related_ranking_impression',
+        observationId,
+        sourcePath: pathname,
+        targetPath,
+        entryIntersectionRatioPpm,
+        ...(recommendationExposureId ? { recommendationExposureId } : {}),
+      })
+    }
+
+    function finishObservation(anchor: HTMLAnchorElement, reason: VisibilityEndReason) {
+      const state = active.get(anchor)
+      if (!state) return
+      active.delete(anchor)
+      if (anchor.dataset.measureObservationId === state.observationId) {
+        delete anchor.dataset.measureObservationId
+      }
+
+      postEvent({
+        kind: 'related_ranking_visibility',
+        observationId: state.observationId,
+        sourcePath: pathname,
+        targetPath: state.targetPath,
+        visibleDurationMs: Math.max(0, Math.round(performance.now() - state.startedAt)),
+        entryIntersectionRatioPpm: state.entryIntersectionRatioPpm,
+        visibilityEndReason: reason,
+        ...(state.recommendationExposureId ? { recommendationExposureId: state.recommendationExposureId } : {}),
+      })
+    }
+
+    function finishAll(reason: VisibilityEndReason) {
+      for (const anchor of [...active.keys()]) finishObservation(anchor, reason)
+    }
+
+    function observeAnchors() {
+      observer?.disconnect()
+      observer = new IntersectionObserver((entries) => {
+        if (document.visibilityState !== 'visible') return
+        for (const entry of entries) {
+          const anchor = entry.target as HTMLAnchorElement
+          if (entry.isIntersecting && entry.intersectionRatio > 0) {
+            startObservation(anchor, entry.intersectionRatio)
+          } else {
+            finishObservation(anchor, 'out_of_view')
+          }
+        }
+      }, { threshold: 0 })
+      for (const anchor of anchors) observer.observe(anchor)
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        finishAll('page_hidden')
+        observer?.disconnect()
+      } else {
+        observeAnchors()
+      }
+    }
+
+    function onPageHide() {
+      pageExited = true
+      finishAll('page_exit')
+    }
+
+    observeAnchors()
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('pagehide', onPageHide)
+
+    return () => {
+      observer?.disconnect()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('pagehide', onPageHide)
+      if (!pageExited) finishAll('unmount')
+      for (const anchor of anchors) delete anchor.dataset.measureObservationId
+    }
+  }, [pathname])
+
+  useEffect(() => {
     function onClick(event: MouseEvent) {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
       const anchor = (event.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
@@ -115,11 +241,13 @@ export default function ProductTelemetry() {
 
       if (!isDiscoverySource(pathname)) return
       const recommendationExposureId = anchor.dataset.rf1ExposureId
+      const observationId = anchor.dataset.measureObservationId
       postEvent({
         kind: 'content_discovery_click',
         sourcePath: pathname,
         targetPath: url.pathname,
         ...(recommendationExposureId ? { recommendationExposureId } : {}),
+        ...(observationId ? { observationId } : {}),
       })
     }
 
