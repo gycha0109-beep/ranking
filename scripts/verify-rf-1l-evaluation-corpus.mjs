@@ -29,7 +29,7 @@ for (const requiredPath of [corpusPath, corePath, neighborhoodPath, identityPath
 const corpusSource = fs.readFileSync(corpusPath, 'utf8')
 const coreSource = fs.readFileSync(corePath, 'utf8')
 const neighborhoodSource = fs.readFileSync(neighborhoodPath, 'utf8')
-const identitySource = fs.readFileSync(identityPath, 'utf8')
+const identityModuleSource = fs.readFileSync(identityPath, 'utf8')
 const policySource = fs.readFileSync(policyPath, 'utf8')
 const pageSource = fs.readFileSync(pagePath, 'utf8')
 
@@ -53,7 +53,7 @@ function dataUrl(source) {
 
 const coreUrl = dataUrl(transpile(coreSource, corePath))
 const neighborhoodUrl = dataUrl(transpile(neighborhoodSource, neighborhoodPath))
-const identityUrl = dataUrl(transpile(identitySource, identityPath))
+const identityUrl = dataUrl(transpile(identityModuleSource, identityPath))
 const corpusUrl = dataUrl(transpile(corpusSource, corpusPath))
 
 let policyJs = transpile(policySource, policyPath)
