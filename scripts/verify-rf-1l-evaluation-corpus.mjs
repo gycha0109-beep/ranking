@@ -11,7 +11,7 @@ const identityPath = path.join(root, 'src/lib/ranking-identity.ts')
 const policyPath = path.join(root, 'src/lib/recommendation/rf1-initial-policy-calibration.ts')
 const pagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
 
-const EXPECTED_BLIND_CORPUS_SHA256 = 'TO_BE_FROZEN_AFTER_FIRST_EXECUTION'
+const EXPECTED_BLIND_CORPUS_SHA256 = '052013a29af0b810fe7d9b0b3637cf7100d723591290fade3e18ce76d1647cd7'
 
 function fail(message) {
   console.error(`RF-1L contract failed: ${message}`)
