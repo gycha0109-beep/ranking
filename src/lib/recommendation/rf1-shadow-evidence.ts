@@ -5,6 +5,7 @@ export type Rf1ShadowEvidenceRecord = {
   shadowRunId: string
   currentRankingId: string
   policyBundleVersion: string
+  policyHypothesisFingerprint: string
   profileMaturity: 'EMPTY' | 'EMERGING' | 'ESTABLISHED'
   profileFingerprint: string
   sessionFingerprint: string | null
@@ -25,10 +26,14 @@ function assertUnique(values: string[], label: string) {
   if (new Set(values).size !== values.length) throw new Error(`${label} must not contain duplicate ranking IDs`)
 }
 
-export function createRf1ShadowEvidenceRecord(result: Rf1ShadowResult): Rf1ShadowEvidenceRecord {
+export function createRf1ShadowEvidenceRecord(
+  result: Rf1ShadowResult,
+  policyHypothesisFingerprint: string,
+): Rf1ShadowEvidenceRecord {
   if (result.mode !== 'SHADOW') throw new Error('RF-1D accepts SHADOW results only')
   assertTrimmed(result.currentRankingId, 'currentRankingId')
   assertTrimmed(result.policyBundleVersion, 'policyBundleVersion')
+  assertTrimmed(policyHypothesisFingerprint, 'policyHypothesisFingerprint')
   assertTrimmed(result.profileFingerprint, 'profileFingerprint')
   if (result.sessionFingerprint) assertTrimmed(result.sessionFingerprint, 'sessionFingerprint')
   assertTrimmed(result.seed, 'seed')
@@ -76,9 +81,10 @@ export function createRf1ShadowEvidenceRecord(result: Rf1ShadowResult): Rf1Shado
 
   const referenceTime = new Date(result.referenceTime).toISOString()
   const fingerprintPayload = {
-    domain: 'rankingwiki:rf1-shadow-run:v1',
+    domain: 'rankingwiki:rf1-shadow-run:v2',
     currentRankingId: result.currentRankingId,
     policyBundleVersion: result.policyBundleVersion,
+    policyHypothesisFingerprint,
     profileMaturity: result.profileMaturity,
     profileFingerprint: result.profileFingerprint,
     sessionFingerprint: result.sessionFingerprint,
@@ -95,6 +101,7 @@ export function createRf1ShadowEvidenceRecord(result: Rf1ShadowResult): Rf1Shado
     shadowRunId: stableFingerprint(fingerprintPayload),
     currentRankingId: result.currentRankingId,
     policyBundleVersion: result.policyBundleVersion,
+    policyHypothesisFingerprint,
     profileMaturity: result.profileMaturity,
     profileFingerprint: result.profileFingerprint,
     sessionFingerprint: result.sessionFingerprint,
