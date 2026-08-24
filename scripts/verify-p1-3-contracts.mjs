@@ -116,10 +116,10 @@ requireText(publicQueries, 'return a.id.localeCompare(b.id)', 'related recommend
 
 const home = read('src/app/page.tsx')
 const homeQueries = read('src/lib/queries/home.ts')
-requireText(home, '<SearchForm hero />', 'active home search')
 requireText(homeQueries, ".in('moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home moderation boundary')
 requireText(homeQueries, ".in('image_moderation_status', PUBLIC_MODERATION_STATUSES)", 'explicit home image moderation boundary')
-requireText(home, '최근 업데이트', 'home latest wording')
+requireText(home, '새로 업데이트', 'home latest wording')
+forbid(home, /<SearchForm\s+hero\s*\/>/, 'home must not duplicate global navbar search')
 forbid(home, /disabled[\s\S]{0,120}P1 준비중/, 'disabled legacy search')
 
 const navbar = read('src/components/Navbar.tsx')
