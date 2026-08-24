@@ -152,8 +152,8 @@ BEGIN
 
   SELECT COUNT(*)::INTEGER
   INTO v_computed_changed_count
-  FROM generate_subscripts(v_baseline_ranking_ids, 1) AS position
-  WHERE v_baseline_ranking_ids[position] IS DISTINCT FROM v_shadow_ranking_ids[position];
+  FROM generate_subscripts(v_baseline_ranking_ids, 1) AS g(position)
+  WHERE v_baseline_ranking_ids[g.position] IS DISTINCT FROM v_shadow_ranking_ids[g.position];
 
   IF v_computed_changed_count <> v_changed_position_count THEN
     RAISE EXCEPTION 'RF-1 shadow changed position count does not match the supplied ordering' USING ERRCODE = '22023';
