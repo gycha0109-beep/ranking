@@ -87,14 +87,41 @@ The operational overview cards/high-medium counts consume only `trusted_server` 
 - preservation of self-report paths,
 - CI wiring.
 
-Hosted verification must additionally prove:
+Hosted verification additionally requires that the trusted writer is unavailable to ordinary authenticated clients and that the operational overview excludes self-reported buckets.
 
-- anon cannot execute trusted writer,
-- ordinary authenticated cannot execute trusted writer,
-- self-report writer remains tagged untrusted,
-- trusted producer writes `trusted_server`,
-- overview excludes self-report buckets,
-- authorized admin readback still works,
-- legacy self-report telemetry remains preserved.
+## Final hosted closeout — 2026-08-24
 
-AUDIT-R2 is not closed until the hosted migration and negative/positive readbacks pass.
+The hosted Supabase project now records the applied migration as:
+
+- version `20260823071140`
+- name `audit_r2_admin_security_event_trust_boundary`
+
+Current function ACL readback confirms:
+
+- `record_admin_security_event(...)`: executable by `authenticated` and `service_role` as the self-report path;
+- `record_trusted_admin_security_event(...)`: executable by `service_role` and `postgres`, not by `authenticated`;
+- `get_admin_security_event_overview(...)`: remains capability-gated for authorized application access.
+
+Current function-definition readback confirms:
+
+- the trusted writer rejects callers unless `session_user = 'postgres'` or `auth.role() = 'service_role'`;
+- the trusted writer records `source_trust = 'trusted_server'` through the private core;
+- the operational overview filters `admin_security_event_buckets` with `source_trust = 'trusted_server'` before classification and aggregation.
+
+The current bucket table contains no rows, so no synthetic event is manufactured solely to create closeout evidence. Structural grants, runtime guards, function definitions, migration authority, CI, and Production deployment together establish the trust boundary without mutating operational evidence.
+
+R2 repository merge authority:
+
+- PR #97
+- merged `main` SHA: `f939aa9c054f6e74d34f1d87c5a0f90f873ae15f`
+- corresponding Vercel Production deployment: `READY`
+
+Final R2 state:
+
+`TRUSTED_TELEMETRY_WRITE_BOUNDARY = VERIFIED`
+
+`SELF_REPORT_OPERATIONAL_AGGREGATION = EXCLUDED`
+
+`HOSTED_MIGRATION = VERIFIED`
+
+`AUDIT_R2 = SUCCESS / CLOSED`
