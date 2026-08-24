@@ -50,10 +50,12 @@ assert(!migration.includes('policy_weight'), 'RF-1F must not invent production p
 assert(evidenceSource.includes('candidateCount must be a positive integer'), 'pure evidence materialization must reject empty candidate sets')
 assert(evidenceSource.includes('source ranking must not appear in SHADOW candidate orderings'), 'pure evidence materialization must reject source self-membership')
 assert(serverSource.includes('runAndRecordRf1RelatedShadowEvidence'), 'server-only durable SHADOW capture harness must exist')
-assert(serverSource.includes('policy: Rf1PolicyBundle'), 'capture harness must require a caller-supplied complete policy bundle')
-assert(serverSource.includes('has no\n * embedded/default production tuning values'), 'capture harness must explicitly document that it has no default tuning policy')
-assert(serverSource.includes('runRf1RelatedShadow(input)'), 'capture harness must execute the governed SHADOW path')
-assert(serverSource.includes('createRf1ShadowEvidenceRecord(shadow)'), 'capture harness must deterministically materialize SHADOW evidence')
+assert(serverSource.includes('hypothesis: Rf1ReviewedShadowPolicyHypothesis'), 'durable capture must require an explicitly reviewed SHADOW-only policy hypothesis')
+assert(serverSource.includes('validateRf1ReviewedShadowPolicyHypothesis(input.hypothesis)'), 'capture harness must validate reviewed policy provenance before execution')
+assert(serverSource.includes('policy: reviewedHypothesis.policy'), 'capture harness must execute the complete policy contained in the reviewed hypothesis')
+assert(serverSource.includes('No default production tuning values are embedded here'), 'capture harness must explicitly document that it has no default tuning policy')
+assert(serverSource.includes('runRf1RelatedShadow({'), 'capture harness must execute the governed SHADOW path')
+assert(serverSource.includes('reviewedHypothesis.hypothesisFingerprint'), 'capture harness must bind durable evidence to the reviewed policy fingerprint')
 assert(serverSource.includes('recordRf1ShadowEvidence(evidence)'), 'capture harness must persist through the governed evidence RPC')
 assert(serverSource.includes('getRf1CalibrationEvidenceSummary()'), 'capture harness must read readiness after persistence')
 assert(serverSource.includes('rf1_attributed_related_ranking_clicks: number'), 'TypeScript readiness shape must include the RF-1E exact attributed-click count')
@@ -94,21 +96,23 @@ const validFixture = {
   referenceTime: '2026-08-24T06:00:00.000Z',
   seed: 'shadow-capture-seed',
 }
+const hypothesisFingerprint = 'rf1-policy-hypothesis-fixture'
 
-const materialized = evidenceModule.createRf1ShadowEvidenceRecord(validFixture)
+const materialized = evidenceModule.createRf1ShadowEvidenceRecord(validFixture, hypothesisFingerprint)
 assert(materialized.candidateCount === 1, 'non-empty SHADOW evidence must remain valid')
+assert(materialized.policyHypothesisFingerprint === hypothesisFingerprint, 'reviewed policy provenance must survive materialization')
 
 expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord({
   ...validFixture,
   baselineRankingIds: [],
   shadowRankingIds: [],
   candidateCount: 0,
-}), 'empty SHADOW evidence must fail closed')
+}, hypothesisFingerprint), 'empty SHADOW evidence must fail closed')
 
 expectThrow(() => evidenceModule.createRf1ShadowEvidenceRecord({
   ...validFixture,
   baselineRankingIds: ['source-ranking'],
   shadowRankingIds: ['source-ranking'],
-}), 'source ranking inside candidate ordering must fail closed')
+}, hypothesisFingerprint), 'source ranking inside candidate ordering must fail closed')
 
 console.log('RF-1F durable SHADOW capture harness contracts: PASS')
