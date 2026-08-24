@@ -17,8 +17,10 @@ import { loadOptionalMyRf1ProfileEvents } from './rf1-profile-server'
 
 export type Rf1ShadowResult = {
   mode: 'SHADOW'
+  currentRankingId: string
   baselineRankingIds: string[]
   shadowRankingIds: string[]
+  candidateCount: number
   changedPositionCount: number
   protectedIdentityCount: number
   profileMaturity: 'EMPTY' | 'EMERGING' | 'ESTABLISHED'
@@ -45,6 +47,9 @@ export async function runRf1RelatedShadow(input: {
 }): Promise<Rf1ShadowResult> {
   if (!input.currentRanking?.id) throw new Error('RF-1 SHADOW requires a current ranking')
   if (!input.seed || input.seed.trim() !== input.seed) throw new Error('RF-1 SHADOW seed must be a non-empty trimmed string')
+
+  const currentRankingId = String(input.currentRanking.id)
+  if (!currentRankingId || currentRankingId.trim() !== currentRankingId) throw new Error('RF-1 SHADOW current ranking ID must be a non-empty trimmed string')
 
   const policy = validateRf1PolicyBundle(input.policy)
   const referenceMs = parseReferenceTime(input.referenceTime)
@@ -108,8 +113,10 @@ export async function runRf1RelatedShadow(input: {
 
   return {
     mode: 'SHADOW',
+    currentRankingId,
     baselineRankingIds,
     shadowRankingIds,
+    candidateCount: baselineRankingIds.length,
     changedPositionCount,
     protectedIdentityCount: plan.protectedIdentity.length,
     profileMaturity: profile.maturity,
