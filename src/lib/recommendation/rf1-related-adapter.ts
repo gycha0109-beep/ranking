@@ -63,6 +63,7 @@ export type Rf1RelatedExposureRecord = {
   exposureId: string
   recommendationRunId: string
   surface: 'related_rankings'
+  sourceRankingId: string
   rankingId: string
   rankingMode: 'IA2_PROTECTED' | 'RF1_RERANKED'
   identityRelation: Rf1IdentityRelationKind | null
@@ -234,12 +235,14 @@ export function mergeRf1RelatedRankingResult(
 
 export function createRf1RelatedExposureRecords(input: {
   recommendationRunId: string
+  sourceRankingId: string
   profile: Pick<Rf1BehaviorProfileSnapshot, 'profileVersion' | 'fingerprint'>
   session: Pick<Rf1SessionInterestSnapshot, 'fingerprint'> | null
   result: Rf1RelatedRankingResult
   exposedAt: string
 }): Rf1RelatedExposureRecord[] {
   assertTrimmed(input.recommendationRunId, 'recommendationRunId')
+  assertTrimmed(input.sourceRankingId, 'sourceRankingId')
   assertTrimmed(input.profile.profileVersion, 'profileVersion')
   assertTrimmed(input.profile.fingerprint, 'profileFingerprint')
   if (input.session) assertTrimmed(input.session.fingerprint, 'sessionFingerprint')
@@ -253,22 +256,28 @@ export function createRf1RelatedExposureRecords(input: {
     throw new Error('RF-1 related exposure session fingerprint must match ranking result')
   }
 
-  return input.result.candidates.map((candidate) => ({
-    exposureId: `${input.recommendationRunId}:${candidate.rankingId}`,
-    recommendationRunId: input.recommendationRunId,
-    surface: 'related_rankings',
-    rankingId: candidate.rankingId,
-    rankingMode: candidate.mode,
-    identityRelation: candidate.identityRelation,
-    sourceRank: candidate.sourceRank,
-    finalRank: candidate.finalRank,
-    policyBundleVersion: input.result.policyBundleVersion,
-    profileVersion: input.profile.profileVersion,
-    profileFingerprint: input.profile.fingerprint,
-    sessionFingerprint: input.session?.fingerprint ?? null,
-    scoreBreakdown: candidate.breakdown,
-    explored: candidate.explored,
-    diversityRelaxations: [...candidate.diversityRelaxations],
-    exposedAt,
-  }))
+  return input.result.candidates.map((candidate) => {
+    if (candidate.rankingId === input.sourceRankingId) {
+      throw new Error('RF-1 related exposure source ranking must differ from target ranking')
+    }
+    return {
+      exposureId: `${input.recommendationRunId}:${candidate.rankingId}`,
+      recommendationRunId: input.recommendationRunId,
+      surface: 'related_rankings',
+      sourceRankingId: input.sourceRankingId,
+      rankingId: candidate.rankingId,
+      rankingMode: candidate.mode,
+      identityRelation: candidate.identityRelation,
+      sourceRank: candidate.sourceRank,
+      finalRank: candidate.finalRank,
+      policyBundleVersion: input.result.policyBundleVersion,
+      profileVersion: input.profile.profileVersion,
+      profileFingerprint: input.profile.fingerprint,
+      sessionFingerprint: input.session?.fingerprint ?? null,
+      scoreBreakdown: candidate.breakdown,
+      explored: candidate.explored,
+      diversityRelaxations: [...candidate.diversityRelaxations],
+      exposedAt,
+    }
+  })
 }
