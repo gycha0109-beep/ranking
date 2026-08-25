@@ -12,7 +12,7 @@ const paths = {
 }
 const PRIOR = [1, 2, 3].map((n) => p(`content/corpus-200/materialization/wave-${n}.json`))
 const MANIFEST = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
-const EXPECTED = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED = '7383ff4509bd4d2f254a511a80e313f625004231e6d615736375cae19cb89436'
 const fail = (m) => { console.error(`CONTENT-CORPUS-200 Wave 4 verification failed: ${m}`); process.exit(1) }
 const ok = (v, m) => { if (!v) fail(m) }
 const read = (f) => JSON.parse(fs.readFileSync(f, 'utf8'))
