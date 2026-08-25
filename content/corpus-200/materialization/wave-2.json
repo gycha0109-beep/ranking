@@ -1,0 +1,459 @@
+{
+  "version": "content-corpus-200-wave-2-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "SOURCE_EVIDENCE_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T13:01:50+09:00",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "doe-epa-feg2026",
+      "sourceKey": "epa-fueleconomy",
+      "url": "https://www.fueleconomy.gov/feg/pdfs/guides/FEG2026.pdf",
+      "referencePeriod": "2026-model-year-guide-observed-2026-08-25",
+      "note": "Official U.S. DOE/EPA 2026 Fuel Economy Guide. All-electric rows P41-P49 were reviewed; configuration-level values are collapsed only where an explicit model maximum is stated in this artifact."
+    },
+    {
+      "id": "aci-final-2025-traffic",
+      "sourceKey": "aci-airport-ranking",
+      "url": "https://aci.aero/resources/busiest-airports-in-the-world/",
+      "referencePeriod": "2025-final-data-observed-2026-08-25",
+      "note": "ACI World final 2025 airport traffic rankings used for international passengers and aircraft movements."
+    },
+    {
+      "id": "nongshim-official-sample",
+      "sourceKey": "food-official-labels",
+      "url": "https://brand.nongshim.com/shintoomba/main/index",
+      "referencePeriod": "current-product-page-observed-2026-08-25",
+      "note": "Official Nongshim product page confirms product-level package/calorie data, but one manufacturer does not establish a complete Korean instant-noodle comparison universe."
+    },
+    {
+      "id": "samyang-official-sample",
+      "sourceKey": "food-official-labels",
+      "url": "https://www.samyangfoods.com/eng/brand/view.do?seq=245",
+      "referencePeriod": "current-product-page-observed-2026-08-25",
+      "note": "Official Samyang Foods Buldak Ramen page used only as evidence that manufacturer-level product data exists; no cross-brand nutrition ranking is inferred."
+    },
+    {
+      "id": "paldo-official-sample",
+      "sourceKey": "food-official-labels",
+      "url": "https://paldofood.co.kr/product/noodle/162",
+      "referencePeriod": "current-product-page-observed-2026-08-25",
+      "note": "Official Paldo product page exposes nutrition data for one product; coverage remains insufficient for broad Korean-market ranking claims."
+    },
+    {
+      "id": "tving-plans-2026-08-25",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.tving.com/bill/subscription/plan?tab=d2c",
+      "referencePeriod": "current-korea-plan-page-observed-2026-08-25",
+      "note": "Official TVING subscription plan surface. Entry and premium plan values are frozen only where reviewed evidence is explicit."
+    },
+    {
+      "id": "netflix-korea-plans-2026-08-25",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.netflix.com/kr/title/70045850",
+      "referencePeriod": "current-korea-plan-page-observed-2026-08-25",
+      "note": "Netflix Korea page exposes regular plan prices and Premium 4K/HDR; concurrency is supported by Netflix Help."
+    },
+    {
+      "id": "netflix-help-concurrency-2026-08-25",
+      "sourceKey": "streaming-official-features",
+      "url": "https://help.netflix.com/ko/node/29",
+      "referencePeriod": "current-help-page-observed-2026-08-25",
+      "note": "Netflix Help explicitly states Premium allows up to four simultaneous devices."
+    },
+    {
+      "id": "disneyplus-korea-plans-2026-08-25",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.disneyplus.com/ko-kr",
+      "referencePeriod": "current-korea-plan-page-observed-2026-08-25",
+      "note": "Official Disney+ Korea plan surface exposes Standard/Premium price, resolution, and concurrent stream limits."
+    },
+    {
+      "id": "watcha-plans-2026-08-25",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://watcha.com/ko-KR/promotions/ibk_narasarang_card",
+      "referencePeriod": "2026-promotion-page-with-normal-prices-observed-2026-08-25",
+      "note": "Official Watcha page displays normal Basic/Premium prices alongside temporary discounts and exposes Full HD/4K and simultaneous stream limits. Normal prices are used."
+    },
+    {
+      "id": "apple-tv-korea-2026-08-25",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.apple.com/kr/apple-tv/",
+      "referencePeriod": "current-korea-service-page-observed-2026-08-25",
+      "note": "Official Apple Korea page exposes monthly Apple TV price and family-sharing scope."
+    },
+    {
+      "id": "sony-wh1000xm6-specs",
+      "sourceKey": "headphone-official-specs",
+      "url": "https://www.sony.co.kr/electronics/support/wireless-headphones-bluetooth-headphones/wh-1000xm6/specifications",
+      "referencePeriod": "current-official-specification-observed-2026-08-25",
+      "note": "Sony Korea official WH-1000XM6 specifications used for weight, ANC-on battery and declared Bluetooth codecs."
+    },
+    {
+      "id": "sennheiser-momentum4-manual",
+      "sourceKey": "headphone-official-specs",
+      "url": "https://media.graphassets.com/PJWQnJhcQ5WXbSQoKXYg",
+      "referencePeriod": "current-official-manual-observed-2026-08-25",
+      "note": "Official Sennheiser MOMENTUM 4 manual/specification evidence; reviewed with PDF visual inspection before freezing weight, battery and codec declarations."
+    },
+    {
+      "id": "bose-qc-ultra2-specs",
+      "sourceKey": "headphone-official-specs",
+      "url": "https://www.bose.com/p/headphones/bose-quietcomfort-ultra-headphones-2nd-gen/QCUH2-HEADPHONEARN.html",
+      "referencePeriod": "current-official-specification-observed-2026-08-25",
+      "note": "Bose official product evidence. Original weight 0.583 lb is preserved and converted deterministically to grams for comparison."
+    },
+    {
+      "id": "apple-airpods-max2-specs",
+      "sourceKey": "headphone-official-specs",
+      "url": "https://www.apple.com/kr/airpods-max/specs/",
+      "referencePeriod": "current-official-specification-observed-2026-08-25",
+      "note": "Apple Korea official AirPods Max specifications used for weight and ANC-on listening time. Codec support is not inferred when absent from the reviewed specification page."
+    },
+    {
+      "id": "jbl-tour-one-m3-specs",
+      "sourceKey": "headphone-official-specs",
+      "url": "https://support.jbl.com/on/demandware.static/-/Sites-masterCatalog_Harman/default/dwd3290fa0/pdfs/JBL_Tour_One_M3_Specsheet_EN.pdf",
+      "referencePeriod": "current-official-specsheet-observed-2026-08-25",
+      "note": "Official JBL Tour One M3 spec sheet reviewed visually before freezing 278 g, 40 h ANC-on and SBC/AAC/LC3/LDAC declarations."
+    }
+  ],
+  "families": [
+    {
+      "familyId": "electric-vehicles",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["doe-epa-feg2026"],
+        "items": [
+          {"itemKey": "lucid-air", "label": "Lucid Air"},
+          {"itemKey": "chevrolet-silverado-ev", "label": "Chevrolet Silverado EV"},
+          {"itemKey": "lucid-gravity", "label": "Lucid Gravity"},
+          {"itemKey": "rivian-r1t", "label": "Rivian R1T"},
+          {"itemKey": "tesla-model-s", "label": "Tesla Model S"},
+          {"itemKey": "mercedes-eqs450-plus", "label": "Mercedes-Benz EQS 450+"},
+          {"itemKey": "tesla-model-3", "label": "Tesla Model 3"},
+          {"itemKey": "tesla-model-y", "label": "Tesla Model Y"},
+          {"itemKey": "tesla-model-x", "label": "Tesla Model X"},
+          {"itemKey": "toyota-bz", "label": "Toyota bZ"},
+          {"itemKey": "subaru-uncharted", "label": "Subaru Uncharted"},
+          {"itemKey": "lexus-es350e", "label": "Lexus ES 350e"}
+        ],
+        "note": "Distinct source-backed model pool from the reviewed 2026 DOE/EPA all-electric table. Eligibility does not imply editorial quality or market completeness outside the guide."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-electric-vehicles-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["doe-epa-feg2026"],
+          "metric": "epaRangeMilesModelMaximumInReviewedGuide",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "lucid-air", "label": "Lucid Air", "value": 512, "configuration": "G Touring XR AWD 19in"},
+            {"itemKey": "chevrolet-silverado-ev", "label": "Chevrolet Silverado EV", "value": 493, "configuration": "24-mod 19kW 6-mode"},
+            {"itemKey": "lucid-gravity", "label": "Lucid Gravity", "value": 450, "configuration": "GT 20F21R 2R"},
+            {"itemKey": "rivian-r1t", "label": "Rivian R1T", "value": 420, "configuration": "Dual Max 22in"},
+            {"itemKey": "tesla-model-s", "label": "Tesla Model S", "value": 410},
+            {"itemKey": "mercedes-eqs450-plus", "label": "Mercedes-Benz EQS 450+", "value": 390},
+            {"itemKey": "tesla-model-3", "label": "Tesla Model 3", "value": 363, "configuration": "Premium RWD"},
+            {"itemKey": "tesla-model-y", "label": "Tesla Model Y", "value": 357, "configuration": "Long Range RWD"},
+            {"itemKey": "tesla-model-x", "label": "Tesla Model X", "value": 352},
+            {"itemKey": "toyota-bz", "label": "Toyota bZ", "value": 314, "configuration": "191Ah"}
+          ]
+        },
+        {
+          "manifestId": "cc200-electric-vehicles-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["doe-epa-feg2026"],
+          "metric": "combinedMpgeModelMaximumInReviewedGuide",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "lucid-air", "label": "Lucid Air", "value": 146, "configuration": "Pure RWD 19in", "kwhPer100Miles": 23},
+            {"itemKey": "tesla-model-3", "label": "Tesla Model 3", "value": 139, "configuration": "Standard RWD", "kwhPer100Miles": 24},
+            {"itemKey": "tesla-model-y", "label": "Tesla Model Y", "value": 138, "configuration": "Standard RWD 18in", "kwhPer100Miles": 24},
+            {"itemKey": "toyota-bz", "label": "Toyota bZ", "value": 131, "configuration": "191Ah", "kwhPer100Miles": 26},
+            {"itemKey": "subaru-uncharted", "label": "Subaru Uncharted", "value": 129, "kwhPer100Miles": 26},
+            {"itemKey": "lexus-es350e", "label": "Lexus ES 350e", "value": 127, "configuration": "19in", "kwhPer100Miles": 27}
+          ]
+        },
+        {
+          "manifestId": "cc200-electric-vehicles-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": [],
+          "blocker": "NO_REVIEWED_SINGLE_GOVERNMENT_SAFETY_RATING_PROGRAM_WITH_COMPARABLE_CURRENT_MODEL_POOL"
+        },
+        {"manifestId": "cc200-electric-vehicles-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "electric-vehicles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-electric-vehicles-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "electric-vehicles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-electric-vehicles-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "electric-vehicles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-electric-vehicles-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "electric-vehicles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-electric-vehicles-08", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "electric-vehicles", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-electric-vehicles-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "electric-vehicles", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-electric-vehicles-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "electric-vehicles", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "airports",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["aci-final-2025-traffic"],
+        "items": [
+          {"itemKey": "dxb", "label": "Dubai International Airport"},
+          {"itemKey": "lhr", "label": "London Heathrow Airport"},
+          {"itemKey": "icn", "label": "Incheon International Airport"},
+          {"itemKey": "sin", "label": "Singapore Changi Airport"},
+          {"itemKey": "ams", "label": "Amsterdam Airport Schiphol"},
+          {"itemKey": "ist", "label": "Istanbul Airport"},
+          {"itemKey": "cdg", "label": "Paris Charles de Gaulle Airport"},
+          {"itemKey": "hkg", "label": "Hong Kong International Airport"},
+          {"itemKey": "fra", "label": "Frankfurt Airport"},
+          {"itemKey": "doh", "label": "Hamad International Airport"},
+          {"itemKey": "ord", "label": "Chicago O'Hare International Airport"},
+          {"itemKey": "atl", "label": "Hartsfield-Jackson Atlanta International Airport"},
+          {"itemKey": "dfw", "label": "Dallas Fort Worth International Airport"},
+          {"itemKey": "den", "label": "Denver International Airport"},
+          {"itemKey": "las", "label": "Harry Reid International Airport"},
+          {"itemKey": "lax", "label": "Los Angeles International Airport"},
+          {"itemKey": "clt", "label": "Charlotte Douglas International Airport"},
+          {"itemKey": "pvg", "label": "Shanghai Pudong International Airport"},
+          {"itemKey": "can", "label": "Guangzhou Baiyun International Airport"}
+        ],
+        "note": "Union of ACI final-2025 international-passenger and aircraft-movement leaders; this is a source-backed operational hub pool, not an editorial verdict."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-airports-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["aci-final-2025-traffic"],
+          "metric": "internationalPassengers",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "dxb", "label": "Dubai International Airport", "value": 95192160},
+            {"itemKey": "lhr", "label": "London Heathrow Airport", "value": 79874784},
+            {"itemKey": "icn", "label": "Incheon International Airport", "value": 73554772},
+            {"itemKey": "sin", "label": "Singapore Changi Airport", "value": 69402000},
+            {"itemKey": "ams", "label": "Amsterdam Airport Schiphol", "value": 68767548},
+            {"itemKey": "ist", "label": "Istanbul Airport", "value": 66608849},
+            {"itemKey": "cdg", "label": "Paris Charles de Gaulle Airport", "value": 66135938},
+            {"itemKey": "hkg", "label": "Hong Kong International Airport", "value": 60810724},
+            {"itemKey": "fra", "label": "Frankfurt Airport", "value": 57528528},
+            {"itemKey": "doh", "label": "Hamad International Airport", "value": 54338667}
+          ]
+        },
+        {
+          "manifestId": "cc200-airports-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["aci-final-2025-traffic"],
+          "metric": "aircraftMovements",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "ord", "label": "Chicago O'Hare International Airport", "value": 857392},
+            {"itemKey": "atl", "label": "Hartsfield-Jackson Atlanta International Airport", "value": 807625},
+            {"itemKey": "dfw", "label": "Dallas Fort Worth International Airport", "value": 743394},
+            {"itemKey": "den", "label": "Denver International Airport", "value": 701335},
+            {"itemKey": "las", "label": "Harry Reid International Airport", "value": 586871},
+            {"itemKey": "lax", "label": "Los Angeles International Airport", "value": 580996},
+            {"itemKey": "clt", "label": "Charlotte Douglas International Airport", "value": 574193},
+            {"itemKey": "pvg", "label": "Shanghai Pudong International Airport", "value": 557043},
+            {"itemKey": "can", "label": "Guangzhou Baiyun International Airport", "value": 550512},
+            {"itemKey": "ist", "label": "Istanbul Airport", "value": 549309}
+          ]
+        },
+        {
+          "manifestId": "cc200-airports-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["aci-final-2025-traffic"],
+          "blocker": "ACI_FINAL_2025_TABLE_DOES_NOT_PROVIDE_COMPARABLE_DIRECT_DESTINATIONS_SERVED_AND_OPERATOR_DATASET_NOT_YET_FROZEN"
+        },
+        {"manifestId": "cc200-airports-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "airports", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-airports-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "airports", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-airports-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "airports", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-airports-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "airports", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-airports-08", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "airports", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-airports-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "airports", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-airports-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "airports", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "instant-noodles",
+      "candidateUniverse": {
+        "status": "BLOCKED_SOURCE_GAP",
+        "sourceSnapshotIds": ["nongshim-official-sample", "samyang-official-sample", "paldo-official-sample"],
+        "items": [],
+        "blocker": "MULTI_BRAND_OFFICIAL_PRODUCT_IDENTITY_AND_NUTRITION_COVERAGE_NOT_YET_COMPLETE_ENOUGH_FOR_BROAD_KOREAN_MARKET_EDITORIAL_OR_VOTE_ELIGIBILITY",
+        "note": "Official manufacturer samples exist across Nongshim, Samyang and Paldo, but Wave 2 refuses to freeze a broad Korean-market candidate pool from incomplete coverage."
+      },
+      "rankings": [
+        {"manifestId": "cc200-instant-noodles-01", "kind": "FACT", "materializationStatus": "BLOCKED_SOURCE_GAP", "sourceSnapshotIds": ["nongshim-official-sample", "samyang-official-sample", "paldo-official-sample"], "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_SODIUM_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"},
+        {"manifestId": "cc200-instant-noodles-02", "kind": "FACT", "materializationStatus": "BLOCKED_SOURCE_GAP", "sourceSnapshotIds": ["nongshim-official-sample", "samyang-official-sample", "paldo-official-sample"], "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_PROTEIN_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"},
+        {"manifestId": "cc200-instant-noodles-03", "kind": "FACT", "materializationStatus": "BLOCKED_SOURCE_GAP", "sourceSnapshotIds": ["nongshim-official-sample", "samyang-official-sample", "paldo-official-sample"], "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_CALORIE_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"},
+        {"manifestId": "cc200-instant-noodles-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-08", "kind": "COMMUNITY_VOTE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"},
+        {"manifestId": "cc200-instant-noodles-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "BLOCKED_CANDIDATE_GAP", "candidateUniverseRef": "instant-noodles", "blocker": "BROAD_MARKET_CANDIDATE_UNIVERSE_NOT_FROZEN"}
+      ]
+    },
+    {
+      "familyId": "streaming-services",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["tving-plans-2026-08-25", "netflix-korea-plans-2026-08-25", "netflix-help-concurrency-2026-08-25", "disneyplus-korea-plans-2026-08-25", "watcha-plans-2026-08-25", "apple-tv-korea-2026-08-25"],
+        "items": [
+          {"itemKey": "tving", "label": "TVING"},
+          {"itemKey": "netflix", "label": "Netflix"},
+          {"itemKey": "disney-plus", "label": "Disney+"},
+          {"itemKey": "watcha", "label": "Watcha"},
+          {"itemKey": "apple-tv", "label": "Apple TV"}
+        ],
+        "note": "Five major Korea-available streaming services with current official pricing/feature evidence. Candidate inclusion is not an editorial recommendation."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-streaming-services-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["tving-plans-2026-08-25", "netflix-korea-plans-2026-08-25", "disneyplus-korea-plans-2026-08-25", "watcha-plans-2026-08-25", "apple-tv-korea-2026-08-25"],
+          "metric": "lowestRegularMonthlyEntryPriceKrw",
+          "direction": "ASC",
+          "entries": [
+            {"itemKey": "tving", "label": "TVING", "value": 5500, "plan": "광고형 스탠다드"},
+            {"itemKey": "apple-tv", "label": "Apple TV", "value": 6500, "plan": "월간 멤버십"},
+            {"itemKey": "netflix", "label": "Netflix", "value": 7000, "plan": "광고형 스탠다드"},
+            {"itemKey": "watcha", "label": "Watcha", "value": 7900, "plan": "베이직", "note": "normal price, not temporary promotion price"},
+            {"itemKey": "disney-plus", "label": "Disney+", "value": 9900, "plan": "스탠다드"}
+          ]
+        },
+        {
+          "manifestId": "cc200-streaming-services-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["tving-plans-2026-08-25", "netflix-help-concurrency-2026-08-25", "disneyplus-korea-plans-2026-08-25", "watcha-plans-2026-08-25", "apple-tv-korea-2026-08-25"],
+          "metric": "maximumDocumentedConcurrentStreamsOrFamilyStreams",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "apple-tv", "label": "Apple TV", "value": 6, "evidenceSemantics": "family membership supports up to six people; stream concurrency interpretation follows reviewed service evidence"},
+            {"itemKey": "tving", "label": "TVING", "value": 4, "plan": "프리미엄"},
+            {"itemKey": "netflix", "label": "Netflix", "value": 4, "plan": "프리미엄"},
+            {"itemKey": "disney-plus", "label": "Disney+", "value": 4, "plan": "프리미엄"},
+            {"itemKey": "watcha", "label": "Watcha", "value": 4, "plan": "프리미엄"}
+          ],
+          "tiePolicy": "SOURCE_VALUE_TIE_PRESERVED_NO_INVENTED_TIEBREAKER"
+        },
+        {
+          "manifestId": "cc200-streaming-services-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["tving-plans-2026-08-25", "netflix-korea-plans-2026-08-25", "disneyplus-korea-plans-2026-08-25", "watcha-plans-2026-08-25", "apple-tv-korea-2026-08-25"],
+          "blocker": "LOWEST_4K_PLAN_NOT_EXACTLY_DETERMINED_FOR_ALL_FIVE_SERVICES_FROM_REVIEWED_OFFICIAL_SURFACES_TVING_REMAINS_UNRESOLVED"
+        },
+        {"manifestId": "cc200-streaming-services-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "streaming-services", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-streaming-services-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "streaming-services", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-streaming-services-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "streaming-services", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-streaming-services-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "streaming-services", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-streaming-services-08", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "streaming-services", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-streaming-services-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "streaming-services", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-streaming-services-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "streaming-services", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "anc-headphones",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["sony-wh1000xm6-specs", "sennheiser-momentum4-manual", "bose-qc-ultra2-specs", "apple-airpods-max2-specs", "jbl-tour-one-m3-specs"],
+        "items": [
+          {"itemKey": "sony-wh1000xm6", "label": "Sony WH-1000XM6"},
+          {"itemKey": "bose-qc-ultra2", "label": "Bose QuietComfort Ultra Headphones (2nd Gen)"},
+          {"itemKey": "jbl-tour-one-m3", "label": "JBL Tour One M3"},
+          {"itemKey": "sennheiser-momentum4", "label": "Sennheiser MOMENTUM 4 Wireless"},
+          {"itemKey": "apple-airpods-max2", "label": "Apple AirPods Max"}
+        ],
+        "note": "Five current over-ear ANC products using manufacturer-only evidence. The cataloged third-party measurement lab is deliberately not used because license review is unresolved."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-anc-headphones-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["sony-wh1000xm6-specs", "sennheiser-momentum4-manual", "bose-qc-ultra2-specs", "apple-airpods-max2-specs", "jbl-tour-one-m3-specs"],
+          "metric": "officialWeightGrams",
+          "direction": "ASC",
+          "entries": [
+            {"itemKey": "sony-wh1000xm6", "label": "Sony WH-1000XM6", "value": 254},
+            {"itemKey": "bose-qc-ultra2", "label": "Bose QuietComfort Ultra Headphones (2nd Gen)", "value": 264.444, "sourceOriginal": {"value": 0.583, "unit": "lb"}, "derivation": "0.583 * 453.59237"},
+            {"itemKey": "jbl-tour-one-m3", "label": "JBL Tour One M3", "value": 278},
+            {"itemKey": "sennheiser-momentum4", "label": "Sennheiser MOMENTUM 4 Wireless", "value": 293},
+            {"itemKey": "apple-airpods-max2", "label": "Apple AirPods Max", "value": 386.2}
+          ]
+        },
+        {
+          "manifestId": "cc200-anc-headphones-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["sony-wh1000xm6-specs", "sennheiser-momentum4-manual", "bose-qc-ultra2-specs", "apple-airpods-max2-specs", "jbl-tour-one-m3-specs"],
+          "metric": "officialMusicBatteryHoursWithAncOn",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "sennheiser-momentum4", "label": "Sennheiser MOMENTUM 4 Wireless", "value": 60},
+            {"itemKey": "jbl-tour-one-m3", "label": "JBL Tour One M3", "value": 40},
+            {"itemKey": "sony-wh1000xm6", "label": "Sony WH-1000XM6", "value": 30},
+            {"itemKey": "bose-qc-ultra2", "label": "Bose QuietComfort Ultra Headphones (2nd Gen)", "value": 30},
+            {"itemKey": "apple-airpods-max2", "label": "Apple AirPods Max", "value": 20}
+          ],
+          "tiePolicy": "SOURCE_VALUE_TIE_PRESERVED_NO_INVENTED_TIEBREAKER"
+        },
+        {
+          "manifestId": "cc200-anc-headphones-03",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_COMPARISON",
+          "sourceSnapshotIds": ["sony-wh1000xm6-specs", "sennheiser-momentum4-manual", "bose-qc-ultra2-specs", "apple-airpods-max2-specs", "jbl-tour-one-m3-specs"],
+          "metric": "officiallyDeclaredBluetoothCodecs",
+          "entries": [
+            {"itemKey": "sony-wh1000xm6", "label": "Sony WH-1000XM6", "declared": ["SBC", "AAC", "LDAC", "LC3"], "declarationStatus": "DECLARED"},
+            {"itemKey": "jbl-tour-one-m3", "label": "JBL Tour One M3", "declared": ["SBC", "AAC", "LC3", "LDAC"], "declarationStatus": "DECLARED"},
+            {"itemKey": "sennheiser-momentum4", "label": "Sennheiser MOMENTUM 4 Wireless", "declared": ["SBC", "AAC", "aptX Adaptive"], "declarationStatus": "DECLARED"},
+            {"itemKey": "bose-qc-ultra2", "label": "Bose QuietComfort Ultra Headphones (2nd Gen)", "declared": ["SBC", "AAC"], "declarationStatus": "DECLARED"},
+            {"itemKey": "apple-airpods-max2", "label": "Apple AirPods Max", "declared": [], "declarationStatus": "NOT_DECLARED_ON_REVIEWED_OFFICIAL_SPEC"}
+          ],
+          "comparisonBoundary": "NO_CODEC_IS_INFERRED_WHEN_NOT_EXPLICITLY_DECLARED_BY_THE_REVIEWED_MANUFACTURER_SOURCE"
+        },
+        {"manifestId": "cc200-anc-headphones-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "anc-headphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-anc-headphones-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "anc-headphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-anc-headphones-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "anc-headphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-anc-headphones-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "anc-headphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-anc-headphones-08", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "anc-headphones", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-anc-headphones-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "anc-headphones", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-anc-headphones-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "anc-headphones", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    }
+  ],
+  "closure": {
+    "selectedRankingCount": 50,
+    "factCount": 15,
+    "materializedFactCount": 9,
+    "blockedFactCount": 6,
+    "editorialCount": 20,
+    "editorialCandidateFrozenCount": 16,
+    "editorialCandidateBlockedCount": 4,
+    "voteCount": 15,
+    "voteCandidateFrozenCount": 12,
+    "voteCandidateBlockedCount": 3,
+    "fabricatedVoteRows": 0,
+    "editorialWeightsAssigned": 0,
+    "productionRowsWritten": 0,
+    "recommendationRuns": 0
+  }
+}

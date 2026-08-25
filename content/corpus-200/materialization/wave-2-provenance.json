@@ -1,0 +1,22 @@
+{
+  "version": "content-corpus-200-wave-2-provenance-v1",
+  "observedAt": "2026-08-25T13:01:50+09:00",
+  "links": [
+    {
+      "manifestId": "cc200-streaming-services-02",
+      "itemKey": "apple-tv",
+      "claim": "Apple TV+ supports six simultaneous streams under one subscription",
+      "sourceId": "apple-support-tvplus-concurrency",
+      "url": "https://support.apple.com/ko-kr/118239",
+      "referencePeriod": "official-support-page-reviewed-2026-08-25",
+      "evidence": "Apple 지원의 '여러 기기에서 스트리밍할 때의 제한 사항'은 Apple TV+ 하나의 구독으로 6개의 스트리밍을 동시에 즐길 수 있다고 명시한다."
+    }
+  ],
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false
+  }
+}
