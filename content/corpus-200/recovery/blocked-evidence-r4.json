@@ -1,0 +1,186 @@
+{
+  "version": "content-corpus-200-blocked-evidence-recovery-r4-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "BLOCKED_EVIDENCE_RECOVERY_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T15:24:00+09:00",
+  "baseWave": {
+    "wave": 2,
+    "evidenceSha256": "dab9b2cde2b8bbf3e6eed3ddcdf166df408d2df30a20bbb3e38bbbf105276023",
+    "file": "content/corpus-200/materialization/wave-2.json"
+  },
+  "priorRecoveries": [
+    {
+      "version": "content-corpus-200-blocked-evidence-recovery-r1-v1",
+      "evidenceSha256": "6e5897ef79dc7280e7da1e2b87a2f663f49d383f27a7d65885c84fa09381c42c",
+      "file": "content/corpus-200/recovery/blocked-evidence-r1.json"
+    },
+    {
+      "version": "content-corpus-200-blocked-evidence-recovery-r2-v1",
+      "evidenceSha256": "6ded2c4dc33993e223ffac3ed777a232ec40aa9d5a7556b6c25d1f28653474cc",
+      "file": "content/corpus-200/recovery/blocked-evidence-r2.json"
+    },
+    {
+      "version": "content-corpus-200-blocked-evidence-recovery-r3-v1",
+      "evidenceSha256": "fe70b352fa329a1d230c87cb071b44e92b67e246758b62099aec7c7679505a9e",
+      "file": "content/corpus-200/recovery/blocked-evidence-r3.json"
+    }
+  ],
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "tving-premium-price-r4",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.tving.com/bill/subscription/plan",
+      "referencePeriod": "current-korea-plan-page-reviewed-2026-08-25",
+      "note": "Official TVING subscription page exposes standalone Premium at KRW 17000 per month. Regular standalone price is used; bundles and promotional discounts are excluded."
+    },
+    {
+      "id": "tving-premium-4k-r4",
+      "sourceKey": "streaming-official-features",
+      "url": "https://mkt.tving.com/2025twdouble/index.html",
+      "referencePeriod": "current-official-plan-feature-page-reviewed-2026-08-25",
+      "note": "Official TVING x Wavve plan feature page identifies the TVING Premium component as maximum FHD plus some 4K quality on TV. This resolves the prior TVING 4K-capability gap without treating every title or device as 4K."
+    },
+    {
+      "id": "netflix-premium-4k-r4",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.netflix.com/kr/title/80193549",
+      "referencePeriod": "current-korea-membership-panel-reviewed-2026-08-25",
+      "note": "Official Netflix Korea membership panel exposes Premium at KRW 17000 per month with 4K + HDR."
+    },
+    {
+      "id": "disneyplus-premium-4k-r4",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.disneyplus.com/ko-kr",
+      "referencePeriod": "current-korea-membership-page-reviewed-2026-08-25",
+      "note": "Official Disney+ Korea membership page exposes Premium at KRW 13900 per month with video quality up to 4K UHD and HDR."
+    },
+    {
+      "id": "watcha-premium-4k-r4",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://watcha.com/ko-KR/promotions/ibk_narasarang_card",
+      "referencePeriod": "2026-official-promotion-page-with-regular-price-reviewed-2026-08-25",
+      "note": "Official Watcha page exposes Premium regular price KRW 12900 per month and maximum Ultra HD 4K. The temporary KRW 9030 promotion price is explicitly excluded."
+    },
+    {
+      "id": "apple-tv-membership-price-r4",
+      "sourceKey": "streaming-official-pricing",
+      "url": "https://www.apple.com/kr/apple-tv/",
+      "referencePeriod": "current-korea-service-page-reviewed-2026-08-25",
+      "note": "Official Apple Korea Apple TV service page exposes the single monthly membership at KRW 6500 after the free trial."
+    },
+    {
+      "id": "apple-tv-4k-capability-r4",
+      "sourceKey": "streaming-official-features",
+      "url": "https://support.apple.com/ko-kr/guide/tvplus/welcome/web",
+      "referencePeriod": "current-official-support-page-reviewed-2026-08-25",
+      "note": "Official Apple support identifies Apple TV as a subscription service and explicitly offers an Apple TV 4K path for the best 4K experience. Recovery treats this as documented 4K capability on compatible hardware/content, not a claim that every Apple TV title or device is 4K."
+    }
+  ],
+  "recoveredFacts": [
+    {
+      "manifestId": "cc200-streaming-services-03",
+      "familyId": "streaming-services",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "lowestRegularMonthlyPlanWithDocumented4KCapabilityKrw",
+      "direction": "ASC",
+      "priceBoundary": "REGULAR_MONTHLY_STANDALONE_PRICE_PROMOTIONS_BUNDLES_AND_ANNUAL_DISCOUNTS_EXCLUDED",
+      "qualityBoundary": "DOCUMENTED_4K_CAPABILITY_ON_SUPPORTED_CONTENT_DEVICES_NOT_EVERY_TITLE_OR_DEVICE_GUARANTEED_4K",
+      "sourceSnapshotIds": [
+        "tving-premium-price-r4",
+        "tving-premium-4k-r4",
+        "netflix-premium-4k-r4",
+        "disneyplus-premium-4k-r4",
+        "watcha-premium-4k-r4",
+        "apple-tv-membership-price-r4",
+        "apple-tv-4k-capability-r4"
+      ],
+      "entries": [
+        {
+          "itemKey": "apple-tv",
+          "label": "Apple TV",
+          "value": 6500,
+          "plan": "월간 멤버십",
+          "documented4K": true,
+          "note": "single subscription tier; compatible hardware/content boundary applies"
+        },
+        {
+          "itemKey": "watcha",
+          "label": "Watcha",
+          "value": 12900,
+          "plan": "프리미엄",
+          "documented4K": true,
+          "note": "regular monthly price; temporary 30% promotion excluded"
+        },
+        {
+          "itemKey": "disney-plus",
+          "label": "Disney+",
+          "value": 13900,
+          "plan": "프리미엄",
+          "documented4K": true,
+          "note": "up to 4K UHD & HDR"
+        },
+        {
+          "itemKey": "netflix",
+          "label": "Netflix",
+          "value": 17000,
+          "plan": "프리미엄",
+          "documented4K": true,
+          "note": "4K + HDR"
+        },
+        {
+          "itemKey": "tving",
+          "label": "TVING",
+          "value": 17000,
+          "plan": "프리미엄",
+          "documented4K": true,
+          "note": "maximum FHD plus some 4K quality on TV; content/device restrictions apply"
+        }
+      ],
+      "tiePolicy": "SOURCE_VALUE_TIE_PRESERVED_NO_INVENTED_TIEBREAKER",
+      "scopeBoundary": "EXACT_WAVE2_FROZEN_FIVE_SERVICE_KOREA_AVAILABLE_STREAMING_POOL_NOT_ALL_STREAMING_SERVICES"
+    }
+  ],
+  "remainingBlockedFacts": [
+    {
+      "manifestId": "cc200-electric-vehicles-03",
+      "blocker": "NO_REVIEWED_SINGLE_GOVERNMENT_SAFETY_RATING_PROGRAM_WITH_COMPARABLE_CURRENT_MODEL_POOL"
+    },
+    {
+      "manifestId": "cc200-airports-03",
+      "blocker": "ACI_FINAL_2025_TABLE_DOES_NOT_PROVIDE_COMPARABLE_DIRECT_DESTINATIONS_SERVED_AND_OPERATOR_DATASET_NOT_YET_FROZEN"
+    },
+    {
+      "manifestId": "cc200-instant-noodles-01",
+      "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_SODIUM_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"
+    },
+    {
+      "manifestId": "cc200-instant-noodles-02",
+      "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_PROTEIN_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"
+    },
+    {
+      "manifestId": "cc200-instant-noodles-03",
+      "blocker": "INCOMPLETE_MULTI_BRAND_OFFICIAL_CALORIE_DATASET_FOR_BROAD_KOREAN_MARKET_COMPARISON"
+    }
+  ],
+  "closure": {
+    "wave2BlockedFactsOriginally": 6,
+    "recoveredFactCount": 1,
+    "wave2BlockedFactsAfterR4": 5,
+    "manifestCoverage": 200,
+    "productionRowsWritten": 0,
+    "publicRowsPublished": 0,
+    "recommendationRuns": 0,
+    "editorialWeightsAssigned": 0,
+    "fabricatedVoteRows": 0
+  }
+}
