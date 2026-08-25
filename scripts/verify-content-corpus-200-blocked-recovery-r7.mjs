@@ -26,7 +26,7 @@ const R3_SHA = 'fe70b352fa329a1d230c87cb071b44e92b67e246758b62099aec7c7679505a9e
 const R4_SHA = 'efedcd57539a34169fc658b8b34a78006b031178e5ddbe15ef9f4042bf782d61'
 const R5_SHA = '54d94c069c2ea8731330d3aa1b2d9620bd37559f4e4df9cdd42692352927ac37'
 const R6_SHA = 'f2053d7fe208cc6bf658ddebd9c21a2ed3778ed84e90c73f2e94f43f3eeeab36'
-const EXPECTED = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED = 'c84557fe19b4371c2ab2fcc093197ecb111f588b1693fea1b767f4fc0930d334'
 
 const fail = (message) => { console.error(`CONTENT-CORPUS-200 blocked recovery R7 verification failed: ${message}`); process.exit(1) }
 const ok = (value, message) => { if (!value) fail(message) }
