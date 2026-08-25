@@ -80,6 +80,7 @@ jobs:
       - run: npm run verify:content-corpus-200-blocked-recovery-r6
       - run: npm run verify:content-corpus-200-blocked-recovery-r7
       - run: npm run verify:content-corpus-200-blocked-recovery-r8
+      - run: npm run verify:content-corpus-200-blocked-recovery-closure
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
