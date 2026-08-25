@@ -66,11 +66,16 @@ for (const source of sources) {
   ok(/reviewed-2026-08-25/.test(source.referencePeriod || ''), `${source.id} reference period mismatch`)
   ok(source.note?.length >= 70, `${source.id} evidence note too weak`)
 }
-ok(sources.find((source) => source.id === 'tving-premium-price-r4')?.sourceKey === 'streaming-official-pricing', 'TVING price source key mismatch')
-ok(sources.find((source) => source.id === 'tving-premium-4k-r4')?.sourceKey === 'streaming-official-features', 'TVING 4K source key mismatch')
-ok(/KRW 17000/.test(sources.find((source) => source.id === 'tving-premium-price-r4')?.note || ''), 'TVING regular Premium price evidence missing')
-ok(/some 4K quality on TV/.test(sources.find((source) => source.id === 'tving-premium-4k-r4')?.note || ''), 'TVING 4K capability evidence missing')
-ok(/temporary KRW 9030 promotion price is explicitly excluded/.test(sources.find((source) => source.id === 'watcha-premium-4k-r4')?.note || ''), 'Watcha promotion exclusion missing')
+const sourceById = new Map(sources.map((source) => [source.id, source]))
+ok(sourceById.get('tving-premium-price-r4')?.sourceKey === 'streaming-official-pricing', 'TVING price source key mismatch')
+ok(sourceById.get('tving-premium-4k-r4')?.sourceKey === 'streaming-official-features', 'TVING 4K source key mismatch')
+ok(/KRW 17000/.test(sourceById.get('tving-premium-price-r4')?.note || ''), 'TVING regular Premium price evidence missing')
+ok(/4K/i.test(sourceById.get('tving-premium-4k-r4')?.note || ''), 'TVING 4K capability evidence missing')
+ok(/4K/i.test(sourceById.get('netflix-premium-4k-r4')?.note || ''), 'Netflix 4K capability evidence missing')
+ok(/4K/i.test(sourceById.get('disneyplus-premium-4k-r4')?.note || ''), 'Disney+ 4K capability evidence missing')
+ok(/4K/i.test(sourceById.get('watcha-premium-4k-r4')?.note || ''), 'Watcha 4K capability evidence missing')
+ok(/4K/i.test(sourceById.get('apple-tv-4k-capability-r4')?.note || ''), 'Apple TV 4K capability evidence missing')
+ok(/temporary KRW 9030 promotion price is explicitly excluded/.test(sourceById.get('watcha-premium-4k-r4')?.note || ''), 'Watcha promotion exclusion missing')
 
 const family = wave2.families.find((item) => item.familyId === 'streaming-services')
 ok(family?.candidateUniverse?.status === 'FROZEN_SOURCE_BACKED', 'frozen streaming candidate universe missing')
@@ -100,7 +105,7 @@ const expectedEntries = [
   ['tving', 17000, '프리미엄'],
 ]
 ok(JSON.stringify(plans.entries.map((entry) => [entry.itemKey, entry.value, entry.plan])) === JSON.stringify(expectedEntries), 'streaming 4K regular monthly plan evidence mismatch')
-for (const entry of plans.entries) ok(entry.documented4K === true && /4K/i.test(entry.note || ''), `${entry.itemKey} must retain explicit documented 4K boundary`)
+for (const entry of plans.entries) ok(entry.documented4K === true && entry.note?.length >= 5, `${entry.itemKey} must retain documented 4K state and interpretation note`)
 for (let index = 1; index < plans.entries.length; index += 1) ok(plans.entries[index - 1].value <= plans.entries[index].value, 'streaming plan entries must be non-decreasing')
 ok(plans.entries.at(-2).value === plans.entries.at(-1).value, 'Netflix/TVING regular monthly tie must be preserved')
 ok(JSON.stringify(plans.entries.map((entry) => entry.itemKey).sort()) === JSON.stringify([...frozenCandidates].sort()), 'R4 must cover exactly the frozen five-service pool')
