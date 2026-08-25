@@ -6,7 +6,7 @@ const root = process.cwd()
 const wavePath = path.join(root, 'content/corpus-200/materialization/wave-1.json')
 const publicPagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
 const EXPECTED_MANIFEST_SHA256 = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
-const EXPECTED_WAVE_SHA256 = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED_WAVE_SHA256 = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
 
 function fail(message) {
   console.error(`CONTENT-CORPUS-200 Wave 1 verification failed: ${message}`)
