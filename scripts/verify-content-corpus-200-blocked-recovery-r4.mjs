@@ -10,6 +10,7 @@ const files = {
   r2: p('content/corpus-200/recovery/blocked-evidence-r2.json'),
   r3: p('content/corpus-200/recovery/blocked-evidence-r3.json'),
   wave2: p('content/corpus-200/materialization/wave-2.json'),
+  wave2Provenance: p('content/corpus-200/materialization/wave-2-provenance.json'),
   page: p('src/app/rankings/[rankingSlug]/page.tsx'),
   pkg: p('package.json'),
   ci: p('.github/workflows/ci.yml'),
@@ -31,11 +32,13 @@ const r1 = read(files.r1)
 const r2 = read(files.r2)
 const r3 = read(files.r3)
 const wave2 = read(files.wave2)
+const wave2Provenance = read(files.wave2Provenance)
 const page = fs.readFileSync(files.page, 'utf8')
 const pkg = read(files.pkg)
 const ci = fs.readFileSync(files.ci, 'utf8')
+const wave2EvidenceSha = jsonSha({ wave: wave2, provenance: wave2Provenance })
 
-ok(jsonSha(wave2) === WAVE2_SHA, 'frozen Wave 2 evidence mutated')
+ok(wave2EvidenceSha === WAVE2_SHA, 'frozen Wave 2 evidence bundle mutated')
 ok(jsonSha(r1) === R1_SHA, 'frozen Recovery R1 evidence mutated')
 ok(jsonSha(r2) === R2_SHA, 'frozen Recovery R2 evidence mutated')
 ok(jsonSha(r3) === R3_SHA, 'frozen Recovery R3 evidence mutated')
@@ -127,7 +130,7 @@ console.log('CONTENT-CORPUS-200 blocked evidence recovery R4 result:')
 console.log(JSON.stringify({
   version: recovery.version,
   manifestSha256: recovery.manifestSha256,
-  baseWave2EvidenceSha256: jsonSha(wave2),
+  baseWave2EvidenceSha256: wave2EvidenceSha,
   priorRecoveryR1EvidenceSha256: jsonSha(r1),
   priorRecoveryR2EvidenceSha256: jsonSha(r2),
   priorRecoveryR3EvidenceSha256: jsonSha(r3),
