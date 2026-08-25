@@ -36,7 +36,7 @@ const RECOVERY_SHA = [
   ['r7', 'c84557fe19b4371c2ab2fcc093197ecb111f588b1693fea1b767f4fc0930d334'],
   ['r8', '8105d95ab4b04fda5bcf16ed57294d40632bba2b37b3b561b62325e001b0dd92'],
 ]
-const EXPECTED = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED = '5b409992bb35914b1076ceebdd56545664438ca5205b6c0d16dc39b91cc06ff3'
 
 const fail = (message) => { console.error(`CONTENT-CORPUS-200 blocked recovery closure verification failed: ${message}`); process.exit(1) }
 const ok = (value, message) => { if (!value) fail(message) }
