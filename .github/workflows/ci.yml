@@ -75,6 +75,7 @@ jobs:
       - run: npm run verify:content-corpus-200-blocked-recovery-r1
       - run: npm run verify:content-corpus-200-blocked-recovery-r2
       - run: npm run verify:content-corpus-200-blocked-recovery-r3
+      - run: npm run verify:content-corpus-200-blocked-recovery-r4
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
