@@ -1,0 +1,529 @@
+{
+  "version": "content-corpus-200-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "SOURCE_EVIDENCE_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T12:44:00+09:00",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "steam-mostplayed-2026-08-25",
+      "sourceKey": "steam-official-charts",
+      "url": "https://store.steampowered.com/charts/mostplayed",
+      "referencePeriod": "dynamic-current-chart-observed-2026-08-25",
+      "note": "Official Steam most-played chart. Counts are a frozen observation, not a permanent all-time value."
+    },
+    {
+      "id": "steam-weekly-2026-08-11",
+      "sourceKey": "steam-official-charts",
+      "url": "https://store.steampowered.com/charts/topsellers/global/2026-8-11",
+      "referencePeriod": "2026-08-11/2026-08-18",
+      "note": "Official weekly chart route exists, but the retrieval surface did not expose reliable title labels; the corresponding fact remains blocked."
+    },
+    {
+      "id": "kobis-korean-2026-ytd",
+      "sourceKey": "kobis-yearly",
+      "url": "https://www.koreanfilm.or.kr/eng/news/boxOffice_Yearly.jsp?country=K&mode=BOXOFFICE_YEAR&selectDt=2026",
+      "referencePeriod": "2026-YTD-observed-2026-08-25",
+      "note": "KOFIC/KOBIS nationwide Korean-film yearly table. Values may change as the year progresses or titles are re-released."
+    },
+    {
+      "id": "netflix-kr-film-2026-07-27",
+      "sourceKey": "netflix-top10",
+      "url": "https://www.netflix.com/tudum/top10/south-korea",
+      "referencePeriod": "2026-07-27/2026-08-02",
+      "note": "Official Netflix South Korea film Top 10 frozen week."
+    },
+    {
+      "id": "netflix-kr-tv-2026-07-27",
+      "sourceKey": "netflix-top10",
+      "url": "https://www.netflix.com/tudum/top10/south-korea/tv",
+      "referencePeriod": "2026-07-27/2026-08-02",
+      "note": "Official Netflix South Korea TV Top 10 frozen week."
+    },
+    {
+      "id": "geekbench-mobile-2026-08-25",
+      "sourceKey": "geekbench-mobile",
+      "url": "https://browser.geekbench.com/mobile-benchmarks",
+      "referencePeriod": "current-chart-observed-2026-08-25",
+      "note": "Geekbench Browser mobile benchmark aggregation. Only models visibly present on the same chart snapshot are compared; Galaxy S26 scores are not inferred."
+    },
+    {
+      "id": "samsung-s26-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.samsung.com/sec/smartphones/galaxy-s26/",
+      "referencePeriod": "official-current-specification",
+      "note": "Samsung Korea official Galaxy S26 family specifications."
+    },
+    {
+      "id": "samsung-s26-ultra-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.samsung.com/sec/smartphones/galaxy-s26-ultra/",
+      "referencePeriod": "official-current-specification",
+      "note": "Samsung Korea official Galaxy S26 Ultra specifications."
+    },
+    {
+      "id": "apple-iphone17pro-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.apple.com/kr/iphone-17-pro/specs/",
+      "referencePeriod": "official-current-specification",
+      "note": "Apple Korea official iPhone 17 Pro and Pro Max specifications."
+    },
+    {
+      "id": "xiaomi15-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.mi.com/global/product/xiaomi-15/",
+      "referencePeriod": "official-current-specification",
+      "note": "Xiaomi global official Xiaomi 15 product specification surface."
+    },
+    {
+      "id": "oneplus15-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.oneplus.com/global/15/specs",
+      "referencePeriod": "official-current-specification",
+      "note": "OnePlus global official specs. Weight is color-specific; only Sand Storm 211 g is frozen here."
+    },
+    {
+      "id": "vivo-x300pro-specs-2026-08-25",
+      "sourceKey": "device-official-specs",
+      "url": "https://www.vivo.com/en/products/param/x300-pro",
+      "referencePeriod": "official-current-specification",
+      "note": "vivo official X300 Pro specification surface."
+    },
+    {
+      "id": "kbo-team-hitting-1-2026-08-25",
+      "sourceKey": "kbo-live-stats",
+      "url": "https://www.koreabaseball.com/Record/Team/Hitter/Basic1.aspx",
+      "referencePeriod": "2026-season-observed-2026-08-25",
+      "note": "KBO official current-season team batting Basic1 table."
+    },
+    {
+      "id": "kbo-team-hitting-2-2026-08-25",
+      "sourceKey": "kbo-live-stats",
+      "url": "https://www.koreabaseball.com/Record/Team/Hitter/Basic2.aspx",
+      "referencePeriod": "2026-season-observed-2026-08-25",
+      "note": "KBO official current-season team batting Basic2 table."
+    },
+    {
+      "id": "kbo-team-pitching-2026-08-25",
+      "sourceKey": "kbo-live-stats",
+      "url": "https://www.koreabaseball.com/Record/Team/Pitcher/Basic1.aspx",
+      "referencePeriod": "2026-season-observed-2026-08-25",
+      "note": "KBO official team pitching table exposes whole-team ERA, not bullpen-only ERA; it must not substitute for the blocked bullpen fact."
+    }
+  ],
+  "families": [
+    {
+      "familyId": "steam-mainstream",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["steam-mostplayed-2026-08-25"],
+        "items": [
+          {"itemKey": "counter-strike-2", "label": "Counter-Strike 2"},
+          {"itemKey": "dota-2", "label": "Dota 2"},
+          {"itemKey": "pubg-battlegrounds", "label": "PUBG: BATTLEGROUNDS"},
+          {"itemKey": "palworld", "label": "Palworld"},
+          {"itemKey": "fivem", "label": "FiveM"}
+        ],
+        "note": "Wave 1 freezes a narrow official-chart candidate pool only. It is not claimed to be a complete Steam editorial universe."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-steam-mainstream-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["steam-mostplayed-2026-08-25"],
+          "metric": "currentPlayers",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "counter-strike-2", "label": "Counter-Strike 2", "value": 1072155},
+            {"itemKey": "dota-2", "label": "Dota 2", "value": 880096},
+            {"itemKey": "pubg-battlegrounds", "label": "PUBG: BATTLEGROUNDS", "value": 434694},
+            {"itemKey": "palworld", "label": "Palworld", "value": 224937},
+            {"itemKey": "fivem", "label": "FiveM", "value": 175095}
+          ]
+        },
+        {
+          "manifestId": "cc200-steam-mainstream-02",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["steam-weekly-2026-08-11"],
+          "blocker": "OFFICIAL_WEEKLY_ROUTE_TITLE_LABELS_NOT_RELIABLY_EXPOSED_BY_CURRENT_RETRIEVAL_SURFACE"
+        },
+        {
+          "manifestId": "cc200-steam-mainstream-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["steam-mostplayed-2026-08-25"],
+          "blocker": "NO_REVIEWED_2026_NEW_RELEASE_ALL_TIME_PEAK_SOURCE_SET_YET"
+        },
+        {"manifestId": "cc200-steam-mainstream-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "steam-mainstream", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-steam-mainstream-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "steam-mainstream", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-steam-mainstream-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "steam-mainstream", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-steam-mainstream-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "steam-mainstream", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-steam-mainstream-08", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "steam-mainstream", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-steam-mainstream-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "steam-mainstream", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-steam-mainstream-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "steam-mainstream", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "korean-box-office",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["kobis-korean-2026-ytd"],
+        "items": [
+          {"itemKey": "the-kings-warden", "label": "The King's Warden"},
+          {"itemKey": "colony", "label": "COLONY"},
+          {"itemKey": "hope", "label": "HOPE"},
+          {"itemKey": "salmokji-whispering-water", "label": "Salmokji : Whispering Water"},
+          {"itemKey": "once-we-were-us", "label": "Once We Were Us"},
+          {"itemKey": "humint", "label": "HUMINT"},
+          {"itemKey": "the-eyes", "label": "THE EYES"},
+          {"itemKey": "choir-of-god", "label": "Choir of God"},
+          {"itemKey": "wild-sing", "label": "Wild Sing"},
+          {"itemKey": "heartsping-legend-of-whale-jewel", "label": "사랑의 하츄핑: 고래보석의 전설"}
+        ],
+        "note": "Top 10 Korean-film rows from the frozen 2026 YTD KOBIS table. Editorial eligibility is frozen; editorial quality judgments are not."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-korean-box-office-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["kobis-korean-2026-ytd"],
+          "metric": "admissions",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "the-kings-warden", "label": "The King's Warden", "value": 16918059},
+            {"itemKey": "colony", "label": "COLONY", "value": 5952602},
+            {"itemKey": "hope", "label": "HOPE", "value": 4393885},
+            {"itemKey": "salmokji-whispering-water", "label": "Salmokji : Whispering Water", "value": 3240784},
+            {"itemKey": "once-we-were-us", "label": "Once We Were Us", "value": 2474027},
+            {"itemKey": "humint", "label": "HUMINT", "value": 1982506},
+            {"itemKey": "the-eyes", "label": "THE EYES", "value": 1541298},
+            {"itemKey": "choir-of-god", "label": "Choir of God", "value": 1429110},
+            {"itemKey": "wild-sing", "label": "Wild Sing", "value": 1345890},
+            {"itemKey": "heartsping-legend-of-whale-jewel", "label": "사랑의 하츄핑: 고래보석의 전설", "value": 433808}
+          ]
+        },
+        {
+          "manifestId": "cc200-korean-box-office-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["kobis-korean-2026-ytd"],
+          "metric": "grossUsdDisplayed",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "the-kings-warden", "label": "The King's Warden", "value": 115290752},
+            {"itemKey": "colony", "label": "COLONY", "value": 44298384},
+            {"itemKey": "hope", "label": "HOPE", "value": 33261173},
+            {"itemKey": "salmokji-whispering-water", "label": "Salmokji : Whispering Water", "value": 23535820},
+            {"itemKey": "once-we-were-us", "label": "Once We Were Us", "value": 17236917},
+            {"itemKey": "humint", "label": "HUMINT", "value": 14129272},
+            {"itemKey": "the-eyes", "label": "THE EYES", "value": 11230801},
+            {"itemKey": "choir-of-god", "label": "Choir of God", "value": 9633022},
+            {"itemKey": "wild-sing", "label": "Wild Sing", "value": 9178410},
+            {"itemKey": "heartsping-legend-of-whale-jewel", "label": "사랑의 하츄핑: 고래보석의 전설", "value": 2897671}
+          ]
+        },
+        {
+          "manifestId": "cc200-korean-box-office-03",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["kobis-korean-2026-ytd"],
+          "metric": "admissionsPerScreenProxy",
+          "direction": "DESC",
+          "derivation": "admissions / screens",
+          "entries": [
+            {"itemKey": "the-kings-warden", "label": "The King's Warden", "inputs": {"admissions": 16918059, "screens": 2262}},
+            {"itemKey": "colony", "label": "COLONY", "inputs": {"admissions": 5952602, "screens": 2110}},
+            {"itemKey": "hope", "label": "HOPE", "inputs": {"admissions": 4393885, "screens": 2424}},
+            {"itemKey": "salmokji-whispering-water", "label": "Salmokji : Whispering Water", "inputs": {"admissions": 3240784, "screens": 1511}},
+            {"itemKey": "once-we-were-us", "label": "Once We Were Us", "inputs": {"admissions": 2474027, "screens": 1116}},
+            {"itemKey": "humint", "label": "HUMINT", "inputs": {"admissions": 1982506, "screens": 1520}},
+            {"itemKey": "the-eyes", "label": "THE EYES", "inputs": {"admissions": 1541298, "screens": 1177}},
+            {"itemKey": "choir-of-god", "label": "Choir of God", "inputs": {"admissions": 1429110, "screens": 907}},
+            {"itemKey": "wild-sing", "label": "Wild Sing", "inputs": {"admissions": 1345890, "screens": 1351}},
+            {"itemKey": "heartsping-legend-of-whale-jewel", "label": "사랑의 하츄핑: 고래보석의 전설", "inputs": {"admissions": 433808, "screens": 958}}
+          ]
+        },
+        {"manifestId": "cc200-korean-box-office-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "korean-box-office", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-korean-box-office-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "korean-box-office", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-korean-box-office-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "korean-box-office", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-korean-box-office-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "korean-box-office", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-korean-box-office-08", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "korean-box-office", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-korean-box-office-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "korean-box-office", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-korean-box-office-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "korean-box-office", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "netflix-titles",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["netflix-kr-film-2026-07-27", "netflix-kr-tv-2026-07-27"],
+        "items": [
+          {"itemKey": "demon-slayer-infinity-castle-i", "label": "Demon Slayer: Kimetsu no Yaiba Infinity Castle I"},
+          {"itemKey": "wild-sing", "label": "Wild Sing"},
+          {"itemKey": "the-debt-collector", "label": "The Debt Collector"},
+          {"itemKey": "spider-man-homecoming", "label": "Spider-Man: Homecoming"},
+          {"itemKey": "hindsight", "label": "Hindsight"},
+          {"itemKey": "the-beekeeper", "label": "The Beekeeper"},
+          {"itemKey": "spider-man-far-from-home", "label": "Spider-Man: Far from Home"},
+          {"itemKey": "elize-shadows-of-a-woman", "label": "Elize: Shadows of a Woman"},
+          {"itemKey": "roofman", "label": "Roofman"},
+          {"itemKey": "husbands-in-action", "label": "Husbands in Action"},
+          {"itemKey": "the-east-palace", "label": "The East Palace: Limited Series"},
+          {"itemKey": "agent-kim-reactivated", "label": "Agent Kim Reactivated: Limited Series"},
+          {"itemKey": "spooky-in-love", "label": "Spooky in Love: Limited Series"},
+          {"itemKey": "the-apartment-job", "label": "The Apartment Job: Limited Series"},
+          {"itemKey": "better-late-than-single-after-service", "label": "Better Late Than Single: After Service: Season 1"},
+          {"itemKey": "better-late-than-single-season-2", "label": "Better Late Than Single: Season 2"},
+          {"itemKey": "agent-kim-reactivated-universe", "label": "Agent Kim Reactivated – the Universe: 2026"},
+          {"itemKey": "teach-you-a-lesson", "label": "Teach You a Lesson: Limited Series"},
+          {"itemKey": "the-psychopath-i-met", "label": "The Psychopath I Met: Season 1"},
+          {"itemKey": "smoking-behind-the-supermarket-with-you", "label": "Smoking Behind the Supermarket With You: Season 1"}
+        ],
+        "note": "Union of official South Korea film and TV Top 10 titles for one frozen week; no editorial preference is encoded."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-netflix-titles-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["netflix-kr-film-2026-07-27"],
+          "metric": "weeklyRank",
+          "direction": "ASC",
+          "entries": [
+            {"itemKey": "demon-slayer-infinity-castle-i", "label": "Demon Slayer: Kimetsu no Yaiba Infinity Castle I", "value": 1},
+            {"itemKey": "wild-sing", "label": "Wild Sing", "value": 2},
+            {"itemKey": "the-debt-collector", "label": "The Debt Collector", "value": 3},
+            {"itemKey": "spider-man-homecoming", "label": "Spider-Man: Homecoming", "value": 4},
+            {"itemKey": "hindsight", "label": "Hindsight", "value": 5},
+            {"itemKey": "the-beekeeper", "label": "The Beekeeper", "value": 6},
+            {"itemKey": "spider-man-far-from-home", "label": "Spider-Man: Far from Home", "value": 7},
+            {"itemKey": "elize-shadows-of-a-woman", "label": "Elize: Shadows of a Woman", "value": 8},
+            {"itemKey": "roofman", "label": "Roofman", "value": 9},
+            {"itemKey": "husbands-in-action", "label": "Husbands in Action", "value": 10}
+          ]
+        },
+        {
+          "manifestId": "cc200-netflix-titles-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["netflix-kr-tv-2026-07-27"],
+          "metric": "weeklyRank",
+          "direction": "ASC",
+          "entries": [
+            {"itemKey": "the-east-palace", "label": "The East Palace: Limited Series", "value": 1},
+            {"itemKey": "agent-kim-reactivated", "label": "Agent Kim Reactivated: Limited Series", "value": 2},
+            {"itemKey": "spooky-in-love", "label": "Spooky in Love: Limited Series", "value": 3},
+            {"itemKey": "the-apartment-job", "label": "The Apartment Job: Limited Series", "value": 4},
+            {"itemKey": "better-late-than-single-after-service", "label": "Better Late Than Single: After Service: Season 1", "value": 5},
+            {"itemKey": "better-late-than-single-season-2", "label": "Better Late Than Single: Season 2", "value": 6},
+            {"itemKey": "agent-kim-reactivated-universe", "label": "Agent Kim Reactivated – the Universe: 2026", "value": 7},
+            {"itemKey": "teach-you-a-lesson", "label": "Teach You a Lesson: Limited Series", "value": 8},
+            {"itemKey": "the-psychopath-i-met", "label": "The Psychopath I Met: Season 1", "value": 9},
+            {"itemKey": "smoking-behind-the-supermarket-with-you", "label": "Smoking Behind the Supermarket With You: Season 1", "value": 10}
+          ]
+        },
+        {
+          "manifestId": "cc200-netflix-titles-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["netflix-kr-film-2026-07-27", "netflix-kr-tv-2026-07-27"],
+          "blocker": "NO_FROZEN_TITLE_LEVEL_GLOBAL_TOP10_HISTORY_SET_FOR_COMPARABLE_KOREAN_TITLES_YET"
+        },
+        {"manifestId": "cc200-netflix-titles-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "netflix-titles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-netflix-titles-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "netflix-titles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-netflix-titles-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "netflix-titles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-netflix-titles-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "netflix-titles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-netflix-titles-08", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "netflix-titles", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-netflix-titles-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "netflix-titles", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-netflix-titles-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "netflix-titles", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "smartphones",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["geekbench-mobile-2026-08-25", "samsung-s26-specs-2026-08-25", "samsung-s26-ultra-specs-2026-08-25", "apple-iphone17pro-specs-2026-08-25", "xiaomi15-specs-2026-08-25", "oneplus15-specs-2026-08-25", "vivo-x300pro-specs-2026-08-25"],
+        "items": [
+          {"itemKey": "galaxy-s26", "label": "Samsung Galaxy S26"},
+          {"itemKey": "galaxy-s26-plus", "label": "Samsung Galaxy S26+"},
+          {"itemKey": "galaxy-s26-ultra", "label": "Samsung Galaxy S26 Ultra"},
+          {"itemKey": "iphone-17-pro", "label": "Apple iPhone 17 Pro"},
+          {"itemKey": "iphone-17-pro-max", "label": "Apple iPhone 17 Pro Max"},
+          {"itemKey": "xiaomi-15", "label": "Xiaomi 15"},
+          {"itemKey": "oneplus-15-sand-storm", "label": "OnePlus 15 (Sand Storm)"},
+          {"itemKey": "vivo-x300-pro", "label": "vivo X300 Pro"}
+        ],
+        "note": "Editorial pool is a source-backed current-device set, while benchmark facts use only models visible on the same Geekbench chart snapshot."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-smartphones-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["geekbench-mobile-2026-08-25"],
+          "metric": "geekbenchMobileSingleCoreChart",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "iphone-17-pro-max", "label": "Apple iPhone 17 Pro Max", "value": 3170},
+            {"itemKey": "iphone-17-pro", "label": "Apple iPhone 17 Pro", "value": 3152},
+            {"itemKey": "samsung-galaxy-s25-plus", "label": "Samsung Galaxy S25+", "value": 2558},
+            {"itemKey": "vivo-iqoo-15", "label": "vivo iQOO 15", "value": 2549},
+            {"itemKey": "samsung-galaxy-s25-edge", "label": "Samsung Galaxy S25 Edge", "value": 2532},
+            {"itemKey": "samsung-galaxy-s25-ultra", "label": "Samsung Galaxy S25 Ultra", "value": 2490},
+            {"itemKey": "samsung-galaxy-s25", "label": "Samsung Galaxy S25", "value": 2468},
+            {"itemKey": "vivo-x300-pro", "label": "vivo X300 Pro", "value": 2182},
+            {"itemKey": "xiaomi-15", "label": "Xiaomi 15", "value": 1887},
+            {"itemKey": "oneplus-15", "label": "OnePlus 15", "value": 1791}
+          ],
+          "note": "Galaxy S26 is absent from this Geekbench chart snapshot and is therefore not assigned an inferred benchmark score."
+        },
+        {
+          "manifestId": "cc200-smartphones-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["geekbench-mobile-2026-08-25"],
+          "metric": "geekbenchMobileMultiCoreChart",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "vivo-iqoo-15", "label": "vivo iQOO 15", "value": 8950},
+            {"itemKey": "samsung-galaxy-s25-ultra", "label": "Samsung Galaxy S25 Ultra", "value": 8917},
+            {"itemKey": "samsung-galaxy-s25-plus", "label": "Samsung Galaxy S25+", "value": 8825},
+            {"itemKey": "samsung-galaxy-s25-edge", "label": "Samsung Galaxy S25 Edge", "value": 8811},
+            {"itemKey": "iphone-17-pro-max", "label": "Apple iPhone 17 Pro Max", "value": 8785},
+            {"itemKey": "iphone-17-pro", "label": "Apple iPhone 17 Pro", "value": 8736},
+            {"itemKey": "samsung-galaxy-s25", "label": "Samsung Galaxy S25", "value": 8699},
+            {"itemKey": "vivo-x300-pro", "label": "vivo X300 Pro", "value": 8059},
+            {"itemKey": "xiaomi-15", "label": "Xiaomi 15", "value": 7703},
+            {"itemKey": "oneplus-15", "label": "OnePlus 15", "value": 7700}
+          ],
+          "note": "All values come from one frozen Geekbench mobile chart surface; no cross-version score mixing is allowed."
+        },
+        {
+          "manifestId": "cc200-smartphones-03",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["samsung-s26-specs-2026-08-25", "samsung-s26-ultra-specs-2026-08-25", "apple-iphone17pro-specs-2026-08-25", "xiaomi15-specs-2026-08-25", "oneplus15-specs-2026-08-25", "vivo-x300pro-specs-2026-08-25"],
+          "metric": "officialWeightGrams",
+          "direction": "ASC",
+          "entries": [
+            {"itemKey": "galaxy-s26", "label": "Samsung Galaxy S26", "value": 167},
+            {"itemKey": "galaxy-s26-plus", "label": "Samsung Galaxy S26+", "value": 190},
+            {"itemKey": "xiaomi-15", "label": "Xiaomi 15", "value": 191},
+            {"itemKey": "iphone-17-pro", "label": "Apple iPhone 17 Pro", "value": 204},
+            {"itemKey": "oneplus-15-sand-storm", "label": "OnePlus 15 (Sand Storm)", "value": 211},
+            {"itemKey": "galaxy-s26-ultra", "label": "Samsung Galaxy S26 Ultra", "value": 214},
+            {"itemKey": "vivo-x300-pro", "label": "vivo X300 Pro", "value": 226},
+            {"itemKey": "iphone-17-pro-max", "label": "Apple iPhone 17 Pro Max", "value": 231}
+          ]
+        },
+        {"manifestId": "cc200-smartphones-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "smartphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-smartphones-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "smartphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-smartphones-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "smartphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-smartphones-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "smartphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-smartphones-08", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "smartphones", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-smartphones-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "smartphones", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-smartphones-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "smartphones", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    },
+    {
+      "familyId": "kbo-clubs",
+      "candidateUniverse": {
+        "status": "FROZEN_SOURCE_BACKED",
+        "sourceSnapshotIds": ["kbo-team-hitting-1-2026-08-25", "kbo-team-hitting-2-2026-08-25", "kbo-team-pitching-2026-08-25"],
+        "items": [
+          {"itemKey": "kt-wiz", "label": "KT"},
+          {"itemKey": "samsung-lions", "label": "삼성"},
+          {"itemKey": "hanwha-eagles", "label": "한화"},
+          {"itemKey": "nc-dinos", "label": "NC"},
+          {"itemKey": "kia-tigers", "label": "KIA"},
+          {"itemKey": "lg-twins", "label": "LG"},
+          {"itemKey": "doosan-bears", "label": "두산"},
+          {"itemKey": "lotte-giants", "label": "롯데"},
+          {"itemKey": "ssg-landers", "label": "SSG"},
+          {"itemKey": "kiwoom-heroes", "label": "키움"}
+        ],
+        "note": "All 10 current KBO clubs. Candidate inclusion is independent of recommendation behavior."
+      },
+      "rankings": [
+        {
+          "manifestId": "cc200-kbo-clubs-01",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["kbo-team-hitting-2-2026-08-25"],
+          "metric": "teamOps",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "hanwha-eagles", "label": "한화", "value": 0.784},
+            {"itemKey": "kia-tigers", "label": "KIA", "value": 0.784},
+            {"itemKey": "samsung-lions", "label": "삼성", "value": 0.781},
+            {"itemKey": "kt-wiz", "label": "KT", "value": 0.771},
+            {"itemKey": "nc-dinos", "label": "NC", "value": 0.761},
+            {"itemKey": "lg-twins", "label": "LG", "value": 0.759},
+            {"itemKey": "ssg-landers", "label": "SSG", "value": 0.753},
+            {"itemKey": "doosan-bears", "label": "두산", "value": 0.736},
+            {"itemKey": "lotte-giants", "label": "롯데", "value": 0.710},
+            {"itemKey": "kiwoom-heroes", "label": "키움", "value": 0.672}
+          ],
+          "tiePolicy": "SOURCE_VALUE_TIE_PRESERVED_NO_INVENTED_TIEBREAKER"
+        },
+        {
+          "manifestId": "cc200-kbo-clubs-02",
+          "kind": "FACT",
+          "materializationStatus": "MATERIALIZED_FACT",
+          "sourceSnapshotIds": ["kbo-team-hitting-1-2026-08-25"],
+          "metric": "teamHomeRuns",
+          "direction": "DESC",
+          "entries": [
+            {"itemKey": "kia-tigers", "label": "KIA", "value": 128},
+            {"itemKey": "hanwha-eagles", "label": "한화", "value": 114},
+            {"itemKey": "ssg-landers", "label": "SSG", "value": 114},
+            {"itemKey": "nc-dinos", "label": "NC", "value": 92},
+            {"itemKey": "lg-twins", "label": "LG", "value": 92},
+            {"itemKey": "samsung-lions", "label": "삼성", "value": 87},
+            {"itemKey": "doosan-bears", "label": "두산", "value": 77},
+            {"itemKey": "kt-wiz", "label": "KT", "value": 75},
+            {"itemKey": "lotte-giants", "label": "롯데", "value": 72},
+            {"itemKey": "kiwoom-heroes", "label": "키움", "value": 72}
+          ],
+          "tiePolicy": "SOURCE_VALUE_TIE_PRESERVED_NO_INVENTED_TIEBREAKER"
+        },
+        {
+          "manifestId": "cc200-kbo-clubs-03",
+          "kind": "FACT",
+          "materializationStatus": "BLOCKED_SOURCE_GAP",
+          "sourceSnapshotIds": ["kbo-team-pitching-2026-08-25"],
+          "blocker": "OFFICIAL_TABLE_IS_WHOLE_TEAM_ERA_NOT_BULLPEN_ONLY_ERA_SUBSTITUTION_FORBIDDEN"
+        },
+        {"manifestId": "cc200-kbo-clubs-04", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "kbo-clubs", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-kbo-clubs-05", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "kbo-clubs", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-kbo-clubs-06", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "kbo-clubs", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-kbo-clubs-07", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "kbo-clubs", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-kbo-clubs-08", "kind": "EDITORIAL_COMPOSITE", "materializationStatus": "CANDIDATES_FROZEN_SCORING_UNASSIGNED", "candidateUniverseRef": "kbo-clubs", "scoringStatus": "UNASSIGNED_EVIDENCE_REVIEW_REQUIRED"},
+        {"manifestId": "cc200-kbo-clubs-09", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "kbo-clubs", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"},
+        {"manifestId": "cc200-kbo-clubs-10", "kind": "COMMUNITY_VOTE", "materializationStatus": "CANDIDATES_FROZEN_NO_VOTES", "candidateUniverseRef": "kbo-clubs", "voteCountStatus": "NOT_STARTED_NO_FABRICATED_VOTES"}
+      ]
+    }
+  ],
+  "closure": {
+    "selectedRankingCount": 50,
+    "factCount": 15,
+    "materializedFactCount": 11,
+    "blockedFactCount": 4,
+    "editorialCount": 25,
+    "voteCount": 10,
+    "fabricatedVoteRows": 0,
+    "editorialWeightsAssigned": 0,
+    "productionRowsWritten": 0,
+    "recommendationRuns": 0
+  }
+}
