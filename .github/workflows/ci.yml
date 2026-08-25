@@ -72,6 +72,7 @@ jobs:
       - run: npm run verify:content-corpus-200-wave-2
       - run: npm run verify:content-corpus-200-wave-3
       - run: npm run verify:content-corpus-200-wave-4
+      - run: npm run verify:content-corpus-200-blocked-recovery-r1
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
