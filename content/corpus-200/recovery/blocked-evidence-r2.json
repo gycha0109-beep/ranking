@@ -1,0 +1,166 @@
+{
+  "version": "content-corpus-200-blocked-evidence-recovery-r2-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "BLOCKED_EVIDENCE_RECOVERY_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T14:22:00+09:00",
+  "baseWave": {
+    "wave": 3,
+    "evidenceSha256": "f366862c0b6d9edd881245dbaba35572faa4e7bbde8b10c4af4ac5872634e756",
+    "file": "content/corpus-200/materialization/wave-3.json"
+  },
+  "priorRecovery": {
+    "version": "content-corpus-200-blocked-evidence-recovery-r1-v1",
+    "evidenceSha256": "6e5897ef79dc7280e7da1e2b87a2f663f49d383f27a7d65885c84fa09381c42c",
+    "file": "content/corpus-200/recovery/blocked-evidence-r1.json"
+  },
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "fifa-2026-complete-results-r2",
+      "sourceKey": "fifa-official-fixture-results",
+      "url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/match-schedule-fixtures-results-teams-stadiums",
+      "referencePeriod": "completed-2026-world-cup-results-reviewed-2026-08-25",
+      "note": "Official FIFA tournament schedule/results surface exposes completed group and knockout scorelines through the final; shootout tallies are separately marked and are not counted as match goals conceded."
+    },
+    {
+      "id": "fifa-2026-final-standings-r2",
+      "sourceKey": "fifa-official-ranking",
+      "url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/final-tournament-standings",
+      "referencePeriod": "final-standings-published-2026-07-20-reviewed-2026-08-25",
+      "note": "Official FIFA final standings bind the recovery to the same frozen final-top-eight review pool used by Wave 3."
+    },
+    {
+      "id": "fifa-2026-stat-hub-r2",
+      "sourceKey": "fifa-match-statistics",
+      "url": "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/statistics",
+      "referencePeriod": "final-tournament-statistics-reviewed-2026-08-25",
+      "note": "Official FIFA statistics hub independently exposes the goals-conceded category; the schedule scorelines remain the complete derivation surface for all eight frozen teams."
+    }
+  ],
+  "recoveredFacts": [
+    {
+      "manifestId": "cc200-fifa-national-teams-02",
+      "familyId": "fifa-national-teams",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "goalsConcededPerMatchWithinFrozenFinalTopEightPool",
+      "direction": "ASC",
+      "sourceSnapshotIds": [
+        "fifa-2026-complete-results-r2",
+        "fifa-2026-final-standings-r2",
+        "fifa-2026-stat-hub-r2"
+      ],
+      "derivationBoundary": "SUM_OPPONENT_MATCH_GOALS_FROM_OFFICIAL_COMPLETED_RESULTS_THEN_DIVIDE_BY_FROZEN_MATCH_COUNT",
+      "penaltyShootoutGoalsExcluded": true,
+      "tieBoundary": "EQUAL_GOALS_CONCEDED_PER_MATCH_VALUES_DO_NOT_IMPLY_SECONDARY_ORDER",
+      "entries": [
+        {
+          "itemKey": "spain",
+          "label": "Spain",
+          "goalsConceded": 1,
+          "matches": 8,
+          "value": 0.125,
+          "goalsConcededByMatch": [0, 0, 0, 0, 0, 1, 0, 0]
+        },
+        {
+          "itemKey": "argentina",
+          "label": "Argentina",
+          "goalsConceded": 8,
+          "matches": 8,
+          "value": 1,
+          "goalsConcededByMatch": [0, 0, 1, 2, 2, 1, 1, 1]
+        },
+        {
+          "itemKey": "morocco",
+          "label": "Morocco",
+          "goalsConceded": 6,
+          "matches": 6,
+          "value": 1,
+          "goalsConcededByMatch": [1, 0, 2, 1, 0, 2]
+        },
+        {
+          "itemKey": "switzerland",
+          "label": "Switzerland",
+          "goalsConceded": 6,
+          "matches": 6,
+          "value": 1,
+          "goalsConcededByMatch": [1, 1, 1, 0, 0, 3]
+        },
+        {
+          "itemKey": "belgium",
+          "label": "Belgium",
+          "goalsConceded": 7,
+          "matches": 6,
+          "value": 1.1666666666666667,
+          "goalsConcededByMatch": [1, 0, 1, 2, 1, 2]
+        },
+        {
+          "itemKey": "france",
+          "label": "France",
+          "goalsConceded": 10,
+          "matches": 8,
+          "value": 1.25,
+          "goalsConcededByMatch": [1, 0, 1, 0, 0, 0, 2, 6]
+        },
+        {
+          "itemKey": "england",
+          "label": "England",
+          "goalsConceded": 12,
+          "matches": 8,
+          "value": 1.5,
+          "goalsConcededByMatch": [2, 0, 0, 1, 2, 1, 2, 4]
+        },
+        {
+          "itemKey": "norway",
+          "label": "Norway",
+          "goalsConceded": 11,
+          "matches": 6,
+          "value": 1.8333333333333333,
+          "goalsConcededByMatch": [1, 2, 4, 1, 1, 2]
+        }
+      ],
+      "scopeBoundary": "EXACT_WAVE3_FROZEN_2026_WORLD_CUP_FINAL_TOP_EIGHT_POOL_NOT_ALL_48_TEAMS"
+    }
+  ],
+  "remainingBlockedFacts": [
+    {
+      "manifestId": "cc200-steam-coop-survival-02",
+      "blocker": "NO_SINGLE_SAME_SCOPE_OFFICIAL_REVIEW_COUNT_SNAPSHOT_ACROSS_FULL_FROZEN_POOL"
+    },
+    {
+      "manifestId": "cc200-steam-coop-survival-03",
+      "blocker": "OFFICIAL_STEAM_CHART_EXPOSES_CURRENT_AND_PEAK_TODAY_NOT_ALL_TIME_PEAK_FOR_FULL_FROZEN_POOL"
+    },
+    {
+      "manifestId": "cc200-laptops-02",
+      "blocker": "NO_REVIEWED_SINGLE_COMPARABLE_CPU_BENCHMARK_SNAPSHOT_BOUND_TO_THE_EXACT_FROZEN_CONFIGURATIONS"
+    },
+    {
+      "manifestId": "cc200-laptops-03",
+      "blocker": "MANUFACTURER_BATTERY_HOUR_DECLARATIONS_AND_TEST_METHODS_ARE_NOT_COMPARABLE_ACROSS_THE_FROZEN_POOL"
+    },
+    {
+      "manifestId": "cc200-sunscreens-01",
+      "blocker": "NO_SINGLE_COMPARABLE_CURRENT_KOREAN_RETAIL_PRICE_SNAPSHOT_ACROSS_ALL_FIVE_FROZEN_PRODUCTS"
+    }
+  ],
+  "closure": {
+    "baseWaveBlockedFactsBeforeRecovery": 6,
+    "recoveredFactCount": 1,
+    "baseWaveBlockedFactsAfterRecovery": 5,
+    "manifestCoverage": 200,
+    "productionRowsWritten": 0,
+    "publicRowsPublished": 0,
+    "recommendationRuns": 0,
+    "editorialWeightsAssigned": 0,
+    "fabricatedVoteRows": 0
+  }
+}
