@@ -15,7 +15,7 @@ const familyPaths = [
 ]
 const sourceCatalogPath = path.join(contentRoot, 'source-catalog.json')
 const publicPagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
-const EXPECTED_MANIFEST_SHA256 = 'TO_BE_FROZEN_AFTER_FIRST_VERIFIED_MANIFEST'
+const EXPECTED_MANIFEST_SHA256 = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
 
 function fail(message) {
   console.error(`CONTENT-CORPUS-200 verification failed: ${message}`)
