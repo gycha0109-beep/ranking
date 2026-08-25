@@ -26,6 +26,14 @@ function assert(condition, message) {
   if (!condition) fail(message)
 }
 
+function groupBy(values, keyFn) {
+  return values.reduce((groups, value) => {
+    const key = keyFn(value)
+    ;(groups[key] ||= []).push(value)
+    return groups
+  }, {})
+}
+
 for (const requiredPath of [schemaPath, manifestPath, sourceCatalogPath, publicPagePath, ...familyPaths]) {
   assert(fs.existsSync(requiredPath), `${path.relative(root, requiredPath)} must exist`)
 }
@@ -106,7 +114,7 @@ assert(new Set(rows.map((row) => row.manifestId)).size === 200, 'manifest IDs mu
 assert(new Set(rows.map((row) => row.slug)).size === 200, 'draft slugs must be unique')
 assert(new Set(rows.map((row) => row.title)).size === 200, 'titles must be unique')
 
-const byType = Object.groupBy(rows, (row) => row.contentType)
+const byType = groupBy(rows, (row) => row.contentType)
 assert((byType.FACT || []).length === 60, 'FACT count must be exactly 60')
 assert((byType.EDITORIAL_COMPOSITE || []).length === 90, 'EDITORIAL_COMPOSITE count must be exactly 90')
 assert((byType.COMMUNITY_VOTE || []).length === 50, 'COMMUNITY_VOTE count must be exactly 50')
@@ -237,7 +245,7 @@ const report = {
     proposedRows: rows.filter((row) => row.taxonomyStatus === 'PROPOSED').length,
   },
   sourceCatalogCount: sourceCatalog.sources.length,
-  sourceVerification: Object.groupBy(sourceCatalog.sources, (source) => source.verificationStatus),
+  sourceVerification: groupBy(sourceCatalog.sources, (source) => source.verificationStatus),
   state: {
     entryMaterialization: 'NOT_STARTED',
     productionDatabaseWrites: false,
