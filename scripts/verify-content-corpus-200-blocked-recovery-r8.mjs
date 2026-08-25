@@ -32,7 +32,7 @@ const PRIOR = [
   ['r6', 'f2053d7fe208cc6bf658ddebd9c21a2ed3778ed84e90c73f2e94f43f3eeeab36'],
   ['r7', 'c84557fe19b4371c2ab2fcc093197ecb111f588b1693fea1b767f4fc0930d334'],
 ]
-const EXPECTED = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED = '8105d95ab4b04fda5bcf16ed57294d40632bba2b37b3b561b62325e001b0dd92'
 
 const fail = (message) => { console.error(`CONTENT-CORPUS-200 blocked recovery R8 verification failed: ${message}`); process.exit(1) }
 const ok = (value, message) => { if (!value) fail(message) }
