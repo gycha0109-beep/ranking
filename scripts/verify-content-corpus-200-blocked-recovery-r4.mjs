@@ -100,7 +100,7 @@ const expectedEntries = [
   ['tving', 17000, '프리미엄'],
 ]
 ok(JSON.stringify(plans.entries.map((entry) => [entry.itemKey, entry.value, entry.plan])) === JSON.stringify(expectedEntries), 'streaming 4K regular monthly plan evidence mismatch')
-for (const entry of plans.entries) ok(entry.documented4K === true && entry.note?.length >= 10, `${entry.itemKey} must retain explicit documented 4K boundary`)
+for (const entry of plans.entries) ok(entry.documented4K === true && /4K/i.test(entry.note || ''), `${entry.itemKey} must retain explicit documented 4K boundary`)
 for (let index = 1; index < plans.entries.length; index += 1) ok(plans.entries[index - 1].value <= plans.entries[index].value, 'streaming plan entries must be non-decreasing')
 ok(plans.entries.at(-2).value === plans.entries.at(-1).value, 'Netflix/TVING regular monthly tie must be preserved')
 ok(JSON.stringify(plans.entries.map((entry) => entry.itemKey).sort()) === JSON.stringify([...frozenCandidates].sort()), 'R4 must cover exactly the frozen five-service pool')
