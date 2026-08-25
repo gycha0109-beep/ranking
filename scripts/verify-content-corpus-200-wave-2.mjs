@@ -7,7 +7,7 @@ const wavePath = path.join(root, 'content/corpus-200/materialization/wave-2.json
 const provenancePath = path.join(root, 'content/corpus-200/materialization/wave-2-provenance.json')
 const publicPagePath = path.join(root, 'src/app/rankings/[rankingSlug]/page.tsx')
 const EXPECTED_MANIFEST_SHA256 = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
-const EXPECTED_EVIDENCE_SHA256 = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED_EVIDENCE_SHA256 = 'dab9b2cde2b8bbf3e6eed3ddcdf166df408d2df30a20bbb3e38bbbf105276023'
 
 function fail(message) {
   console.error(`CONTENT-CORPUS-200 Wave 2 verification failed: ${message}`)
