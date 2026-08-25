@@ -61,6 +61,7 @@
     "verify:content-corpus-200-wave-4": "node scripts/verify-content-corpus-200-wave-4.mjs",
     "verify:content-corpus-200-blocked-recovery-r1": "node scripts/verify-content-corpus-200-blocked-recovery-r1.mjs",
     "verify:content-corpus-200-blocked-recovery-r2": "node scripts/verify-content-corpus-200-blocked-recovery-r2.mjs",
+    "verify:content-corpus-200-blocked-recovery-r3": "node scripts/verify-content-corpus-200-blocked-recovery-r3.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:ui-2c": "node scripts/verify-ui-2c-contracts.mjs",
     "verify:ui-2d": "node scripts/verify-ui-2d-contracts.mjs",

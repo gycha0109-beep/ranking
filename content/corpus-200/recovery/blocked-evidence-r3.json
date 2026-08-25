@@ -1,0 +1,162 @@
+{
+  "version": "content-corpus-200-blocked-evidence-recovery-r3-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "BLOCKED_EVIDENCE_RECOVERY_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T14:22:00+09:00",
+  "baseWave": {
+    "wave": 3,
+    "evidenceSha256": "f366862c0b6d9edd881245dbaba35572faa4e7bbde8b10c4af4ac5872634e756",
+    "file": "content/corpus-200/materialization/wave-3.json"
+  },
+  "priorRecoveries": [
+    {
+      "version": "content-corpus-200-blocked-evidence-recovery-r1-v1",
+      "evidenceSha256": "6e5897ef79dc7280e7da1e2b87a2f663f49d383f27a7d65885c84fa09381c42c",
+      "file": "content/corpus-200/recovery/blocked-evidence-r1.json"
+    },
+    {
+      "version": "content-corpus-200-blocked-evidence-recovery-r2-v1",
+      "evidenceSha256": "6ded2c4dc33993e223ffac3ed777a232ec40aa9d5a7556b6c25d1f28653474cc",
+      "file": "content/corpus-200/recovery/blocked-evidence-r2.json"
+    }
+  ],
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "steam-palworld-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/1623730/Palworld/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam Palworld store review surface. Recovery uses Review Type > All raw submitted-review count 472845, not the review-score count or recent-review count."
+    },
+    {
+      "id": "steam-rust-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/252490/Rust/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam Rust store review surface. Recovery uses Review Type > All raw submitted-review count 1390192, not the review-score count or recent-review count."
+    },
+    {
+      "id": "steam-project-zomboid-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/108600/Project_Zomboid/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam Project Zomboid store review surface. Recovery uses Review Type > All raw submitted-review count 470222, not the review-score count or recent-review count."
+    },
+    {
+      "id": "steam-7dtd-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/251570/7_Days_to_Die/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam 7 Days to Die store review surface. Recovery uses Review Type > All raw submitted-review count 407330; this deliberately avoids treating the off-topic-filtered review-score count as comparable review volume."
+    },
+    {
+      "id": "steam-dst-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/322330/Dont_Starve_Together/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam Don't Starve Together store review surface. Recovery uses Review Type > All raw submitted-review count 541307, not the review-score count or recent-review count."
+    },
+    {
+      "id": "steam-valheim-review-all-r3",
+      "sourceKey": "steam-store-pages",
+      "url": "https://store.steampowered.com/app/892970/Valheim/",
+      "referencePeriod": "official-store-review-snapshot-reviewed-2026-08-25",
+      "note": "Official Steam Valheim store review surface. Recovery uses Review Type > All raw submitted-review count 539957, not the review-score count or recent-review count."
+    }
+  ],
+  "recoveredFacts": [
+    {
+      "manifestId": "cc200-steam-coop-survival-02",
+      "familyId": "steam-coop-survival",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "officialSteamReviewTypeAllRawCountAtFrozenReviewedSnapshot",
+      "direction": "DESC",
+      "reviewCountField": "REVIEW_TYPE_ALL_RAW_SUBMITTED_REVIEWS",
+      "reviewScoreCountExcluded": true,
+      "recentReviewCountExcluded": true,
+      "offTopicReviewScoreFilteringIrrelevantToMetric": true,
+      "sourceSnapshotIds": [
+        "steam-palworld-review-all-r3",
+        "steam-rust-review-all-r3",
+        "steam-project-zomboid-review-all-r3",
+        "steam-7dtd-review-all-r3",
+        "steam-dst-review-all-r3",
+        "steam-valheim-review-all-r3"
+      ],
+      "entries": [
+        {
+          "itemKey": "rust",
+          "label": "Rust",
+          "value": 1390192
+        },
+        {
+          "itemKey": "dont-starve-together",
+          "label": "Don't Starve Together",
+          "value": 541307
+        },
+        {
+          "itemKey": "valheim",
+          "label": "Valheim",
+          "value": 539957
+        },
+        {
+          "itemKey": "palworld",
+          "label": "Palworld",
+          "value": 472845
+        },
+        {
+          "itemKey": "project-zomboid",
+          "label": "Project Zomboid",
+          "value": 470222
+        },
+        {
+          "itemKey": "7-days-to-die",
+          "label": "7 Days to Die",
+          "value": 407330
+        }
+      ],
+      "scopeBoundary": "EXACT_WAVE3_FROZEN_SIX_TITLE_STEAM_COOP_SURVIVAL_POOL_NOT_ALL_STEAM_GAMES",
+      "snapshotBoundary": "FROZEN_OFFICIAL_STORE_REVIEW_SURFACES_NOT_LIVE_TO_SECOND_COUNTS"
+    }
+  ],
+  "remainingBlockedFacts": [
+    {
+      "manifestId": "cc200-steam-coop-survival-03",
+      "blocker": "OFFICIAL_STEAM_CHART_EXPOSES_CURRENT_AND_PEAK_TODAY_NOT_ALL_TIME_PEAK_FOR_FULL_FROZEN_POOL"
+    },
+    {
+      "manifestId": "cc200-laptops-02",
+      "blocker": "NO_REVIEWED_SINGLE_COMPARABLE_CPU_BENCHMARK_SNAPSHOT_BOUND_TO_THE_EXACT_FROZEN_CONFIGURATIONS"
+    },
+    {
+      "manifestId": "cc200-laptops-03",
+      "blocker": "MANUFACTURER_BATTERY_HOUR_DECLARATIONS_AND_TEST_METHODS_ARE_NOT_COMPARABLE_ACROSS_THE_FROZEN_POOL"
+    },
+    {
+      "manifestId": "cc200-sunscreens-01",
+      "blocker": "NO_SINGLE_COMPARABLE_CURRENT_KOREAN_RETAIL_PRICE_SNAPSHOT_ACROSS_ALL_FIVE_FROZEN_PRODUCTS"
+    }
+  ],
+  "closure": {
+    "wave3BlockedFactsOriginally": 6,
+    "priorRecoveredFactsFromWave3": 1,
+    "recoveredFactCount": 1,
+    "wave3BlockedFactsAfterR3": 4,
+    "manifestCoverage": 200,
+    "productionRowsWritten": 0,
+    "publicRowsPublished": 0,
+    "recommendationRuns": 0,
+    "editorialWeightsAssigned": 0,
+    "fabricatedVoteRows": 0
+  }
+}
