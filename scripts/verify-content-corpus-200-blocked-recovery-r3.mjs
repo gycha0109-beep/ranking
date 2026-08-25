@@ -17,7 +17,7 @@ const MANIFEST = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d8341364
 const WAVE3_SHA = 'f366862c0b6d9edd881245dbaba35572faa4e7bbde8b10c4af4ac5872634e756'
 const R1_SHA = '6e5897ef79dc7280e7da1e2b87a2f663f49d383f27a7d65885c84fa09381c42c'
 const R2_SHA = '6ded2c4dc33993e223ffac3ed777a232ec40aa9d5a7556b6c25d1f28653474cc'
-const EXPECTED = 'TO_BE_FROZEN_AFTER_FIRST_STRUCTURALLY_VALID_EXECUTION'
+const EXPECTED = 'fe70b352fa329a1d230c87cb071b44e92b67e246758b62099aec7c7679505a9e'
 const fail = (message) => { console.error(`CONTENT-CORPUS-200 blocked recovery R3 verification failed: ${message}`); process.exit(1) }
 const ok = (value, message) => { if (!value) fail(message) }
 const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'))
