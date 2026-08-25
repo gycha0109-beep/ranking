@@ -1,0 +1,128 @@
+{
+  "version": "content-corpus-200-blocked-evidence-recovery-r1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "BLOCKED_EVIDENCE_RECOVERY_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T14:22:00+09:00",
+  "baseWave": {
+    "wave": 4,
+    "combinedEvidenceSha256": "7383ff4509bd4d2f254a511a80e313f625004231e6d615736375cae19cb89436",
+    "files": [
+      "content/corpus-200/materialization/wave-4.json",
+      "content/corpus-200/materialization/wave-4-families-a.json",
+      "content/corpus-200/materialization/wave-4-families-b.json"
+    ]
+  },
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "cj-altive-protein-chocolate-250ml-r1",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40211089",
+      "referencePeriod": "current-official-product-page-reviewed-2026-08-25",
+      "note": "CJ The Market official product page identifies Altive Protein Chocolate 250 mL and declares 21 g protein per pack."
+    },
+    {
+      "id": "cj-altive-protein-banana-250ml-r1",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40205295",
+      "referencePeriod": "current-official-product-page-reviewed-2026-08-25",
+      "note": "CJ The Market official product page identifies Altive Protein Banana 250 mL and declares 21 g protein per pack."
+    },
+    {
+      "id": "cj-altive-protein-chestnut-250ml-r1",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40229746",
+      "referencePeriod": "current-official-product-page-reviewed-2026-08-25",
+      "note": "CJ The Market official product page identifies Altive Protein Chestnut 250 mL and declares 21 g protein per pack."
+    },
+    {
+      "id": "cj-altive-protein-pistachio-250ml-r1",
+      "sourceKey": "cj-official-product",
+      "url": "https://m.cjthemarket.com/the/product/product-main?prdCd=40218775",
+      "referencePeriod": "current-official-product-page-reviewed-2026-08-25",
+      "note": "CJ The Market official product page identifies Altive Protein Pistachio 250 mL and declares 21 g protein per pack."
+    },
+    {
+      "id": "cj-altive-protein-royal-milk-tea-250ml-r1",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40217271",
+      "referencePeriod": "current-official-product-page-reviewed-2026-08-25",
+      "note": "CJ The Market official product page identifies Altive Protein Royal Milk Tea 250 mL and declares 20 g protein per pack."
+    }
+  ],
+  "recoveredFacts": [
+    {
+      "manifestId": "cc200-convenience-protein-01",
+      "familyId": "convenience-protein",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "officialDeclaredProteinGramsPer250ml",
+      "direction": "DESC",
+      "sourceSnapshotIds": [
+        "cj-altive-protein-chocolate-250ml-r1",
+        "cj-altive-protein-banana-250ml-r1",
+        "cj-altive-protein-chestnut-250ml-r1",
+        "cj-altive-protein-pistachio-250ml-r1",
+        "cj-altive-protein-royal-milk-tea-250ml-r1"
+      ],
+      "entries": [
+        {
+          "itemKey": "altive-protein-chocolate-250ml",
+          "label": "Altive Protein Chocolate 250 mL",
+          "value": 21
+        },
+        {
+          "itemKey": "altive-protein-banana-250ml",
+          "label": "Altive Protein Banana 250 mL",
+          "value": 21
+        },
+        {
+          "itemKey": "altive-protein-chestnut-250ml",
+          "label": "Altive Protein Chestnut 250 mL",
+          "value": 21
+        },
+        {
+          "itemKey": "altive-protein-pistachio-250ml",
+          "label": "Altive Protein Pistachio 250 mL",
+          "value": 21
+        },
+        {
+          "itemKey": "altive-protein-royal-milk-tea-250ml",
+          "label": "Altive Protein Royal Milk Tea 250 mL",
+          "value": 20
+        }
+      ],
+      "scopeBoundary": "EXACT_FROZEN_FIVE_FLAVOR_SUBSET_CJ_OFFICIAL_PRODUCT_SURFACES",
+      "tieBoundary": "EQUAL_PROTEIN_VALUES_DO_NOT_IMPLY_SECONDARY_ORDER"
+    }
+  ],
+  "remainingBlockedFacts": [
+    {
+      "manifestId": "cc200-convenience-protein-02",
+      "blocker": "COMPLETE_CURRENT_OFFICIAL_KCAL_LABEL_SET_NOT_RECOVERED_FOR_ALL_FIVE_EXACT_FROZEN_FLAVORS_SO_PROTEIN_PER_KCAL_IS_NOT_DERIVED"
+    },
+    {
+      "manifestId": "cc200-convenience-protein-03",
+      "blocker": "COMPLETE_CURRENT_OFFICIAL_SODIUM_LABEL_SET_NOT_RECOVERED_FOR_ALL_FIVE_EXACT_FROZEN_FLAVORS"
+    }
+  ],
+  "closure": {
+    "blockedFactsBeforeRecovery": 13,
+    "recoveredFactCount": 1,
+    "blockedFactsAfterRecovery": 12,
+    "manifestCoverage": 200,
+    "productionRowsWritten": 0,
+    "publicRowsPublished": 0,
+    "recommendationRuns": 0,
+    "editorialWeightsAssigned": 0,
+    "fabricatedVoteRows": 0
+  }
+}
