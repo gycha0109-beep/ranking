@@ -1,0 +1,148 @@
+{
+  "version": "content-corpus-200-blocked-evidence-recovery-r8-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "status": "BLOCKED_EVIDENCE_RECOVERY_PARTIALLY_MATERIALIZED",
+  "observedAt": "2026-08-25T18:10:00+09:00",
+  "baseWave": {
+    "wave": 4,
+    "combinedEvidenceSha256": "7383ff4509bd4d2f254a511a80e313f625004231e6d615736375cae19cb89436",
+    "files": [
+      "content/corpus-200/materialization/wave-4.json",
+      "content/corpus-200/materialization/wave-4-families-a.json",
+      "content/corpus-200/materialization/wave-4-families-b.json"
+    ]
+  },
+  "priorRecoveries": [
+    {"id": "r1", "evidenceSha256": "6e5897ef79dc7280e7da1e2b87a2f663f49d383f27a7d65885c84fa09381c42c"},
+    {"id": "r2", "evidenceSha256": "6ded2c4dc33993e223ffac3ed777a232ec40aa9d5a7556b6c25d1f28653474cc"},
+    {"id": "r3", "evidenceSha256": "fe70b352fa329a1d230c87cb071b44e92b67e246758b62099aec7c7679505a9e"},
+    {"id": "r4", "evidenceSha256": "efedcd57539a34169fc658b8b34a78006b031178e5ddbe15ef9f4042bf782d61"},
+    {"id": "r5", "evidenceSha256": "54d94c069c2ea8731330d3aa1b2d9620bd37559f4e4df9cdd42692352927ac37"},
+    {"id": "r6", "evidenceSha256": "f2053d7fe208cc6bf658ddebd9c21a2ed3778ed84e90c73f2e94f43f3eeeab36"},
+    {"id": "r7", "evidenceSha256": "c84557fe19b4371c2ab2fcc093197ecb111f588b1693fea1b767f4fc0930d334"}
+  ],
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "sourceSnapshots": [
+    {
+      "id": "cj-altive-chocolate-nutrition-r8",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40211089",
+      "referencePeriod": "current-official-product-page-and-label-reviewed-2026-08-25",
+      "nutrition": {"proteinGrams": 21, "kcal": 125, "sodiumMg": 330},
+      "note": "CJ The Market official product surface for Altive Protein Chocolate 250 mL; reviewed package/detail nutrition evidence declares 21 g protein, 125 kcal and 330 mg sodium per 250 mL pack."
+    },
+    {
+      "id": "cj-altive-banana-nutrition-r8",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40205295",
+      "referencePeriod": "current-official-product-page-and-label-reviewed-2026-08-25",
+      "nutrition": {"proteinGrams": 21, "kcal": 115, "sodiumMg": 450},
+      "note": "CJ The Market official product surface for Altive Protein Banana 250 mL; reviewed package/detail nutrition evidence declares 21 g protein, 115 kcal and 450 mg sodium per 250 mL pack."
+    },
+    {
+      "id": "cj-altive-chestnut-nutrition-r8",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40211091",
+      "referencePeriod": "current-official-product-page-and-label-reviewed-2026-08-25",
+      "nutrition": {"proteinGrams": 21, "kcal": 115, "sodiumMg": 320},
+      "note": "CJ The Market official product surface for Altive Protein Chestnut 250 mL; reviewed package/detail nutrition evidence declares 21 g protein, 115 kcal and 320 mg sodium per 250 mL pack."
+    },
+    {
+      "id": "cj-altive-pistachio-nutrition-r8",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40218775",
+      "referencePeriod": "current-official-product-page-and-label-reviewed-2026-08-25",
+      "nutrition": {"proteinGrams": 21, "kcal": 115, "sodiumMg": 420},
+      "note": "CJ The Market official product surface for Altive Protein Pistachio 250 mL; reviewed package/detail nutrition evidence declares 21 g protein, 115 kcal and 420 mg sodium per 250 mL pack."
+    },
+    {
+      "id": "cj-altive-royal-milk-tea-nutrition-r8",
+      "sourceKey": "cj-official-product",
+      "url": "https://www.cjthemarket.com/the/product/product-main?prdCd=40218774",
+      "referencePeriod": "current-official-product-page-and-label-reviewed-2026-08-25",
+      "nutrition": {"proteinGrams": 20, "kcal": 115, "sodiumMg": 380},
+      "note": "CJ The Market official product surface for Altive Protein Royal Milk Tea 250 mL; reviewed package/detail nutrition evidence declares 20 g protein, 115 kcal and 380 mg sodium per 250 mL pack."
+    }
+  ],
+  "labelEvidence": [
+    {"itemKey": "altive-protein-chocolate-250ml", "label": "Altive Protein Chocolate 250 mL", "sourceSnapshotId": "cj-altive-chocolate-nutrition-r8", "proteinGrams": 21, "kcal": 125, "sodiumMg": 330},
+    {"itemKey": "altive-protein-banana-250ml", "label": "Altive Protein Banana 250 mL", "sourceSnapshotId": "cj-altive-banana-nutrition-r8", "proteinGrams": 21, "kcal": 115, "sodiumMg": 450},
+    {"itemKey": "altive-protein-chestnut-250ml", "label": "Altive Protein Chestnut 250 mL", "sourceSnapshotId": "cj-altive-chestnut-nutrition-r8", "proteinGrams": 21, "kcal": 115, "sodiumMg": 320},
+    {"itemKey": "altive-protein-pistachio-250ml", "label": "Altive Protein Pistachio 250 mL", "sourceSnapshotId": "cj-altive-pistachio-nutrition-r8", "proteinGrams": 21, "kcal": 115, "sodiumMg": 420},
+    {"itemKey": "altive-protein-royal-milk-tea-250ml", "label": "Altive Protein Royal Milk Tea 250 mL", "sourceSnapshotId": "cj-altive-royal-milk-tea-nutrition-r8", "proteinGrams": 20, "kcal": 115, "sodiumMg": 380}
+  ],
+  "recoveredFacts": [
+    {
+      "manifestId": "cc200-convenience-protein-02",
+      "familyId": "convenience-protein",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "officialDeclaredProteinGramsPer100Kcal",
+      "direction": "DESC",
+      "derivationBoundary": "PROTEIN_GRAMS_DIVIDED_BY_KCAL_TIMES_100_USING_EXACT_250ML_LABEL_VALUES",
+      "scopeBoundary": "EXACT_WAVE4_FROZEN_FIVE_ALTIVE_250ML_FLAVOR_SUBSET_NOT_ALL_CONVENIENCE_PROTEIN_PRODUCTS",
+      "tiePolicy": "NO_SECONDARY_ORDER_WITHIN_EQUAL_DERIVED_VALUES",
+      "sourceSnapshotIds": [
+        "cj-altive-chocolate-nutrition-r8",
+        "cj-altive-banana-nutrition-r8",
+        "cj-altive-chestnut-nutrition-r8",
+        "cj-altive-pistachio-nutrition-r8",
+        "cj-altive-royal-milk-tea-nutrition-r8"
+      ],
+      "entries": [
+        {"itemKey": "altive-protein-banana-250ml", "label": "Altive Protein Banana 250 mL", "proteinGrams": 21, "kcal": 115, "value": 18.26087},
+        {"itemKey": "altive-protein-chestnut-250ml", "label": "Altive Protein Chestnut 250 mL", "proteinGrams": 21, "kcal": 115, "value": 18.26087},
+        {"itemKey": "altive-protein-pistachio-250ml", "label": "Altive Protein Pistachio 250 mL", "proteinGrams": 21, "kcal": 115, "value": 18.26087},
+        {"itemKey": "altive-protein-royal-milk-tea-250ml", "label": "Altive Protein Royal Milk Tea 250 mL", "proteinGrams": 20, "kcal": 115, "value": 17.391304},
+        {"itemKey": "altive-protein-chocolate-250ml", "label": "Altive Protein Chocolate 250 mL", "proteinGrams": 21, "kcal": 125, "value": 16.8}
+      ]
+    },
+    {
+      "manifestId": "cc200-convenience-protein-03",
+      "familyId": "convenience-protein",
+      "baseMaterializationStatus": "BLOCKED_SOURCE_GAP",
+      "materializationStatus": "RECOVERED_MATERIALIZED_FACT",
+      "metric": "officialDeclaredSodiumMgPer250ml",
+      "direction": "ASC",
+      "scopeBoundary": "EXACT_WAVE4_FROZEN_FIVE_ALTIVE_250ML_FLAVOR_SUBSET_NOT_ALL_CONVENIENCE_PROTEIN_PRODUCTS",
+      "tiePolicy": "NO_SECONDARY_ORDER_IF_EQUAL_SOURCE_VALUES_OCCUR",
+      "sourceSnapshotIds": [
+        "cj-altive-chocolate-nutrition-r8",
+        "cj-altive-banana-nutrition-r8",
+        "cj-altive-chestnut-nutrition-r8",
+        "cj-altive-pistachio-nutrition-r8",
+        "cj-altive-royal-milk-tea-nutrition-r8"
+      ],
+      "entries": [
+        {"itemKey": "altive-protein-chestnut-250ml", "label": "Altive Protein Chestnut 250 mL", "value": 320},
+        {"itemKey": "altive-protein-chocolate-250ml", "label": "Altive Protein Chocolate 250 mL", "value": 330},
+        {"itemKey": "altive-protein-royal-milk-tea-250ml", "label": "Altive Protein Royal Milk Tea 250 mL", "value": 380},
+        {"itemKey": "altive-protein-pistachio-250ml", "label": "Altive Protein Pistachio 250 mL", "value": 420},
+        {"itemKey": "altive-protein-banana-250ml", "label": "Altive Protein Banana 250 mL", "value": 450}
+      ]
+    }
+  ],
+  "remainingTargetFamilyBlockedFacts": [],
+  "closure": {
+    "wave4BlockedFactsOriginally": 13,
+    "wave4RecoveredThroughR8": 3,
+    "wave4BlockedFactsAfterR8": 10,
+    "convenienceProteinFactCount": 3,
+    "convenienceProteinRecoveredFactCount": 3,
+    "remainingConvenienceProteinBlockedFacts": 0,
+    "manifestCoverage": 200,
+    "productionRowsWritten": 0,
+    "publicRowsPublished": 0,
+    "recommendationRuns": 0,
+    "editorialWeightsAssigned": 0,
+    "fabricatedVoteRows": 0
+  }
+}
