@@ -1,0 +1,112 @@
+{
+  "version": "content-corpus-200-editorial-dimension-evidence-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "dimensionRegistryVersion": "content-corpus-200-editorial-dimension-contract-registry-and-evidence-plan-v1",
+  "dimensionRegistrySha256": "c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7",
+  "candidateMaterializationWaveVersion": "content-corpus-200-wave-1-v1",
+  "candidateMaterializationWaveSha256": "7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c",
+  "status": "MATERIALIZED_EXACT_FROZEN_FACT_BINDINGS_ONLY_NO_EDITORIAL_SCORING",
+  "observedAt": "2026-08-26T13:11:20+09:00",
+  "scope": {
+    "waveFamilies": [
+      "steam-mainstream",
+      "korean-box-office",
+      "netflix-titles",
+      "smartphones",
+      "kbo-clubs"
+    ],
+    "waveEditorialRows": 25,
+    "materializedSourceBindings": 3,
+    "newNumericValuesAuthored": 0,
+    "rubricDefinitionsAuthored": 0,
+    "rubricOutcomesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "materializationPolicy": {
+    "allowedProjection": "REUSE_EXACT_MATERIALIZED_FACT_ENTRIES_WITHIN_THE_SAME_FAMILY_AND_EXACT_CANDIDATE_UNIVERSE_NO_TRANSFORM",
+    "candidateCoverageRule": "FACT_ENTRY_ITEM_KEYS_MUST_EXACTLY_MATCH_THE_EDITORIAL_CANDIDATE_UNIVERSE",
+    "sourceSnapshotRule": "SOURCE_SNAPSHOT_IDS_ARE_INHERITED_FROM_THE_MATERIALIZED_FACT_WITHOUT_REINTERPRETATION",
+    "numericValueRule": "NO_NEW_NUMERIC_VALUE_MAY_BE_AUTHORED_OR_INFERRED_IN_THIS_GATE",
+    "directionRule": "FACT_RANKING_DIRECTION_IS_NOT_AN_EDITORIAL_PREFERENCE_DIRECTION_AND_MUST_NOT_BE_INHERITED",
+    "normalizationRule": "NO_EDITORIAL_NORMALIZATION_OR_SCALE_TRANSFORM_IS_AUTHORIZED",
+    "partialCoverageRule": "PARTIAL_FACT_COVERAGE_CANNOT_BE_PROJECTED_AS_EDITORIAL_DIMENSION_EVIDENCE",
+    "mixedDimensionRule": "MIXED_EVIDENCE_AND_RUBRIC_DIMENSIONS_REMAIN_PENDING_UNTIL_ALL_OBSERVED_INPUTS_AND_THE_RUBRIC_JOIN_RULE_ARE_REVIEWED",
+    "rubricDimensionRule": "EXPLICIT_EDITORIAL_RUBRIC_DIMENSIONS_REMAIN_PENDING_WITHOUT_PER_CANDIDATE_VALUES",
+    "deterministicDerivedRule": "DETERMINISTIC_DERIVED_DIMENSIONS_REMAIN_PENDING_UNTIL_A_FORMULA_IS_SEPARATELY_REVIEWED"
+  },
+  "sourceBindings": [
+    {
+      "editorialManifestId": "cc200-smartphones-05",
+      "dimensionIndex": 4,
+      "dimensionName": "무게",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceFactManifestId": "cc200-smartphones-03",
+      "sourceMetric": "officialWeightGrams",
+      "projection": "REUSE_EXACT_FACT_ENTRIES_NO_TRANSFORM",
+      "editorialPreferenceDirectionMaterialized": false,
+      "normalizationMaterialized": false
+    },
+    {
+      "editorialManifestId": "cc200-smartphones-06",
+      "dimensionIndex": 1,
+      "dimensionName": "무게",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceFactManifestId": "cc200-smartphones-03",
+      "sourceMetric": "officialWeightGrams",
+      "projection": "REUSE_EXACT_FACT_ENTRIES_NO_TRANSFORM",
+      "editorialPreferenceDirectionMaterialized": false,
+      "normalizationMaterialized": false
+    },
+    {
+      "editorialManifestId": "cc200-kbo-clubs-05",
+      "dimensionIndex": 0,
+      "dimensionName": "홈런",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceFactManifestId": "cc200-kbo-clubs-02",
+      "sourceMetric": "teamHomeRuns",
+      "projection": "REUSE_EXACT_FACT_ENTRIES_NO_TRANSFORM",
+      "editorialPreferenceDirectionMaterialized": false,
+      "normalizationMaterialized": false
+    }
+  ],
+  "nonMaterializedPolicy": {
+    "allOtherWave1SourceMeasurableSlots": "PENDING_EXACT_SOURCE_OR_FULL_CANDIDATE_COVERAGE",
+    "allWave1ExplicitEditorialRubricSlots": "PENDING_REVIEWED_RUBRIC_DEFINITION",
+    "allWave1MixedSlots": "PENDING_COMPLETE_OBSERVED_INPUTS_AND_REVIEWED_JOIN_RULE",
+    "allWave1DeterministicDerivedSlots": "PENDING_REVIEWED_FORMULA",
+    "missingEvidenceImputation": "FORBIDDEN",
+    "crossDimensionProxySubstitution": "FORBIDDEN",
+    "crossCandidateInference": "FORBIDDEN"
+  },
+  "reviewSummary": {
+    "bindingsAreEvidenceReferencesNotCopiedScores": true,
+    "factDirectionsNotInherited": true,
+    "candidateCoverageMustBeExact": true,
+    "sourceSnapshotsRemainFrozen": true,
+    "newNumericValuesAuthored": 0,
+    "subjectiveNumericValuesAuthored": 0,
+    "fabricatedValues": 0,
+    "fabricatedWeights": 0,
+    "scoringExecutionReadyRows": 0
+  },
+  "gateDisposition": "WAVE_1_EXACT_SOURCE_EVIDENCE_BINDINGS_MATERIALIZED_WITH_ZERO_NEW_VALUES_AND_ZERO_SCORING",
+  "nextGate": "EDITORIAL_EXPLICIT_RUBRIC_DEFINITION_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateUniverseMutationAuthorized": false,
+    "newEditorialNumericValueAuthoringAuthorized": false,
+    "editorialPreferenceDirectionAssignmentAuthorized": false,
+    "editorialNormalizationAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialCompositeScoringAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
