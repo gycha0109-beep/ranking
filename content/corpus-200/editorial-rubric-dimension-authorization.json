@@ -1,0 +1,70 @@
+{
+  "version": "content-corpus-200-editorial-rubric-dimension-authorization-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "editorialScoringReviewVersion": "content-corpus-200-editorial-scoring-review-v1",
+  "editorialScoringReviewSha256": "107fdb5d026333b55b21f3ce5cb8fafb754c557e5691f7cb3f3f6b9b8e2bc496",
+  "status": "AUTHORIZED_PREPARATION_ONLY_NO_EDITORIAL_SCORING_EXECUTION",
+  "authorizedAt": "2026-08-26T12:25:00+09:00",
+  "scope": {
+    "editorialRows": 90,
+    "candidateFrozenRowsEligibleForPreparation": 76,
+    "candidateGapRowsExcludedFromPreparation": 14,
+    "scoringExecutionReadyRows": 0
+  },
+  "dimensionEvidenceContract": {
+    "allowedEvidenceClasses": [
+      "SOURCE_MEASURABLE",
+      "DETERMINISTIC_DERIVED",
+      "EXPLICIT_EDITORIAL_RUBRIC",
+      "MIXED_EVIDENCE_AND_RUBRIC"
+    ],
+    "classificationRequiredPerDimension": true,
+    "sourceMeasurableRule": "VALUE_MUST_BIND_TO_A_REVIEWED_SOURCE_SNAPSHOT_OR_EXACT_OFFICIAL_PRODUCT_OR_STATISTICAL_SURFACE",
+    "deterministicDerivedRule": "DERIVATION_MUST_USE_DECLARED_INPUTS_AND_A_REPRODUCIBLE_FORMULA_WITH_NO_HIDDEN_JUDGMENT",
+    "explicitEditorialRubricRule": "SUBJECTIVE_DIMENSIONS_REQUIRE_EXPLICIT_ANCHORED_CRITERIA_BEFORE_ANY_PER_CANDIDATE_VALUE_IS_AUTHORED",
+    "mixedEvidenceAndRubricRule": "MIXED_DIMENSIONS_MUST_SEPARATE_OBSERVED_INPUTS_FROM_EDITORIAL_JUDGMENT_AND_DOCUMENT_THE_JOIN_RULE",
+    "normalizationRule": "CROSS_CANDIDATE_VALUES_MUST_SHARE_SCOPE_UNIT_REFERENCE_PERIOD_AND_DIRECTION_OR_DECLARE_A_REVIEWED_NORMALIZATION",
+    "missingEvidenceRule": "A_REQUIRED_DIMENSION_WITHOUT_A_REVIEWED_VALUE_OR_RUBRIC_OUTCOME_BLOCKS_THE_ROW_FROM_SCORING_EXECUTION",
+    "candidateGapRule": "BLOCKED_CANDIDATE_GAP_ROWS_REMAIN_EXCLUDED_UNTIL_THEIR_CANDIDATE_UNIVERSE_IS_SEPARATELY_RECOVERED"
+  },
+  "authorizedPreparation": {
+    "dimensionContractClassification": true,
+    "rubricSpecificationDrafting": true,
+    "objectiveSourceEvidenceCollection": true,
+    "deterministicDerivedMetricDefinition": true,
+    "normalizationPlanDrafting": true,
+    "rowLevelEvidenceMatrixDrafting": true
+  },
+  "stillProhibited": {
+    "hiddenLlmJudgmentAsNumericEvidence": true,
+    "unreviewedSubjectiveDimensionValues": true,
+    "automaticWeightAssignment": true,
+    "editorialCompositeScoreExecution": true,
+    "editorialOrderingMaterialization": true,
+    "candidateGapInference": true,
+    "productionDatabaseWrites": true,
+    "publicPublication": true,
+    "recommendationEvaluationOrActivation": true,
+    "rf1PublicOrderingActivation": true
+  },
+  "weightBoundary": {
+    "weightsRemainUnassigned": true,
+    "weightDraftingAuthorizedAtThisGate": false,
+    "weightReviewMayBeginOnlyAfterDimensionEvidenceMatrixReview": true,
+    "compositeFormulaRemainsUnassigned": true
+  },
+  "gateDisposition": "EDITORIAL_SCORING_RUBRIC_AND_DIMENSION_EVIDENCE_AUTHORIZATION_GRANTED_FOR_PREPARATION_ONLY",
+  "nextGate": "EDITORIAL_DIMENSION_CONTRACT_REGISTRY_AND_EVIDENCE_PLAN",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
