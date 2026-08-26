@@ -24,7 +24,7 @@ const files = {
 const MANIFEST_SHA = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
 const PREFLIGHT_SHA = 'a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175'
 const OVERLAP_SHA = 'fb309dbb9d18514afbc9b01c3f573fd5b05eb06f84eafaa4fddaeb7e1e968205'
-const EXPECTED = 'UNSEALED_FIRST_OBSERVATION'
+const EXPECTED = '923571392c401674d64a21e3d9f96231f417c702100426a866df912306e57cad'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 proposed taxonomy review verification failed: ${message}`)
