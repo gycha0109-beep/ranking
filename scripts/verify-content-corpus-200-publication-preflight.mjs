@@ -24,7 +24,7 @@ const files = {
 
 const MANIFEST_SHA = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
 const EFFECTIVE_SHA = 'e25f7ba735695f8171b22ce9ba0d6bb0e6e36dea1963d3596d3edbd9a5e14618'
-const EXPECTED = '__UNSEALED_FIRST_RUN__'
+const EXPECTED = 'a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 publication preflight verification failed: ${message}`)
