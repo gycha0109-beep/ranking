@@ -30,7 +30,7 @@ const files = {
 
 const MANIFEST_SHA = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
 const AUTHORIZATION_SHA = 'e923fc17e84030f79d402ccd1188e940bd4482ca4547a0ea6f81202bc360afe0'
-const EXPECTED = 'UNSEALED_EDITORIAL_DIMENSION_CONTRACT_REGISTRY'
+const EXPECTED = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial dimension contract registry verification failed: ${message}`)
