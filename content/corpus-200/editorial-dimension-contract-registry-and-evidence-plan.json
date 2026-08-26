@@ -1,0 +1,182 @@
+{
+  "version": "content-corpus-200-editorial-dimension-contract-registry-and-evidence-plan-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "authorizationVersion": "content-corpus-200-editorial-rubric-dimension-authorization-v1",
+  "authorizationSha256": "e923fc17e84030f79d402ccd1188e940bd4482ca4547a0ea6f81202bc360afe0",
+  "status": "REVIEWED_DIMENSION_CONTRACT_REGISTRY_AND_EVIDENCE_PLAN_NO_VALUES",
+  "reviewedAt": "2026-08-26T12:49:00+09:00",
+  "scope": {
+    "editorialRows": 90,
+    "declaredDimensionSlots": 394,
+    "uniqueDimensionNames": 312,
+    "candidateFrozenRowsEligibleForEvidencePreparation": 76,
+    "candidateGapRowsExcludedFromEvidenceExecution": 14,
+    "materializedDimensionValues": 0,
+    "reviewedWeights": 0,
+    "scoringExecutionReadyRows": 0
+  },
+  "registryDerivation": {
+    "mode": "DERIVE_ONE_SLOT_RECORD_FOR_EVERY_FROZEN_MANIFEST_EDITORIAL_COMPOSITE_DIMENSION",
+    "slotIdentity": "manifestId + dimensionIndex + exactDimensionName",
+    "classificationPriority": [
+      "BLOCKED_ROW_EXECUTION_EXCLUSION",
+      "SOURCE_MEASURABLE_EXACT_NAME",
+      "MIXED_EVIDENCE_AND_RUBRIC_EXACT_NAME",
+      "DETERMINISTIC_DERIVED_EXACT_NAME",
+      "DEFAULT_EXPLICIT_EDITORIAL_RUBRIC"
+    ],
+    "defaultEvidenceClass": "EXPLICIT_EDITORIAL_RUBRIC",
+    "defaultReason": "CONSERVATIVE_NO_OBJECTIVE_MEASURABILITY_INFERRED_FROM_A_DIMENSION_LABEL",
+    "sourceMeasurableExactDimensionNames": [
+      "협동 인원",
+      "최소 사양",
+      "러닝타임",
+      "총 러닝타임",
+      "회차 길이",
+      "무게",
+      "폭",
+      "화면 크기",
+      "메모리 구성",
+      "포트",
+      "저장장치",
+      "가격",
+      "홈런",
+      "장타율",
+      "득점",
+      "슈팅",
+      "원정 일정",
+      "고속 주행거리",
+      "급속충전",
+      "주행거리",
+      "충전속도",
+      "최소 연결시간",
+      "영업시간",
+      "24시간 시설",
+      "단백질",
+      "탄수화물",
+      "열량",
+      "나트륨",
+      "조리 필요",
+      "동시접속",
+      "프로필",
+      "키즈",
+      "4K",
+      "다운로드",
+      "유선 사용",
+      "멀티포인트"
+    ],
+    "mixedEvidenceAndRubricExactDimensionNames": [
+      "CPU/GPU",
+      "배터리 용량/테스트"
+    ],
+    "deterministicDerivedExactDimensionNames": [],
+    "conservativeClassificationRule": "EXACT_NAMES_NOT_LISTED_ABOVE_REMAIN_EXPLICIT_EDITORIAL_RUBRIC_UNTIL_A_SEPARATE_REVIEW_PROVES_A_STRONGER_EVIDENCE_CONTRACT",
+    "noTokenOrSubstringPromotion": true,
+    "noLlmSemanticPromotion": true
+  },
+  "candidateGapExclusions": {
+    "rule": "BLOCKED_CANDIDATE_GAP_ROWS_REMAIN_IN_THE_REGISTRY_BUT_EVIDENCE_EXECUTION_IS_EXCLUDED",
+    "manifestIds": [
+      "cc200-instant-noodles-04",
+      "cc200-instant-noodles-05",
+      "cc200-instant-noodles-06",
+      "cc200-instant-noodles-07",
+      "cc200-kpop-songs-04",
+      "cc200-kpop-songs-05",
+      "cc200-kpop-songs-06",
+      "cc200-kpop-songs-07",
+      "cc200-kpop-songs-08",
+      "cc200-kpop-artists-albums-04",
+      "cc200-kpop-artists-albums-05",
+      "cc200-kpop-artists-albums-06",
+      "cc200-kpop-artists-albums-07",
+      "cc200-kpop-artists-albums-08"
+    ]
+  },
+  "evidencePlanByClass": {
+    "SOURCE_MEASURABLE": {
+      "requiredBeforeAnyValue": [
+        "exact source snapshot or official surface",
+        "candidate binding",
+        "unit or categorical domain",
+        "reference period",
+        "direction where normalization is later required"
+      ],
+      "valueAuthoringAtThisGate": false,
+      "normalizationAtThisGate": false
+    },
+    "DETERMINISTIC_DERIVED": {
+      "requiredBeforeAnyValue": [
+        "reviewed input fields",
+        "reproducible formula",
+        "missing-input behavior",
+        "unit and direction"
+      ],
+      "valueAuthoringAtThisGate": false,
+      "formulaAuthoringAtThisGate": false
+    },
+    "EXPLICIT_EDITORIAL_RUBRIC": {
+      "requiredBeforeAnyValue": [
+        "dimension-specific observable criteria",
+        "anchored rubric levels without hidden judgment",
+        "candidate evidence citation requirements",
+        "tie and insufficient-evidence behavior"
+      ],
+      "perCandidateRubricOutcomeAtThisGate": false,
+      "numericValueAuthoringAtThisGate": false
+    },
+    "MIXED_EVIDENCE_AND_RUBRIC": {
+      "requiredBeforeAnyValue": [
+        "separated observed source inputs",
+        "explicit editorial rubric",
+        "reviewed join rule",
+        "normalization boundary"
+      ],
+      "perCandidateJoinedValueAtThisGate": false,
+      "numericValueAuthoringAtThisGate": false
+    }
+  },
+  "rowEvidencePlan": {
+    "candidateFrozenRowStatus": "PLAN_ONLY_DIMENSION_VALUES_NOT_MATERIALIZED",
+    "candidateGapRowStatus": "EXCLUDED_CANDIDATE_GAP",
+    "allRequiredDimensionsMustResolveBeforeRowScoring": true,
+    "partialScoringForbidden": true,
+    "missingDimensionImputationForbidden": true,
+    "crossRowWeightReuseByInferenceForbidden": true
+  },
+  "weightBoundary": {
+    "weightsRemainUnassigned": true,
+    "weightDraftingAuthorized": false,
+    "weightReviewAuthorized": false,
+    "compositeFormulaRemainsUnassigned": true,
+    "orderingMaterializationAuthorized": false
+  },
+  "reviewSummary": {
+    "slotRegistryDerivationDefined": true,
+    "exactNameSourcePromotionOnly": true,
+    "ambiguousDimensionsDefaultToExplicitRubric": true,
+    "blockedRowsPreservedWithoutExecution": true,
+    "rubricDefinitionsMaterialized": 0,
+    "sourceDimensionValuesMaterialized": 0,
+    "derivedDimensionValuesMaterialized": 0,
+    "mixedDimensionValuesMaterialized": 0,
+    "fabricatedDimensionValues": 0,
+    "fabricatedWeights": 0
+  },
+  "gateDisposition": "EDITORIAL_DIMENSION_CONTRACT_REGISTRY_AND_EVIDENCE_PLAN_REVIEWED_WITH_ZERO_DIMENSION_VALUES",
+  "nextGate": "EDITORIAL_DIMENSION_EVIDENCE_MATERIALIZATION_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateUniverseMutationAuthorized": false,
+    "editorialDimensionValueMaterializationAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialCompositeScoringAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}

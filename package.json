@@ -74,6 +74,7 @@
     "verify:content-corpus-200-proposed-taxonomy-review": "node scripts/verify-content-corpus-200-proposed-taxonomy-review.mjs",
     "verify:content-corpus-200-editorial-scoring-review": "node scripts/verify-content-corpus-200-editorial-scoring-review.mjs",
     "verify:content-corpus-200-editorial-rubric-dimension-authorization": "node scripts/verify-content-corpus-200-editorial-rubric-dimension-authorization.mjs",
+    "verify:content-corpus-200-editorial-dimension-contract-registry": "node scripts/verify-content-corpus-200-editorial-dimension-contract-registry.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:ui-2c": "node scripts/verify-ui-2c-contracts.mjs",
     "verify:ui-2d": "node scripts/verify-ui-2d-contracts.mjs",
