@@ -1,0 +1,56 @@
+{
+  "version": "content-corpus-200-publication-preflight-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "effectiveMaterializationStateVersion": "content-corpus-200-effective-materialization-state-v1",
+  "effectiveMaterializationStateSha256": "e25f7ba735695f8171b22ce9ba0d6bb0e6e36dea1963d3596d3edbd9a5e14618",
+  "status": "DERIVED_NON_AUTHORIZING_PUBLICATION_PREFLIGHT",
+  "derivedAt": "2026-08-26T10:43:00+09:00",
+  "interpretation": "EFFECTIVE_READY_DOES_NOT_MEAN_PUBLICATION_READY",
+  "stages": {
+    "materialization": {
+      "totalRows": 200,
+      "effectiveReadyRows": 159,
+      "blockedSourceOrCandidateGapRows": 41
+    },
+    "authoritativeOrdering": {
+      "factRowsWithMaterializedOrdering": 40,
+      "editorialRowsPendingReviewedScoring": 76,
+      "communityVoteRowsPendingOrganicOutcome": 43,
+      "rowsStillBlockedBySourceOrCandidateGap": 41,
+      "totalRows": 200
+    },
+    "taxonomy": {
+      "existingRows": 70,
+      "proposedRows": 130,
+      "mutationAuthorized": false
+    },
+    "existingProductionOverlapReview": {
+      "reviewedRows": 0,
+      "pendingRows": 200,
+      "knownExactTitleDuplicatesInFrozenStaticProductionTitleSet": 0,
+      "exactTitleNonDuplicationDoesNotSatisfySemanticOverlapReview": true
+    },
+    "publicationClearance": {
+      "fullyPublicationClearedRows": 0,
+      "publicPublicationAuthorized": false,
+      "productionDatabaseWritesAuthorized": false
+    }
+  },
+  "nextGateQueue": [
+    "CURRENT_PRODUCTION_OVERLAP_REVIEW",
+    "PROPOSED_TAXONOMY_REVIEW",
+    "EDITORIAL_SCORING_REVIEW",
+    "COMMUNITY_VOTE_BOOTSTRAP_WITHOUT_FABRICATION",
+    "SEPARATE_PUBLICATION_AUTHORIZATION"
+  ],
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "voteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
