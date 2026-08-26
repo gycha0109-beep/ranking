@@ -72,6 +72,7 @@
     "verify:content-corpus-200-publication-preflight": "node scripts/verify-content-corpus-200-publication-preflight.mjs",
     "verify:content-corpus-200-current-production-overlap-review": "node scripts/verify-content-corpus-200-current-production-overlap-review.mjs",
     "verify:content-corpus-200-proposed-taxonomy-review": "node scripts/verify-content-corpus-200-proposed-taxonomy-review.mjs",
+    "verify:content-corpus-200-editorial-scoring-review": "node scripts/verify-content-corpus-200-editorial-scoring-review.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:ui-2c": "node scripts/verify-ui-2c-contracts.mjs",
     "verify:ui-2d": "node scripts/verify-ui-2d-contracts.mjs",
