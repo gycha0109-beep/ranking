@@ -130,7 +130,7 @@ for (const [wave, families] of familiesByWave) {
       allIds.push(ranking.manifestId)
       if (ranking.kind === 'FACT') {
         summary.fact.total += 1
-        if (ranking.materializationStatus === 'MATERIALIZED_FACT') {
+        if (['MATERIALIZED_FACT', 'MATERIALIZED_COMPARISON'].includes(ranking.materializationStatus)) {
           ok(!recoveredSet.has(ranking.manifestId), `${ranking.manifestId} cannot be both base-materialized and recovered`)
           summary.fact.materializedBase += 1
           summary.effectiveReadyRows += 1
