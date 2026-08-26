@@ -1,0 +1,84 @@
+{
+  "version": "content-corpus-200-proposed-taxonomy-review-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "publicationPreflightVersion": "content-corpus-200-publication-preflight-v1",
+  "publicationPreflightSha256": "a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175",
+  "currentProductionOverlapReviewVersion": "content-corpus-200-current-production-overlap-review-v1",
+  "currentProductionOverlapReviewSha256": "fb309dbb9d18514afbc9b01c3f573fd5b05eb06f84eafaa4fddaeb7e1e968205",
+  "status": "REVIEWED_NON_AUTHORIZING_PROPOSED_TAXONOMY_SNAPSHOT",
+  "reviewedAt": "2026-08-26T11:46:00+09:00",
+  "productionTaxonomySnapshot": {
+    "boundary": "READ_ONLY_HOSTED_PRODUCTION_TAXONOMY_SNAPSHOT",
+    "publishedRankingCount": 16,
+    "categories": [
+      { "slug": "culture-heritage", "name": "문화·유산", "isVisible": true },
+      { "slug": "education", "name": "교육", "isVisible": true },
+      { "slug": "foods", "name": "건강식품", "isVisible": true },
+      { "slug": "sports", "name": "스포츠", "isVisible": true },
+      { "slug": "statistics", "name": "통계", "isVisible": true },
+      { "slug": "technology", "name": "기술", "isVisible": true },
+      { "slug": "travel-transport", "name": "여행·교통", "isVisible": true }
+    ],
+    "subcategories": [
+      { "categorySlug": "culture-heritage", "slug": "world-heritage", "name": "세계유산", "isVisible": true },
+      { "categorySlug": "education", "slug": "pisa", "name": "PISA", "isVisible": true },
+      { "categorySlug": "sports", "slug": "fifa", "name": "FIFA", "isVisible": true },
+      { "categorySlug": "sports", "slug": "kbo", "name": "KBO", "isVisible": true },
+      { "categorySlug": "statistics", "slug": "korea", "name": "대한민국", "isVisible": true },
+      { "categorySlug": "statistics", "slug": "world", "name": "세계", "isVisible": true },
+      { "categorySlug": "statistics", "slug": "world-cities", "name": "세계 도시", "isVisible": true },
+      { "categorySlug": "technology", "slug": "supercomputers", "name": "슈퍼컴퓨터", "isVisible": true },
+      { "categorySlug": "travel-transport", "slug": "airports", "name": "공항", "isVisible": true }
+    ]
+  },
+  "reviewPolicy": {
+    "scope": "ONLY_FROZEN_MANIFEST_FAMILIES_MARKED_PROPOSED_ARE_REVIEWED_FOR_PATH_COHERENCE_AND_CURRENT_PRODUCTION_COLLISION",
+    "familyBoundary": "EACH_FAMILY_OWNS_EXACTLY_TEN_FROZEN_MANIFEST_ROWS_AND_ONE_CATEGORY_SUBCATEGORY_PATH",
+    "existingCategoryReuseRule": "A_PROPOSED_FAMILY_MAY_REUSE_AN_EXISTING_CATEGORY_ONLY_WHEN_ITS_SUBCATEGORY_PATH_IS_NEW_AND_DOMAIN_COHERENT",
+    "newCategoryRule": "A_NEW_CATEGORY_SLUG_MUST_BE_DISTINCT_FROM_THE_CURRENT_PRODUCTION_CATEGORY_SET_AND_GROUP_ONE_OR_MORE_INDEPENDENTLY_USEFUL_FAMILIES",
+    "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION",
+    "displayNameApprovalAuthorized": false,
+    "categoryCreationAuthorized": false,
+    "subcategoryCreationAuthorized": false
+  },
+  "proposedFamilyReviews": [
+    { "familyId": "steam-mainstream", "manifestRowCount": 10, "categorySlug": "games", "subcategorySlug": "steam", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Steam mainstream rankings form a specific child path under a games parent and do not collide with the current production taxonomy." },
+    { "familyId": "steam-coop-survival", "manifestRowCount": 10, "categorySlug": "games", "subcategorySlug": "coop-survival", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Co-op survival is a distinct games subdomain and shares the proposed games parent without requiring a second top-level category." },
+    { "familyId": "korean-box-office", "manifestRowCount": 10, "categorySlug": "media", "subcategorySlug": "korean-film", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Korean theatrical film rankings fit a media parent while remaining distinct from Netflix title and service-ranking paths." },
+    { "familyId": "netflix-titles", "manifestRowCount": 10, "categorySlug": "media", "subcategorySlug": "netflix", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Netflix title rankings are content-level media rankings and remain distinct from the streaming-services product comparison family." },
+    { "familyId": "kpop-songs", "manifestRowCount": 10, "categorySlug": "music", "subcategorySlug": "kpop-songs", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "K-pop song rankings form a song-level child path under music and do not collide with current production taxonomy." },
+    { "familyId": "kpop-artists-albums", "manifestRowCount": 10, "categorySlug": "music", "subcategorySlug": "kpop-artists", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "K-pop artist and album questions share the music parent but are distinct from the song-level family." },
+    { "familyId": "smartphones", "manifestRowCount": 10, "categorySlug": "technology", "subcategorySlug": "smartphones", "categoryDisposition": "EXISTING_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Technology already exists in production; smartphones require only a new child path and do not collide with supercomputers." },
+    { "familyId": "laptops", "manifestRowCount": 10, "categorySlug": "technology", "subcategorySlug": "laptops", "categoryDisposition": "EXISTING_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Technology already exists in production; laptops are a distinct device child path alongside the current supercomputers path." },
+    { "familyId": "electric-vehicles", "manifestRowCount": 10, "categorySlug": "mobility", "subcategorySlug": "electric-vehicles", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Electric-vehicle product and ownership questions form a mobility product domain distinct from the current airport-focused travel-transport taxonomy." },
+    { "familyId": "sunscreens", "manifestRowCount": 10, "categorySlug": "beauty", "subcategorySlug": "sunscreen", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Sunscreen product rankings form a clear beauty child path and do not collide with current production taxonomy." },
+    { "familyId": "skincare-serums", "manifestRowCount": 10, "categorySlug": "beauty", "subcategorySlug": "serum-ampoule", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Serum and ampoule rankings share the beauty parent while remaining distinct from the sunscreen family." },
+    { "familyId": "streaming-services", "manifestRowCount": 10, "categorySlug": "media", "subcategorySlug": "streaming-services", "categoryDisposition": "NEW_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Streaming-service product comparisons fit the media parent but are separated from title-level Netflix and theatrical-film paths." },
+    { "familyId": "anc-headphones", "manifestRowCount": 10, "categorySlug": "technology", "subcategorySlug": "headphones", "categoryDisposition": "EXISTING_CATEGORY", "subcategoryDisposition": "NEW_SUBCATEGORY_PATH", "reviewOutcome": "COHERENT_REQUIRES_SEPARATE_TAXONOMY_AUTHORIZATION", "note": "Technology already exists in production; headphones add a distinct device child path without colliding with existing subcategories." }
+  ],
+  "reviewSummary": {
+    "reviewedProposedFamilyCount": 13,
+    "reviewedProposedManifestRowCount": 130,
+    "existingTaxonomyFamilyCount": 7,
+    "existingTaxonomyManifestRowCount": 70,
+    "newCategorySlugCount": 5,
+    "newCategorySlugs": ["beauty", "games", "media", "mobility", "music"],
+    "reusedExistingCategorySlugCount": 1,
+    "reusedExistingCategorySlugs": ["technology"],
+    "newSubcategoryPathCount": 13,
+    "fullPathCollisionCount": 0,
+    "reviewedCoherentFamilyCount": 13,
+    "requiresRedesignFamilyCount": 0
+  },
+  "nextGate": "EDITORIAL_SCORING_REVIEW",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1PublicOrderingActivationAuthorized": false
+  }
+}
