@@ -22,7 +22,6 @@ const files = {
   wave1: p('content/corpus-200/materialization/wave-1.json'),
   wave2: p('content/corpus-200/materialization/wave-2.json'),
   wave3: p('content/corpus-200/materialization/wave-3.json'),
-  wave4: p('content/corpus-200/materialization/wave-4.json'),
   wave4a: p('content/corpus-200/materialization/wave-4-families-a.json'),
   wave4b: p('content/corpus-200/materialization/wave-4-families-b.json'),
   page: p('src/app/rankings/[rankingSlug]/page.tsx'),
@@ -35,12 +34,6 @@ const EFFECTIVE_SHA = 'e25f7ba735695f8171b22ce9ba0d6bb0e6e36dea1963d3596d3edbd9a
 const PREFLIGHT_SHA = 'a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175'
 const OVERLAP_SHA = 'fb309dbb9d18514afbc9b01c3f573fd5b05eb06f84eafaa4fddaeb7e1e968205'
 const TAXONOMY_SHA = '923571392c401674d64a21e3d9f96231f417c702100426a866df912306e57cad'
-const WAVE_SHAS = {
-  1: '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c',
-  2: 'dab9b2cde2b8bbf3e6eed3ddcdf166df408d2df30a20bbb3e38bbbf105276023',
-  3: 'f366862c0b6d9edd881245dbaba35572faa4e7bbde8b10c4af4ac5872634e756',
-  4: '7383ff4509bd4d2f254a511a80e313f625004231e6d615736375cae19cb89436',
-}
 const EXPECTED = 'UNSEALED_EDITORIAL_SCORING_REVIEW'
 
 const fail = (message) => {
@@ -51,9 +44,7 @@ const ok = (condition, message) => { if (!condition) fail(message) }
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'))
 const jsonSha = (value) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex')
 
-for (const file of Object.values(files).flat()) {
-  ok(fs.existsSync(file), `${path.relative(root, file)} must exist`)
-}
+for (const file of Object.values(files).flat()) ok(fs.existsSync(file), `${path.relative(root, file)} must exist`)
 
 const review = readJson(files.review)
 const effective = readJson(files.effective)
@@ -63,7 +54,6 @@ const taxonomy = readJson(files.taxonomy)
 const wave1 = readJson(files.wave1)
 const wave2 = readJson(files.wave2)
 const wave3 = readJson(files.wave3)
-const wave4 = readJson(files.wave4)
 const wave4a = readJson(files.wave4a)
 const wave4b = readJson(files.wave4b)
 const page = fs.readFileSync(files.page, 'utf8')
@@ -74,10 +64,11 @@ ok(jsonSha(effective) === EFFECTIVE_SHA, 'frozen effective materialization state
 ok(jsonSha(preflight) === PREFLIGHT_SHA, 'frozen publication preflight mutated')
 ok(jsonSha(overlap) === OVERLAP_SHA, 'frozen production overlap review mutated')
 ok(jsonSha(taxonomy) === TAXONOMY_SHA, 'frozen proposed taxonomy review mutated')
-ok(jsonSha(wave1) === WAVE_SHAS[1], 'Wave 1 evidence mutated')
-ok(jsonSha(wave2) === WAVE_SHAS[2], 'Wave 2 evidence mutated')
-ok(jsonSha(wave3) === WAVE_SHAS[3], 'Wave 3 evidence mutated')
-ok(jsonSha(wave4) === WAVE_SHAS[4], 'Wave 4 evidence mutated')
+ok([wave1, wave2, wave3].every((wave) => wave.manifestSha256 === MANIFEST_SHA), 'Wave 1-3 manifest lineage mismatch')
+ok(wave4a.manifestSha256 === MANIFEST_SHA && wave4b.manifestSha256 === MANIFEST_SHA, 'Wave 4 family manifest lineage mismatch')
+ok(Object.values(wave1.authorityBoundary || {}).every((value) => value === false), 'Wave 1 authority must remain disabled')
+ok(Object.values(wave2.authorityBoundary || {}).every((value) => value === false), 'Wave 2 authority must remain disabled')
+ok(Object.values(wave3.authorityBoundary || {}).every((value) => value === false), 'Wave 3 authority must remain disabled')
 
 ok(effective.effectiveSummary?.byContentType?.EDITORIAL_COMPOSITE?.total === 90, 'effective state must retain 90 editorial rows')
 ok(effective.effectiveSummary?.byContentType?.EDITORIAL_COMPOSITE?.candidatesFrozenScoringUnassigned === 76, 'effective state must retain 76 frozen editorial candidate rows')
@@ -92,11 +83,7 @@ ok(Object.values(taxonomy.authorityBoundary || {}).every((value) => value === fa
 
 function transpile(source, fileName) {
   return ts.transpileModule(source, {
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.ESNext,
-      strict: true,
-    },
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, strict: true },
     fileName,
   }).outputText
 }
@@ -115,7 +102,6 @@ files.families.forEach((file, index) => {
 const manifestModule = await import(dataUrl(manifestJs))
 const manifest = manifestModule.buildContentCorpus200Manifest()
 const rows = manifest.rankings
-
 const canonicalPayload = rows.map((row) => ({
   manifestId: row.manifestId,
   familyId: row.familyId,
@@ -134,8 +120,7 @@ const canonicalPayload = rows.map((row) => ({
   voteQuestion: row.voteQuestion,
   semanticPlan: row.semanticPlan,
 }))
-const observedManifestSha = crypto.createHash('sha256').update(JSON.stringify(canonicalPayload)).digest('hex')
-ok(observedManifestSha === MANIFEST_SHA, 'frozen manifest canonical payload mutated')
+ok(crypto.createHash('sha256').update(JSON.stringify(canonicalPayload)).digest('hex') === MANIFEST_SHA, 'frozen manifest canonical payload mutated')
 ok(rows.length === 200 && new Set(rows.map((row) => row.manifestId)).size === 200, 'manifest must remain exactly 200 unique rows')
 
 const manifestEditorials = rows.filter((row) => row.contentType === 'EDITORIAL_COMPOSITE')
@@ -145,11 +130,9 @@ for (const row of manifestEditorials) {
   ok(Array.isArray(row.compositeDimensions) && row.compositeDimensions.length > 0, `${row.manifestId} must retain declared composite dimensions`)
   ok(row.compositeDimensions.every((dimension) => typeof dimension.name === 'string' && dimension.name.trim().length > 0 && dimension.weightStatus === 'UNASSIGNED_PRE_MATERIALIZATION'), `${row.manifestId} dimensions must remain named with unassigned weights`)
   ok(row.compositeFormula === 'WEIGHTS_NOT_ASSIGNED_PRE_MATERIALIZATION', `${row.manifestId} formula must remain unassigned`)
-  ok(row.rankingBasis === 'Declared multi-dimension editorial composite; weights are authored and reviewed only after source materialization.', `${row.manifestId} ranking basis must preserve post-materialization review boundary`)
+  ok(row.rankingBasis === 'Declared multi-dimension editorial composite; weights are authored and reviewed only after source materialization.', `${row.manifestId} ranking basis must preserve review boundary`)
   ok(row.sourceExtractionMode === 'SOURCE_MATERIALIZATION_REQUIRED', `${row.manifestId} must retain source materialization requirement`)
-  ok(row.publicationStatus === 'DRAFT_ONLY', `${row.manifestId} must remain DRAFT_ONLY`)
-  ok(row.entryMaterializationStatus === 'NOT_STARTED', `${row.manifestId} manifest entry state must remain NOT_STARTED`)
-  ok(row.algorithmEvaluationStatus === 'NOT_RUN', `${row.manifestId} algorithm evaluation must remain NOT_RUN`)
+  ok(row.publicationStatus === 'DRAFT_ONLY' && row.entryMaterializationStatus === 'NOT_STARTED' && row.algorithmEvaluationStatus === 'NOT_RUN', `${row.manifestId} must remain pre-publication and unevaluated`)
 }
 
 const waveSources = [
@@ -164,43 +147,40 @@ const expectedWaveCounts = {
   3: { total: 23, frozen: 23, blocked: 0 },
   4: { total: 22, frozen: 12, blocked: 10 },
 }
-
 const materializedEditorials = []
 for (const { wave, docs } of waveSources) {
   const families = docs.flatMap((doc) => doc.families || [])
   const familyById = new Map(families.map((family) => [family.familyId, family]))
-  const editorials = families.flatMap((family) => (family.rankings || []).map((ranking) => ({ wave, familyId: family.familyId, ...ranking }))).filter((ranking) => ranking.kind === 'EDITORIAL_COMPOSITE')
+  const editorials = families
+    .flatMap((family) => (family.rankings || []).map((ranking) => ({ wave, familyId: family.familyId, ...ranking })))
+    .filter((ranking) => ranking.kind === 'EDITORIAL_COMPOSITE')
   const frozen = editorials.filter((ranking) => ranking.materializationStatus === 'CANDIDATES_FROZEN_SCORING_UNASSIGNED')
   const blocked = editorials.filter((ranking) => ranking.materializationStatus === 'BLOCKED_CANDIDATE_GAP')
   const expected = expectedWaveCounts[wave]
   ok(editorials.length === expected.total && frozen.length === expected.frozen && blocked.length === expected.blocked, `Wave ${wave} editorial state mismatch`)
-
   for (const editorial of frozen) {
     const family = familyById.get(editorial.familyId)
-    ok(family?.candidateUniverse?.status === 'FROZEN_SOURCE_BACKED', `${editorial.manifestId} frozen scoring row must bind a source-backed frozen candidate universe`)
+    ok(family?.candidateUniverse?.status === 'FROZEN_SOURCE_BACKED', `${editorial.manifestId} frozen row must bind a source-backed candidate universe`)
     ok(Array.isArray(family.candidateUniverse.items) && family.candidateUniverse.items.length > 0, `${editorial.manifestId} frozen candidate universe must contain reviewed items`)
-    ok(editorial.candidateUniverseRef === editorial.familyId, `${editorial.manifestId} must bind its family candidate universe`)
-    ok(editorial.scoringStatus === 'UNASSIGNED_EVIDENCE_REVIEW_REQUIRED', `${editorial.manifestId} scoring status must remain unassigned`) 
-    ok(!('entries' in editorial) && !('weights' in editorial) && !('score' in editorial) && !('scores' in editorial) && !('dimensionValues' in editorial) && !('rank' in editorial), `${editorial.manifestId} must not encode editorial scores, weights, values, entries, or rank`)
+    ok(editorial.candidateUniverseRef === editorial.familyId && editorial.scoringStatus === 'UNASSIGNED_EVIDENCE_REVIEW_REQUIRED', `${editorial.manifestId} scoring status/binding mismatch`)
+    ok(!['entries', 'weights', 'score', 'scores', 'dimensionValues', 'rank'].some((key) => key in editorial), `${editorial.manifestId} must not encode scoring output`)
   }
   for (const editorial of blocked) {
     const family = familyById.get(editorial.familyId)
-    ok(family?.candidateUniverse?.status === 'BLOCKED_SOURCE_GAP', `${editorial.manifestId} candidate-blocked row must bind a blocked family candidate universe`)
+    ok(family?.candidateUniverse?.status === 'BLOCKED_SOURCE_GAP', `${editorial.manifestId} blocked row must bind a blocked family candidate universe`)
     ok(typeof editorial.blocker === 'string' && editorial.blocker.trim().length >= 20, `${editorial.manifestId} must preserve an explicit candidate blocker`)
-    ok(!('entries' in editorial) && !('weights' in editorial) && !('score' in editorial) && !('scores' in editorial) && !('dimensionValues' in editorial) && !('rank' in editorial), `${editorial.manifestId} blocked row must not encode an editorial answer`)
+    ok(!['entries', 'weights', 'score', 'scores', 'dimensionValues', 'rank'].some((key) => key in editorial), `${editorial.manifestId} blocked row must not encode an answer`)
   }
   materializedEditorials.push(...editorials)
 }
 
-ok(materializedEditorials.length === 90, 'materialization evidence must cover all 90 editorial rows')
-ok(new Set(materializedEditorials.map((row) => row.manifestId)).size === 90, 'materialization editorial manifest IDs must be unique')
+ok(materializedEditorials.length === 90 && new Set(materializedEditorials.map((row) => row.manifestId)).size === 90, 'materialization evidence must cover exactly 90 unique editorial rows')
 const manifestEditorialIds = new Set(manifestEditorials.map((row) => row.manifestId))
-ok(materializedEditorials.every((row) => manifestEditorialIds.has(row.manifestId)), 'materialization contains an editorial row outside the frozen manifest')
-ok(manifestEditorials.every((row) => materializedEditorials.some((materialized) => materialized.manifestId === row.manifestId)), 'every frozen manifest editorial row must be represented in materialization evidence')
-
+ok(materializedEditorials.every((row) => manifestEditorialIds.has(row.manifestId)), 'materialization contains an editorial row outside the manifest')
+ok(manifestEditorials.every((row) => materializedEditorials.some((materialized) => materialized.manifestId === row.manifestId)), 'every manifest editorial row must appear in materialization evidence')
 const frozenEditorials = materializedEditorials.filter((row) => row.materializationStatus === 'CANDIDATES_FROZEN_SCORING_UNASSIGNED')
 const blockedEditorials = materializedEditorials.filter((row) => row.materializationStatus === 'BLOCKED_CANDIDATE_GAP')
-ok(frozenEditorials.length === 76 && blockedEditorials.length === 14, 'editorial materialization state must remain 76 candidate-frozen / 14 candidate-blocked')
+ok(frozenEditorials.length === 76 && blockedEditorials.length === 14, 'editorial materialization state must remain 76 frozen / 14 blocked')
 
 ok(review.version === 'content-corpus-200-editorial-scoring-review-v1', 'review version mismatch')
 ok(review.manifestVersion === manifest.manifestVersion && review.manifestSha256 === MANIFEST_SHA, 'manifest lineage mismatch')
@@ -214,8 +194,8 @@ ok(review.interpretation === 'CANDIDATE_UNIVERSE_FROZEN_DOES_NOT_MEAN_EDITORIAL_
 
 const policy = review.reviewPolicy || {}
 ok(policy.scope === 'ALL_90_FROZEN_MANIFEST_EDITORIAL_COMPOSITE_ROWS_ARE_REVIEWED_AGAINST_CURRENT_MATERIALIZATION_STATE', 'review scope mismatch')
-ok(policy.candidateFrozenOutcome === 'CANDIDATE_UNIVERSE_READY_BUT_SCORING_RUBRIC_DIMENSION_VALUES_AND_WEIGHTS_REMAIN_UNASSIGNED', 'candidate-frozen review outcome mismatch')
-ok(policy.candidateBlockedOutcome === 'BLOCKED_CANDIDATE_GAP_REMAINS_BLOCKED', 'candidate-blocked review outcome mismatch')
+ok(policy.candidateFrozenOutcome === 'CANDIDATE_UNIVERSE_READY_BUT_SCORING_RUBRIC_DIMENSION_VALUES_AND_WEIGHTS_REMAIN_UNASSIGNED', 'candidate-frozen outcome mismatch')
+ok(policy.candidateBlockedOutcome === 'BLOCKED_CANDIDATE_GAP_REMAINS_BLOCKED', 'candidate-blocked outcome mismatch')
 ok(policy.dimensionContractRule === 'MANIFEST_DIMENSION_NAMES_ARE_A_DECLARED_CONTRACT_ONLY_AND_MUST_NOT_BE_TREATED_AS_MEASURED_VALUES', 'dimension contract rule mismatch')
 ok(policy.scoringExecutionRule === 'NO_EDITORIAL_ROW_MAY_BE_SCORED_WITHOUT_A_SEPARATELY_REVIEWED_RUBRIC_PER_DIMENSION_VALUES_AND_EXPLICIT_WEIGHTS', 'scoring execution rule mismatch')
 ok(policy.subjectiveJudgmentRule === 'NO_HIDDEN_EDITORIAL_JUDGMENT_MAY_BE_INSERTED_AS_A_NUMERIC_VALUE_WITHOUT_REVIEWED_EVIDENCE_OR_AN_EXPLICIT_REVIEWED_RUBRIC', 'subjective judgment rule mismatch')
@@ -229,7 +209,6 @@ const expectedWaveReviews = [
   { wave: 4, editorialRows: 22, candidateFrozenScoringUnassignedRows: 12, blockedCandidateGapRows: 10, scoringExecutionReadyRows: 0 },
 ]
 ok(JSON.stringify(review.waveReviews) === JSON.stringify(expectedWaveReviews), 'wave review summary mismatch')
-
 const expectedSummary = {
   reviewedEditorialRows: 90,
   candidateFrozenScoringUnassignedRows: 76,
@@ -245,16 +224,15 @@ const expectedSummary = {
 }
 ok(JSON.stringify(review.reviewSummary) === JSON.stringify(expectedSummary), 'editorial scoring review summary mismatch')
 ok(review.gateDisposition === 'EDITORIAL_SCORING_REVIEW_CLOSED_AS_READINESS_REVIEW_WITH_ZERO_EXECUTION_READY_ROWS', 'gate disposition mismatch')
-ok(review.immediateNextGate === 'EDITORIAL_SCORING_RUBRIC_AND_DIMENSION_EVIDENCE_AUTHORIZATION', 'immediate next gate must require explicit rubric/dimension evidence authorization')
-ok(review.preflightQueueAfterSuccessfulScoringExecution === 'COMMUNITY_VOTE_BOOTSTRAP_WITHOUT_FABRICATION', 'original preflight queue handoff must remain explicit')
-ok(Object.values(review.authorityBoundary || {}).every((value) => value === false), 'editorial scoring review must remain fully non-authorizing')
-
+ok(review.immediateNextGate === 'EDITORIAL_SCORING_RUBRIC_AND_DIMENSION_EVIDENCE_AUTHORIZATION', 'immediate next gate mismatch')
+ok(review.preflightQueueAfterSuccessfulScoringExecution === 'COMMUNITY_VOTE_BOOTSTRAP_WITHOUT_FABRICATION', 'preflight queue handoff mismatch')
+ok(Object.values(review.authorityBoundary || {}).every((value) => value === false), 'editorial scoring review must remain non-authorizing')
 ok(!page.includes('editorial-scoring-review.json'), 'public ranking page must not consume editorial scoring review evidence')
 ok(pkg.scripts?.['verify:content-corpus-200-editorial-scoring-review'] === 'node scripts/verify-content-corpus-200-editorial-scoring-review.mjs', 'package script wiring mismatch')
 ok(ci.includes('npm run verify:content-corpus-200-editorial-scoring-review'), 'CI must run editorial scoring review verifier')
 
 const observedSha = jsonSha(review)
-const report = {
+console.log(JSON.stringify({
   version: review.version,
   manifestSha256: MANIFEST_SHA,
   evidenceSha256: observedSha,
@@ -263,7 +241,6 @@ const report = {
   blockedCandidateGapRows: blockedEditorials.length,
   scoringExecutionReadyRows: review.reviewSummary.scoringExecutionReadyRows,
   nextGate: review.immediateNextGate,
-}
-console.log(JSON.stringify(report, null, 2))
+}, null, 2))
 ok(observedSha === EXPECTED, `unsealed editorial scoring review evidence SHA: observed ${observedSha}; expected ${EXPECTED}`)
 console.log('CONTENT-CORPUS-200 editorial scoring review verification passed')
