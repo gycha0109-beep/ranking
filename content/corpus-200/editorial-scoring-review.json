@@ -1,0 +1,85 @@
+{
+  "version": "content-corpus-200-editorial-scoring-review-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "effectiveMaterializationStateVersion": "content-corpus-200-effective-materialization-state-v1",
+  "effectiveMaterializationStateSha256": "e25f7ba735695f8171b22ce9ba0d6bb0e6e36dea1963d3596d3edbd9a5e14618",
+  "publicationPreflightVersion": "content-corpus-200-publication-preflight-v1",
+  "publicationPreflightSha256": "a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175",
+  "currentProductionOverlapReviewVersion": "content-corpus-200-current-production-overlap-review-v1",
+  "currentProductionOverlapReviewSha256": "fb309dbb9d18514afbc9b01c3f573fd5b05eb06f84eafaa4fddaeb7e1e968205",
+  "proposedTaxonomyReviewVersion": "content-corpus-200-proposed-taxonomy-review-v1",
+  "proposedTaxonomyReviewSha256": "923571392c401674d64a21e3d9f96231f417c702100426a866df912306e57cad",
+  "status": "REVIEWED_NON_AUTHORIZING_EDITORIAL_SCORING_READINESS",
+  "reviewedAt": "2026-08-26T12:05:00+09:00",
+  "interpretation": "CANDIDATE_UNIVERSE_FROZEN_DOES_NOT_MEAN_EDITORIAL_SCORING_EXECUTION_READY",
+  "reviewPolicy": {
+    "scope": "ALL_90_FROZEN_MANIFEST_EDITORIAL_COMPOSITE_ROWS_ARE_REVIEWED_AGAINST_CURRENT_MATERIALIZATION_STATE",
+    "candidateFrozenOutcome": "CANDIDATE_UNIVERSE_READY_BUT_SCORING_RUBRIC_DIMENSION_VALUES_AND_WEIGHTS_REMAIN_UNASSIGNED",
+    "candidateBlockedOutcome": "BLOCKED_CANDIDATE_GAP_REMAINS_BLOCKED",
+    "dimensionContractRule": "MANIFEST_DIMENSION_NAMES_ARE_A_DECLARED_CONTRACT_ONLY_AND_MUST_NOT_BE_TREATED_AS_MEASURED_VALUES",
+    "scoringExecutionRule": "NO_EDITORIAL_ROW_MAY_BE_SCORED_WITHOUT_A_SEPARATELY_REVIEWED_RUBRIC_PER_DIMENSION_VALUES_AND_EXPLICIT_WEIGHTS",
+    "subjectiveJudgmentRule": "NO_HIDDEN_EDITORIAL_JUDGMENT_MAY_BE_INSERTED_AS_A_NUMERIC_VALUE_WITHOUT_REVIEWED_EVIDENCE_OR_AN_EXPLICIT_REVIEWED_RUBRIC",
+    "candidateGapRule": "A_BLOCKED_CANDIDATE_UNIVERSE_CANNOT_BE_PARTIALLY_SCORED_OR_COMPLETED_BY_INFERENCE",
+    "scoringAuthorizationGranted": false,
+    "weightAssignmentAuthorized": false,
+    "dimensionValueMaterializationAuthorized": false
+  },
+  "waveReviews": [
+    {
+      "wave": 1,
+      "editorialRows": 25,
+      "candidateFrozenScoringUnassignedRows": 25,
+      "blockedCandidateGapRows": 0,
+      "scoringExecutionReadyRows": 0
+    },
+    {
+      "wave": 2,
+      "editorialRows": 20,
+      "candidateFrozenScoringUnassignedRows": 16,
+      "blockedCandidateGapRows": 4,
+      "scoringExecutionReadyRows": 0
+    },
+    {
+      "wave": 3,
+      "editorialRows": 23,
+      "candidateFrozenScoringUnassignedRows": 23,
+      "blockedCandidateGapRows": 0,
+      "scoringExecutionReadyRows": 0
+    },
+    {
+      "wave": 4,
+      "editorialRows": 22,
+      "candidateFrozenScoringUnassignedRows": 12,
+      "blockedCandidateGapRows": 10,
+      "scoringExecutionReadyRows": 0
+    }
+  ],
+  "reviewSummary": {
+    "reviewedEditorialRows": 90,
+    "candidateFrozenScoringUnassignedRows": 76,
+    "blockedCandidateGapRows": 14,
+    "manifestRowsWithDeclaredCompositeDimensions": 90,
+    "rowsWithReviewedDimensionValueMatrix": 0,
+    "rowsWithReviewedWeights": 0,
+    "rowsWithMaterializedEditorialEntries": 0,
+    "scoringExecutionReadyRows": 0,
+    "fabricatedScores": 0,
+    "fabricatedWeights": 0,
+    "candidateGapOverrides": 0
+  },
+  "gateDisposition": "EDITORIAL_SCORING_REVIEW_CLOSED_AS_READINESS_REVIEW_WITH_ZERO_EXECUTION_READY_ROWS",
+  "immediateNextGate": "EDITORIAL_SCORING_RUBRIC_AND_DIMENSION_EVIDENCE_AUTHORIZATION",
+  "preflightQueueAfterSuccessfulScoringExecution": "COMMUNITY_VOTE_BOOTSTRAP_WITHOUT_FABRICATION",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialDimensionValueMaterializationAuthorized": false,
+    "voteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
