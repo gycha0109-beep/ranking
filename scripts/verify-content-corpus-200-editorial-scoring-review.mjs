@@ -34,7 +34,7 @@ const EFFECTIVE_SHA = 'e25f7ba735695f8171b22ce9ba0d6bb0e6e36dea1963d3596d3edbd9a
 const PREFLIGHT_SHA = 'a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175'
 const OVERLAP_SHA = 'fb309dbb9d18514afbc9b01c3f573fd5b05eb06f84eafaa4fddaeb7e1e968205'
 const TAXONOMY_SHA = '923571392c401674d64a21e3d9f96231f417c702100426a866df912306e57cad'
-const EXPECTED = 'UNSEALED_EDITORIAL_SCORING_REVIEW'
+const EXPECTED = '107fdb5d026333b55b21f3ce5cb8fafb754c557e5691f7cb3f3f6b9b8e2bc496'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial scoring review verification failed: ${message}`)
