@@ -1,0 +1,84 @@
+{
+  "version": "content-corpus-200-current-production-overlap-review-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "publicationPreflightVersion": "content-corpus-200-publication-preflight-v1",
+  "publicationPreflightSha256": "a62c1c62e9ca68ce4598d67b9b2cb286bddd88c46214d7ab3d08e77c6e937175",
+  "status": "REVIEWED_NON_AUTHORIZING_CURRENT_PRODUCTION_OVERLAP_SNAPSHOT",
+  "reviewedAt": "2026-08-26T10:59:00+09:00",
+  "productionSnapshot": {
+    "boundary": "READ_ONLY_HOSTED_PUBLISHED_RANKINGS_SNAPSHOT",
+    "publishedRankingCount": 16,
+    "semanticProjectionCount": 13,
+    "rankings": [
+      { "slug": "world-population-2024-top-5", "title": "2024 인구 TOP 5", "categorySlug": "statistics", "subcategorySlug": "world", "subjectKey": "world-country-population" },
+      { "slug": "korea-net-inmigration-rate-2025-top-3", "title": "2025 시도 순유입률 TOP 3", "categorySlug": "statistics", "subcategorySlug": "korea", "subjectKey": "korea-interregional-migration-rate" },
+      { "slug": "korea-net-outmigration-rate-2025-top-3", "title": "2025 시도 순유출률 TOP 3", "categorySlug": "statistics", "subcategorySlug": "korea", "subjectKey": "korea-interregional-migration-rate" },
+      { "slug": "world-nominal-gdp-2024-top-5", "title": "2024 명목 GDP TOP 5", "categorySlug": "statistics", "subcategorySlug": "world", "subjectKey": "world-country-nominal-gdp" },
+      { "slug": "kbo-team-batting-average-2025-top-5", "title": "2025 KBO 팀 타율 TOP 5", "categorySlug": "sports", "subcategorySlug": "kbo", "subjectKey": "kbo-team-season-performance" },
+      { "slug": "kbo-team-era-2025-top-5", "title": "2025 KBO 팀 평균자책점 TOP 5", "categorySlug": "sports", "subcategorySlug": "kbo", "subjectKey": "kbo-team-season-performance" },
+      { "slug": "kbo-team-winning-percentage-2025-top-5", "title": "2025 KBO 팀 승률 TOP 5", "categorySlug": "sports", "subcategorySlug": "kbo", "subjectKey": "kbo-team-season-performance" },
+      { "slug": "unesco-world-heritage-properties-2026-top-5", "title": "2026 UNESCO 세계유산 보유 건수 TOP 5", "categorySlug": "culture-heritage", "subcategorySlug": "world-heritage", "subjectKey": "unesco-world-heritage-country-count" },
+      { "slug": "pisa-2022-mathematics-top-5", "title": "PISA 2022 수학 평균점수 TOP 5", "categorySlug": "education", "subcategorySlug": "pisa", "subjectKey": "pisa-country-performance" },
+      { "slug": "pisa-2022-reading-top-5", "title": "PISA 2022 읽기 평균점수 TOP 5", "categorySlug": "education", "subcategorySlug": "pisa", "subjectKey": "pisa-country-performance" },
+      { "slug": "pisa-2022-science-top-5", "title": "PISA 2022 과학 평균점수 TOP 5", "categorySlug": "education", "subcategorySlug": "pisa", "subjectKey": "pisa-country-performance" },
+      { "slug": "fifa-men-world-ranking-2026-07-top-5", "title": "2026년 7월 FIFA 남자 세계랭킹 TOP 5", "categorySlug": "sports", "subcategorySlug": "fifa", "subjectKey": "fifa-world-ranking" },
+      { "slug": "fifa-women-world-ranking-2026-06-top-5", "title": "2026년 6월 FIFA 여자 세계랭킹 TOP 5", "categorySlug": "sports", "subcategorySlug": "fifa", "subjectKey": "fifa-world-ranking" },
+      { "slug": "world-busiest-airports-passengers-2025-top-5", "title": "2025 세계 공항 이용객 수 TOP 5", "categorySlug": "travel-transport", "subcategorySlug": "airports", "subjectKey": null },
+      { "slug": "world-largest-cities-population-2025-top-5", "title": "2025 세계 도시 인구 TOP 5", "categorySlug": "statistics", "subcategorySlug": "world-cities", "subjectKey": null },
+      { "slug": "top500-supercomputer-hpl-rmax-2026-06-top-5", "title": "2026년 6월 TOP500 슈퍼컴퓨터 성능 TOP 5", "categorySlug": "technology", "subcategorySlug": "supercomputers", "subjectKey": null }
+    ],
+    "missingSemanticProjectionSlugs": [
+      "world-busiest-airports-passengers-2025-top-5",
+      "world-largest-cities-population-2025-top-5",
+      "top500-supercomputer-hpl-rmax-2026-06-top-5"
+    ]
+  },
+  "reviewPolicy": {
+    "decisionKinds": ["NO_SUBJECT_OVERLAP", "RELATED_DISTINCT", "DUPLICATE_OR_REDUNDANT"],
+    "familyLevelReviewBoundary": "A_FAMILY_DECISION_COVERS_ITS_FROZEN_TEN_MANIFEST_ROWS_ONLY_AFTER_EACH_ROW_TITLE_BASIS_AND_VIEW_IS_REVIEWED_AGAINST_THE_CURRENT_PRODUCTION_SNAPSHOT",
+    "relatedDistinctMeaning": "SAME_OR_ADJACENT_DOMAIN_BUT_DIFFERENT_QUESTION_METRIC_VIEW_OR_VERSION_SUFFICIENT_TO_REMAIN_INDEPENDENTLY_USEFUL",
+    "exactTitleNonDuplicationAloneIsInsufficient": true,
+    "automaticSemanticApprovalAuthorized": false
+  },
+  "familyReviews": [
+    { "familyId": "steam-mainstream", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Steam mainstream game rankings do not overlap any current production ranking subject." },
+    { "familyId": "korean-box-office", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Korean theatrical title rankings are absent from the current production ranking subjects." },
+    { "familyId": "netflix-titles", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Netflix title rankings are absent from the current production ranking subjects." },
+    { "familyId": "smartphones", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Smartphone rankings are absent from the current production ranking subjects." },
+    { "familyId": "kbo-clubs", "decision": "RELATED_DISTINCT", "productionRankingSlugs": ["kbo-team-batting-average-2025-top-5", "kbo-team-era-2025-top-5", "kbo-team-winning-percentage-2025-top-5"], "note": "Current production covers 2025 batting average, ERA and winning percentage. The frozen family uses 2026 OPS, home runs, bullpen ERA plus distinct editorial and vote questions; it is related KBO subject matter but not a duplicate claim/view/version." },
+    { "familyId": "electric-vehicles", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Electric-vehicle rankings are absent from the current production ranking subjects." },
+    { "familyId": "airports", "decision": "RELATED_DISTINCT", "productionRankingSlugs": ["world-busiest-airports-passengers-2025-top-5"], "note": "Current production ranks total 2025 passenger traffic. The frozen airport family uses international passengers, aircraft movements, destinations served and distinct experience questions; related domain, distinct claims/views." },
+    { "familyId": "instant-noodles", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Instant-noodle rankings are absent from the current production ranking subjects." },
+    { "familyId": "streaming-services", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Streaming-service rankings are absent from the current production ranking subjects." },
+    { "familyId": "anc-headphones", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "ANC-headphone rankings are absent from the current production ranking subjects." },
+    { "familyId": "steam-coop-survival", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Steam co-op survival rankings are absent from the current production ranking subjects." },
+    { "familyId": "laptops", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Laptop rankings are absent from the current production ranking subjects." },
+    { "familyId": "fifa-national-teams", "decision": "RELATED_DISTINCT", "productionRankingSlugs": ["fifa-men-world-ranking-2026-07-top-5", "fifa-women-world-ranking-2026-06-top-5"], "note": "Current production is official FIFA ordering. The frozen family uses 2026 tournament goals, concessions, shots-on-target plus distinct editorial and vote questions; same football-national-team domain, distinct claims/views." },
+    { "familyId": "sunscreens", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Sunscreen rankings are absent from the current production ranking subjects." },
+    { "familyId": "fast-food", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Fast-food rankings are absent from the current production ranking subjects." },
+    { "familyId": "kpop-songs", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "K-pop song rankings are absent from the current production ranking subjects." },
+    { "familyId": "kpop-artists-albums", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "K-pop artist and album rankings are absent from the current production ranking subjects." },
+    { "familyId": "asian-cities", "decision": "RELATED_DISTINCT", "productionRankingSlugs": ["world-largest-cities-population-2025-top-5"], "note": "Current production ranks 2025 city population. The frozen city family uses international visitors, public-transport usage, hotel supply and distinct travel questions; related city domain, distinct claims/views." },
+    { "familyId": "convenience-protein", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Convenience-store protein rankings are absent from the current production ranking subjects." },
+    { "familyId": "skincare-serums", "decision": "NO_SUBJECT_OVERLAP", "productionRankingSlugs": [], "note": "Skincare-serum rankings are absent from the current production ranking subjects." }
+  ],
+  "reviewSummary": {
+    "reviewedFamilyCount": 20,
+    "reviewedManifestRowCount": 200,
+    "noSubjectOverlapRows": 160,
+    "relatedDistinctRows": 40,
+    "duplicateOrRedundantRows": 0,
+    "overlapReviewCompleteRows": 200
+  },
+  "nextGate": "PROPOSED_TAXONOMY_REVIEW",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "editorialScoringAuthorized": false,
+    "voteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
