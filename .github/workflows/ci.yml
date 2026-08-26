@@ -83,6 +83,7 @@ jobs:
       - run: npm run verify:content-corpus-200-blocked-recovery-closure
       - run: npm run verify:content-corpus-200-effective-state
       - run: npm run verify:content-corpus-200-publication-preflight
+      - run: npm run verify:content-corpus-200-current-production-overlap-review
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
