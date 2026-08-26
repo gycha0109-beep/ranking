@@ -86,6 +86,7 @@ jobs:
       - run: npm run verify:content-corpus-200-current-production-overlap-review
       - run: npm run verify:content-corpus-200-proposed-taxonomy-review
       - run: npm run verify:content-corpus-200-editorial-scoring-review
+      - run: npm run verify:content-corpus-200-editorial-rubric-dimension-authorization
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
