@@ -25,7 +25,7 @@ const files = {
 const MANIFEST_SHA = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493'
 const REGISTRY_SHA = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
-const EXPECTED = 'UNSEALED_EDITORIAL_DIMENSION_EVIDENCE_WAVE_1'
+const EXPECTED = '1d87eeaf10751a36f3dd74a61bd461e50e8674d878e0065e87550e64d1f130ea'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial dimension evidence wave 1 verification failed: ${message}`)
