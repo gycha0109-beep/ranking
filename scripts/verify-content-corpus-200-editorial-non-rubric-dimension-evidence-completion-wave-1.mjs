@@ -31,7 +31,7 @@ const REGISTRY_SHA = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a
 const PRIOR_EVIDENCE_SHA = '1d87eeaf10751a36f3dd74a61bd461e50e8674d878e0065e87550e64d1f130ea'
 const RUBRIC_SHA = 'f25542a31dbf157f2195b9a5d7ba7f08ce6a19085cf9f584cec7c11813f3dd04'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
-const EXPECTED = 'UNSEALED_EDITORIAL_NON_RUBRIC_DIMENSION_EVIDENCE_COMPLETION_WAVE_1'
+const EXPECTED = '293906bd122dcc0ac5611a2a4bcc37195a2e4d8e2b5c15bf288e281e43ed025c'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial non-rubric dimension evidence completion wave 1 verification failed: ${message}`)
