@@ -110,10 +110,10 @@
         {"itemKey":"kt-wiz","label":"KT","value":0.398},
         {"itemKey":"samsung-lions","label":"삼성","value":0.416},
         {"itemKey":"hanwha-eagles","label":"한화","value":0.431},
-        {"itemKey":"kia-tigers","label":"KIA","value":0.441},
         {"itemKey":"nc-dinos","label":"NC","value":0.402},
-        {"itemKey":"doosan-bears","label":"두산","value":0.395},
+        {"itemKey":"kia-tigers","label":"KIA","value":0.441},
         {"itemKey":"lg-twins","label":"LG","value":0.405},
+        {"itemKey":"doosan-bears","label":"두산","value":0.395},
         {"itemKey":"lotte-giants","label":"롯데","value":0.392},
         {"itemKey":"ssg-landers","label":"SSG","value":0.407},
         {"itemKey":"kiwoom-heroes","label":"키움","value":0.356}
