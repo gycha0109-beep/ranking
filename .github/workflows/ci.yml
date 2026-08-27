@@ -90,6 +90,7 @@ jobs:
       - run: npm run verify:content-corpus-200-editorial-dimension-contract-registry
       - run: npm run verify:content-corpus-200-editorial-dimension-evidence-wave-1
       - run: npm run verify:content-corpus-200-editorial-explicit-rubric-definition-wave-1
+      - run: npm run verify:content-corpus-200-editorial-non-rubric-dimension-evidence-completion-wave-1
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
