@@ -1,0 +1,141 @@
+{
+  "version": "content-corpus-200-editorial-non-rubric-normalization-direction-contract-review-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "authorizationVersion": "content-corpus-200-editorial-rubric-dimension-authorization-v1",
+  "authorizationSha256": "e923fc17e84030f79d402ccd1188e940bd4482ca4547a0ea6f81202bc360afe0",
+  "dimensionRegistryVersion": "content-corpus-200-editorial-dimension-contract-registry-and-evidence-plan-v1",
+  "dimensionRegistrySha256": "c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7",
+  "priorSourceEvidenceVersion": "content-corpus-200-editorial-dimension-evidence-wave-1-v1",
+  "priorSourceEvidenceSha256": "1d87eeaf10751a36f3dd74a61bd461e50e8674d878e0065e87550e64d1f130ea",
+  "completionEvidenceVersion": "content-corpus-200-editorial-non-rubric-dimension-evidence-completion-wave-1-v1",
+  "completionEvidenceSha256": "293906bd122dcc0ac5611a2a4bcc37195a2e4d8e2b5c15bf288e281e43ed025c",
+  "blockerRecoveryVersion": "content-corpus-200-editorial-non-rubric-blocker-recovery-wave-1-v1",
+  "blockerRecoverySha256": "6ea390e55d827e3613f4cb35a4cd56468c7363c9dacecaaedbbd57fd23a47739",
+  "status": "REVIEWED_WAVE_1_NORMALIZATION_AND_DIRECTION_CONTRACTS_ONLY_NO_VALUE_PROJECTION",
+  "reviewedAt": "2026-08-27T18:35:00+09:00",
+  "scope": {
+    "waveNonRubricSlots": 15,
+    "sourceCoveredSlotsReviewed": 7,
+    "blockedSlotsExcludedFromDirectionAssignment": 8,
+    "identityUnitContracts": 6,
+    "deterministicUnitConversionPlans": 1,
+    "monotonicDirectionContracts": 5,
+    "contextualNonMonotonicContracts": 2,
+    "normalizationsExecuted": 0,
+    "normalizedCandidateValuesMaterialized": 0,
+    "editorialDimensionValuesMaterialized": 0,
+    "editorialPreferenceDirectionsMaterialized": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "reviewPolicy": {
+    "contractReviewOnly": true,
+    "directionRule": "DIRECTION_CONTRACT_MUST_BE_REVIEWED_FROM_THE_EXACT_EDITORIAL_INTENT_AND_MUST_NEVER_BE_INHERITED_FROM_A_FACT_ASC_DESC_DIRECTION",
+    "contextualRule": "NON_MONOTONIC_CONTEXTUAL_MEANS_NO_SCALAR_PREFERENCE_TARGET_THRESHOLD_OR_MIDPOINT_IS_AUTHORIZED",
+    "normalizationRule": "UNIT_NORMALIZATION_MAY_BE_DECLARED_AS_A_DETERMINISTIC_FORMULA_PLAN_BUT_NO_PER_CANDIDATE_NORMALIZED_VALUE_IS_MATERIALIZED_AT_THIS_GATE",
+    "blockedRule": "BLOCKED_SOURCE_OR_METRIC_SLOTS_RECEIVE_NO_DIRECTION_OR_NORMALIZATION_CONTRACT_BY_INFERENCE",
+    "candidateUniverseMutation": "FORBIDDEN",
+    "partialRowScoring": "FORBIDDEN",
+    "editorialValueProjection": "NOT_AUTHORIZED_AT_THIS_GATE",
+    "normalizationExecution": "NOT_AUTHORIZED_AT_THIS_GATE",
+    "weightAssignment": "NOT_AUTHORIZED_AT_THIS_GATE"
+  },
+  "coveredSlotContracts": [
+    {
+      "slotId": "cc200-smartphones-05:4:무게",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "PRIOR_COMPLETE_BINDING",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"g","conversion":"NONE"},
+      "directionContract": {"kind":"LOWER_IS_BETTER","basis":"TRAVEL_CAMERA_USE_CASE_REWARDS_LOWER_CARRY_BURDEN","materialized":false}
+    },
+    {
+      "slotId": "cc200-smartphones-06:0:폭",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "FULL_CANDIDATE_SOURCE_OBSERVATIONS_COMPLETE",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"mm","conversion":"NONE"},
+      "directionContract": {"kind":"LOWER_IS_BETTER","basis":"ONE_HAND_USE_CASE_REWARDS_LOWER_DEVICE_WIDTH","materialized":false}
+    },
+    {
+      "slotId": "cc200-smartphones-06:1:무게",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "PRIOR_COMPLETE_BINDING",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"g","conversion":"NONE"},
+      "directionContract": {"kind":"LOWER_IS_BETTER","basis":"ONE_HAND_USE_CASE_REWARDS_LOWER_WEIGHT_BURDEN","materialized":false}
+    },
+    {
+      "slotId": "cc200-smartphones-06:2:화면 크기",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "RAW_FULL_CANDIDATE_COVERAGE_NORMALIZATION_PENDING",
+      "unitContract": {
+        "kind":"DETERMINISTIC_UNIT_CONVERSION_PLAN",
+        "canonicalUnit":"mm",
+        "acceptedInputUnits":["mm","cm"],
+        "formula":"mm => value; cm => value * 10; otherwise BLOCK",
+        "normalizedValuesMaterialized":false
+      },
+      "directionContract": {"kind":"NON_MONOTONIC_CONTEXTUAL","basis":"ONE_HAND_HANDLING_AND_DISPLAY_AREA_CREATE_A_TRADE_OFF_NO_MONOTONIC_SCREEN_SIZE_PREFERENCE_AUTHORIZED","materialized":false}
+    },
+    {
+      "slotId": "cc200-kbo-clubs-05:0:홈런",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "PRIOR_COMPLETE_BINDING",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"count","conversion":"NONE"},
+      "directionContract": {"kind":"HIGHER_IS_BETTER","basis":"HOME_RUN_VIEWING_INTENT_EXPLICITLY_REWARDS_MORE_HOME_RUN_EVENTS","materialized":false}
+    },
+    {
+      "slotId": "cc200-kbo-clubs-05:1:장타율",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "FULL_CANDIDATE_SOURCE_OBSERVATIONS_COMPLETE",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"rate","conversion":"NONE"},
+      "directionContract": {"kind":"HIGHER_IS_BETTER","basis":"HOME_RUN_AND_EXTRA_BASE_HIT_VIEWING_INTENT_REWARDS_HIGHER_SLUGGING_RATE","materialized":false}
+    },
+    {
+      "slotId": "cc200-korean-box-office-06:3:러닝타임",
+      "evidenceClass": "SOURCE_MEASURABLE",
+      "sourceCoverage": "RECOVERED_FULL_CANDIDATE_SOURCE_OBSERVATIONS_COMPLETE",
+      "unitContract": {"kind":"IDENTITY","canonicalUnit":"min","conversion":"NONE"},
+      "directionContract": {"kind":"NON_MONOTONIC_CONTEXTUAL","basis":"DATE_MOVIE_FAILURE_RISK_DOES_NOT_AUTHORIZE_SHORTER_OR_LONGER_AS_UNIVERSALLY_BETTER","materialized":false}
+    }
+  ],
+  "blockedSlotExclusions": [
+    {"slotId":"cc200-steam-mainstream-04:0:협동 인원","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-steam-mainstream-08:0:최소 사양","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-netflix-titles-04:0:총 러닝타임","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-netflix-titles-04:1:회차 길이","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-netflix-titles-06:0:회차 길이","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-smartphones-04:0:CPU/GPU","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-smartphones-07:0:배터리 용량/테스트","directionContract":"UNASSIGNED_BLOCKED","normalizationContract":"UNASSIGNED_BLOCKED"},
+    {"slotId":"cc200-kbo-clubs-07:0:원정 일정","directionContract":"UNASSIGNED_BLOCKED_METRIC_CONTRACT_UNRESOLVED","normalizationContract":"UNASSIGNED_BLOCKED_METRIC_CONTRACT_UNRESOLVED"}
+  ],
+  "reviewSummary": {
+    "factDirectionsInherited": false,
+    "displayUnitConversionPlanReviewedWithoutExecution": true,
+    "contextualSlotsRemainWithoutScalarPreference": true,
+    "blockedSlotsRemainWithoutInferredContracts": true,
+    "normalizedCandidateValuesMaterialized": 0,
+    "editorialDimensionValuesMaterialized": 0,
+    "weightsAuthored": 0,
+    "compositeScoringExecuted": false,
+    "editorialOrderingMaterialized": false,
+    "scoringExecutionReadyRows": 0
+  },
+  "gateDisposition": "WAVE_1_NORMALIZATION_AND_DIRECTION_CONTRACTS_REVIEWED_FOR_SEVEN_SOURCE_COVERED_SLOTS_WITH_ZERO_NORMALIZATION_EXECUTION_AND_ZERO_EDITORIAL_VALUES",
+  "nextGate": "EDITORIAL_RUBRIC_CANDIDATE_EVIDENCE_MATRIX_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateUniverseMutationAuthorized": false,
+    "normalizedCandidateValueMaterializationAuthorized": false,
+    "editorialDimensionValueMaterializationAuthorized": false,
+    "editorialPreferenceDirectionMaterializationAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialCompositeScoringAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
