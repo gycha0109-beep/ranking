@@ -184,7 +184,7 @@ ok(kboAway.reviewedOfficialSources.every((url) => new URL(url).hostname === 'www
 const summary = evidence.recoverySummary || {}
 ok(summary.runtimeBlockerRecovered === true && summary.runtimeCandidateCoverageComplete === true, 'runtime recovery summary mismatch')
 ok(summary.kboAwayScheduleSourceSurfaceRecovered === true && summary.kboAwayScheduleMetricContractRecovered === false, 'KBO blocker refinement summary mismatch')
-ok(summary.netlixCandidateScopeMismatchResolved !== true, 'unexpected Netflix scope recovery flag')
+ok(summary.netflixCandidateScopeMismatchResolved === false, 'Netflix candidate scope mismatch must remain unresolved')
 ok(summary.steamFullCandidateSourceCoverageResolved === false, 'Steam blocker must remain unresolved')
 ok(summary.smartphoneMixedJoinRulesResolved === false, 'smartphone mixed join blockers must remain unresolved')
 ok(summary.newEditorialDimensionValuesMaterialized === 0, 'editorial values must remain zero')
