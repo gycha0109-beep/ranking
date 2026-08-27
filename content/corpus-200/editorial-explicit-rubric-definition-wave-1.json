@@ -1,0 +1,114 @@
+{
+  "version": "content-corpus-200-editorial-explicit-rubric-definition-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "authorizationVersion": "content-corpus-200-editorial-rubric-dimension-authorization-v1",
+  "authorizationSha256": "e923fc17e84030f79d402ccd1188e940bd4482ca4547a0ea6f81202bc360afe0",
+  "dimensionRegistryVersion": "content-corpus-200-editorial-dimension-contract-registry-and-evidence-plan-v1",
+  "dimensionRegistrySha256": "c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7",
+  "sourceEvidenceWaveVersion": "content-corpus-200-editorial-dimension-evidence-wave-1-v1",
+  "sourceEvidenceWaveSha256": "1d87eeaf10751a36f3dd74a61bd461e50e8674d878e0065e87550e64d1f130ea",
+  "status": "DEFINED_EXPLICIT_ANCHORED_RUBRIC_CONTRACTS_NO_CANDIDATE_OUTCOMES",
+  "definedAt": "2026-08-27T09:13:00+09:00",
+  "scope": {
+    "waveFamilies": [
+      "steam-mainstream",
+      "korean-box-office",
+      "netflix-titles",
+      "smartphones",
+      "kbo-clubs"
+    ],
+    "waveEditorialRows": 25,
+    "waveDimensionSlots": 104,
+    "explicitRubricSlotsDefined": 89,
+    "sourceMeasurableSlotsExcluded": 13,
+    "mixedEvidenceAndRubricSlotsExcluded": 2,
+    "deterministicDerivedSlotsExcluded": 0,
+    "candidateRubricOutcomesAuthored": 0,
+    "numericDimensionValuesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "rubricContractDerivation": {
+    "mode": "DERIVE_ONE_CONTRACT_FOR_EVERY_WAVE_1_SLOT_CLASSIFIED_EXPLICIT_EDITORIAL_RUBRIC_BY_THE_SEALED_REGISTRY",
+    "slotIdentity": "manifestId + dimensionIndex + exactDimensionName",
+    "decisionContext": "EXACT_FROZEN_MANIFEST_RANKING_BASIS_FOR_THE_EDITORIAL_ROW",
+    "dimensionContext": "EXACT_FROZEN_DIMENSION_NAME_ONLY",
+    "templateBinding": "GLOBAL_ANCHORED_ORDINAL_TEMPLATE_BOUND_TO_EXACT_SLOT_AND_EXACT_DECISION_CONTEXT",
+    "sameNamedDimensionsAcrossRowsRemainSeparateContracts": true,
+    "noSubstringOrSemanticSlotPromotion": true,
+    "noLlmGeneratedSlotReclassification": true
+  },
+  "rubricTemplate": {
+    "version": "editorial-explicit-rubric-ordinal-0-4-v1",
+    "scaleType": "ANCHORED_ORDINAL_0_TO_4_NOT_A_COMPOSITE_SCORE",
+    "evaluationQuestionTemplate": "Within the exact editorial decision context, how strongly does reviewed candidate-specific evidence support this candidate on the exact named dimension?",
+    "anchors": [
+      {
+        "ordinal": 0,
+        "label": "CONTRADICTED",
+        "criterion": "Reviewed candidate-specific evidence clearly shows the candidate does not satisfy, or materially works against, the exact named dimension in the exact editorial decision context."
+      },
+      {
+        "ordinal": 1,
+        "label": "WEAK",
+        "criterion": "Reviewed candidate-specific evidence provides only limited or inconsistent support for the exact named dimension, with meaningful deficiencies or counterevidence remaining."
+      },
+      {
+        "ordinal": 2,
+        "label": "MIXED",
+        "criterion": "Reviewed candidate-specific evidence contains material support and material limitations for the exact named dimension, with neither strong positive support nor strong counterevidence clearly dominating."
+      },
+      {
+        "ordinal": 3,
+        "label": "STRONG",
+        "criterion": "Reviewed candidate-specific evidence consistently and directly supports the exact named dimension, with only minor or contextual limitations."
+      },
+      {
+        "ordinal": 4,
+        "label": "EXCEPTIONAL",
+        "criterion": "Reviewed candidate-specific evidence is unusually strong and direct for the exact named dimension in the exact editorial decision context, showing material advantages with no known material counterevidence."
+      }
+    ],
+    "insufficientEvidenceDisposition": "BLOCK_OUTCOME_NO_DEFAULT_OR_MIDPOINT_VALUE",
+    "requiredOutcomeEvidence": "CANDIDATE_SPECIFIC_REVIEWED_EVIDENCE_REFERENCES_PLUS_A_SHORT_DIMENSION_SPECIFIC_RATIONALE",
+    "counterevidenceRule": "MATERIAL_COUNTEREVIDENCE_MUST_BE_RETAINED_AND_CANNOT_BE_CHERRY_PICKED_AWAY",
+    "crossDimensionProxyRule": "FORBIDDEN",
+    "missingEvidenceImputationRule": "FORBIDDEN",
+    "modelOnlyJudgmentRule": "FORBIDDEN",
+    "ordinalDirection": "HIGHER_ORDINAL_MEANS_STRONGER_SUPPORT_FOR_THE_EXACT_NAMED_DIMENSION_ONLY",
+    "weightMeaning": "NONE_AT_THIS_GATE"
+  },
+  "outcomeBoundary": {
+    "rubricDefinitionsAreCandidateOutcomes": false,
+    "candidateOutcomeAuthoringAuthorized": false,
+    "candidateOutcomeReviewExecuted": false,
+    "candidateOutcomeCount": 0,
+    "numericDimensionValueCount": 0,
+    "weightDraftingExecuted": false,
+    "weightAssignmentExecuted": false,
+    "compositeScoringExecuted": false,
+    "editorialOrderingMaterialized": false,
+    "scoringExecutionReadyRows": 0
+  },
+  "nonRubricBoundary": {
+    "sourceMeasurableSlots": "OUT_OF_SCOPE_EXCEPT_ALREADY_SEALED_WAVE_1_BINDINGS",
+    "mixedEvidenceAndRubricSlots": "OUT_OF_SCOPE_PENDING_COMPLETE_OBSERVED_INPUTS_AND_REVIEWED_JOIN_RULE",
+    "deterministicDerivedSlots": "OUT_OF_SCOPE_PENDING_REVIEWED_FORMULA"
+  },
+  "gateDisposition": "WAVE_1_EXPLICIT_RUBRIC_CONTRACTS_DEFINED_WITH_ZERO_CANDIDATE_OUTCOMES_AND_ZERO_SCORING",
+  "nextGate": "EDITORIAL_NON_RUBRIC_DIMENSION_EVIDENCE_COMPLETION_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateRubricOutcomeAuthoringAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
