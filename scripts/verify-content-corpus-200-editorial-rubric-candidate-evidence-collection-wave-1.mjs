@@ -140,7 +140,8 @@ let editorialRows = 0
 let explicitRubricSlots = 0
 let candidateMemberships = 0
 let eligibilitySnapshotReferences = 0
-let numericFactEntries = 0
+let directValueFactEntries = 0
+let derivedInputFactEntries = 0
 
 for (const family of wave1.families || []) {
   ok(family.candidateUniverse?.status === 'FROZEN_SOURCE_BACKED', `${family.familyId} candidate universe must remain frozen/source-backed`)
@@ -158,8 +159,14 @@ for (const family of wave1.families || []) {
   let familyRubricSlots = 0
   for (const ranking of family.rankings || []) {
     if (ranking.kind === 'FACT' && Array.isArray(ranking.entries)) {
-      numericFactEntries += ranking.entries.length
-      ok(ranking.entries.every((entry) => Number.isFinite(entry.value)), `${ranking.manifestId} FACT entries must remain numeric observations`)
+      for (const entry of ranking.entries) {
+        const hasDirectValue = Number.isFinite(entry.value)
+        const inputValues = entry.inputs && typeof entry.inputs === 'object' ? Object.values(entry.inputs) : []
+        const hasDerivedInputs = inputValues.length > 0 && inputValues.every((value) => Number.isFinite(value))
+        ok(hasDirectValue || hasDerivedInputs, `${ranking.manifestId}:${entry.itemKey} FACT entry must retain either a finite direct value or finite deterministic inputs`)
+        if (hasDirectValue) directValueFactEntries += 1
+        else derivedInputFactEntries += 1
+      }
     }
     if (ranking.kind !== 'EDITORIAL_COMPOSITE') continue
     editorialRows += 1
@@ -207,7 +214,7 @@ ok(explicitRubricSlots === 89, `Wave 1 must retain 89 explicit rubric slots, got
 ok(candidateMemberships === 53, `Wave 1 must retain 53 candidate memberships, got ${candidateMemberships}`)
 ok(matrixCells.length === 934, `Wave 1 must derive 934 matrix cells, got ${matrixCells.length}`)
 ok(eligibilitySnapshotReferences === 14, `Wave 1 must retain 14 candidate-universe eligibility snapshot references, got ${eligibilitySnapshotReferences}`)
-ok(numericFactEntries > 0, 'Wave 1 must retain numeric FACT observations while keeping them separate from rubric evidence')
+ok(directValueFactEntries + derivedInputFactEntries > 0, 'Wave 1 must retain source-backed FACT observations while keeping them separate from rubric evidence')
 ok(jsonSha(matrixCells) === MATRIX_CELL_REGISTRY_SHA, 'derived matrix cell registry changed')
 
 const expectedFamilyCollection = [
@@ -311,7 +318,8 @@ console.log(JSON.stringify({
   candidateSlotCells: matrixCells.length,
   waveSourceSnapshots: wave1.sourceSnapshots.length,
   candidateUniverseEligibilitySnapshotReferences: eligibilitySnapshotReferences,
-  numericFactEntriesObservedButNotPromoted: numericFactEntries,
+  directValueFactEntriesObservedButNotPromoted: directValueFactEntries,
+  derivedInputFactEntriesObservedButNotPromoted: derivedInputFactEntries,
   candidateSpecificRubricEvidenceRecordsFound: 0,
   collectedCells: 0,
   sourceAcquisitionRequiredCells: matrixCells.length,
