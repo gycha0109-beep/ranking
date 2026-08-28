@@ -94,6 +94,7 @@ jobs:
       - run: npm run verify:content-corpus-200-editorial-non-rubric-blocker-recovery-wave-1
       - run: npm run verify:content-corpus-200-editorial-non-rubric-normalization-direction-contract-review-wave-1
       - run: npm run verify:content-corpus-200-editorial-rubric-candidate-evidence-matrix-wave-1
+      - run: npm run verify:content-corpus-200-editorial-rubric-candidate-evidence-collection-wave-1
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
