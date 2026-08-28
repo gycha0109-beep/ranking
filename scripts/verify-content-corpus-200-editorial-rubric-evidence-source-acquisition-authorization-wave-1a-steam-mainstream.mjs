@@ -27,7 +27,7 @@ const MANIFEST_SHA = 'f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834
 const PLAN_SHA = '80eb6a1602ce7fae0155aeb2f872f1ac281039d8ed3a6a7cdcdcc0e9fc96a28b'
 const REGISTRY_SHA = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
-const EXPECTED = 'UNSEALED_EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_AUTHORIZATION_WAVE_1A_STEAM_MAINSTREAM'
+const EXPECTED = '7abfd8007bf24a50ca3b353c1f3f36f264290d6a0a1a749f957bef8bd50bbcc1'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 Wave 1A Steam acquisition authorization verification failed: ${message}`)
