@@ -1,0 +1,139 @@
+{
+  "version": "content-corpus-200-editorial-rubric-candidate-evidence-collection-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "candidateEvidenceMatrixVersion": "content-corpus-200-editorial-rubric-candidate-evidence-matrix-wave-1-v1",
+  "candidateEvidenceMatrixSha256": "82630125086df98a032b054757f9c65dfdc5bca38ea5eee8adcb78b1219e7c43",
+  "matrixCellRegistrySha256": "5bab536257d321fce99514e1bccd084ade12664aa5012b639fa3f7f00f00763f",
+  "rubricDefinitionVersion": "content-corpus-200-editorial-explicit-rubric-definition-wave-1-v1",
+  "rubricDefinitionSha256": "f25542a31dbf157f2195b9a5d7ba7f08ce6a19085cf9f584cec7c11813f3dd04",
+  "candidateMaterializationWaveVersion": "content-corpus-200-wave-1-v1",
+  "candidateMaterializationWaveSha256": "7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c",
+  "status": "COLLECTION_REVIEW_COMPLETED_ZERO_EXISTING_CANDIDATE_SPECIFIC_RUBRIC_EVIDENCE",
+  "observedAt": "2026-08-28T09:47:00+09:00",
+  "scope": {
+    "waveFamilies": 5,
+    "waveEditorialRows": 25,
+    "explicitRubricSlots": 89,
+    "familyScopedCandidateMemberships": 53,
+    "candidateSlotCells": 934,
+    "waveSourceSnapshots": 15,
+    "candidateUniverseEligibilitySnapshotReferences": 14,
+    "candidateSpecificRubricEvidenceRecordsFound": 0,
+    "collectedCells": 0,
+    "sourceAcquisitionRequiredCells": 934,
+    "candidateRubricOutcomesAuthored": 0,
+    "numericDimensionValuesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "existingSourceReview": {
+    "reviewedSurface": "SEALED_WAVE_1_SOURCE_SNAPSHOTS_CANDIDATE_UNIVERSES_AND_FACT_ENTRIES",
+    "sourceSnapshotSchemaContainsCandidateSpecificRubricEvidenceRecords": false,
+    "candidateUniverseItemsContainRubricEvidenceRecords": false,
+    "editorialMaterializationRowsContainRubricEvidenceRecords": false,
+    "factEntriesContainNumericCandidateObservations": true,
+    "factEntriesCanSatisfyExplicitRubricCellsWithoutExactReviewedBinding": false,
+    "candidateEligibilitySnapshotsCanSatisfyRubricCellsByThemselves": false,
+    "sourceSnapshotMetadataCanBeTreatedAsCandidateSpecificObservation": false,
+    "chartPresenceOrRankCanBeTreatedAsSubjectiveRubricSupport": false,
+    "collectionResult": "NO_EXISTING_FROZEN_RECORD_SATISFIES_THE_CANDIDATE_SPECIFIC_RUBRIC_EVIDENCE_CONTRACT"
+  },
+  "futureEvidenceRecordContract": {
+    "recordIdentity": "EXACT_DERIVED_CELL_ID",
+    "requiredCandidateBinding": "familyId + itemKey + exact frozen label",
+    "requiredSlotBinding": "manifestId + dimensionIndex + exactDimensionName",
+    "requiredEvidenceReferences": "ONE_OR_MORE_REVIEWED_CANDIDATE_SPECIFIC_SOURCE_REFERENCES_WITH_EXACT_URL_OR_FROZEN_SNAPSHOT_ID_AND_REFERENCE_PERIOD",
+    "requiredObservation": "SHORT_DIMENSION_SPECIFIC_OBSERVATION_DIRECTLY_SUPPORTED_BY_THE_REFERENCED_SOURCE",
+    "counterevidencePolicy": "MATERIAL_COUNTEREVIDENCE_MUST_BE_RETAINED_WHEN_FOUND",
+    "sourceMetadataOnlyRecordAllowed": false,
+    "eligibilityOnlyRecordAllowed": false,
+    "crossDimensionProxyAllowed": false,
+    "crossCandidateInferenceAllowed": false,
+    "missingEvidenceImputationAllowed": false,
+    "modelOnlyObservationAllowed": false,
+    "ordinalOutcomeAtCollectionGateAllowed": false,
+    "numericDimensionValueAtCollectionGateAllowed": false
+  },
+  "familyCollection": [
+    {
+      "familyId": "steam-mainstream",
+      "explicitRubricSlots": 18,
+      "frozenCandidates": 5,
+      "candidateSlotCells": 90,
+      "eligibilitySnapshotReferences": 1,
+      "collectedCells": 0,
+      "sourceAcquisitionRequiredCells": 90
+    },
+    {
+      "familyId": "korean-box-office",
+      "explicitRubricSlots": 19,
+      "frozenCandidates": 10,
+      "candidateSlotCells": 190,
+      "eligibilitySnapshotReferences": 1,
+      "collectedCells": 0,
+      "sourceAcquisitionRequiredCells": 190
+    },
+    {
+      "familyId": "netflix-titles",
+      "explicitRubricSlots": 17,
+      "frozenCandidates": 20,
+      "candidateSlotCells": 340,
+      "eligibilitySnapshotReferences": 2,
+      "collectedCells": 0,
+      "sourceAcquisitionRequiredCells": 340
+    },
+    {
+      "familyId": "smartphones",
+      "explicitRubricSlots": 18,
+      "frozenCandidates": 8,
+      "candidateSlotCells": 144,
+      "eligibilitySnapshotReferences": 7,
+      "collectedCells": 0,
+      "sourceAcquisitionRequiredCells": 144
+    },
+    {
+      "familyId": "kbo-clubs",
+      "explicitRubricSlots": 17,
+      "frozenCandidates": 10,
+      "candidateSlotCells": 170,
+      "eligibilitySnapshotReferences": 3,
+      "collectedCells": 0,
+      "sourceAcquisitionRequiredCells": 170
+    }
+  ],
+  "blockingReasons": [
+    "NO_CANDIDATE_SPECIFIC_RUBRIC_EVIDENCE_RECORDS_EXIST_IN_THE_SEALED_WAVE_1_SOURCE_MATERIAL",
+    "ELIGIBILITY_PROVENANCE_CANNOT_BE_PROMOTED_TO_SUBJECTIVE_RUBRIC_EVIDENCE",
+    "FACT_VALUES_CANNOT_BE_REUSED_AS_CROSS_DIMENSION_RUBRIC_PROXIES",
+    "SOURCE_SNAPSHOT_METADATA_IS_NOT_A_CANDIDATE_SPECIFIC_DIMENSION_OBSERVATION"
+  ],
+  "reviewSummary": {
+    "all934CellsReviewedForExistingFrozenEvidenceAvailability": true,
+    "existingFrozenEvidenceCollectableCells": 0,
+    "sourceAcquisitionRequiredCells": 934,
+    "candidateRubricOutcomesMaterialized": 0,
+    "numericDimensionValuesMaterialized": 0,
+    "weightsMaterialized": 0,
+    "compositeScoringExecuted": false,
+    "editorialOrderingMaterialized": false,
+    "scoringExecutionReadyRows": 0,
+    "newExternalSourceClaimsAuthored": 0
+  },
+  "gateDisposition": "WAVE_1_RUBRIC_EVIDENCE_COLLECTION_REVIEWED_WITH_ZERO_OF_934_CELLS_COLLECTABLE_FROM_EXISTING_FROZEN_SOURCE_MATERIAL",
+  "nextGate": "EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_PLAN_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateRubricOutcomeAuthoringAuthorized": false,
+    "numericEditorialDimensionValueAuthoringAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
