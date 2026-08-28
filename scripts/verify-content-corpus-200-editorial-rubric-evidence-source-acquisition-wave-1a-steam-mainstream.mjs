@@ -17,7 +17,7 @@ const AUTH='7abfd8007bf24a50ca3b353c1f3f36f264290d6a0a1a749f957bef8bd50bbcc1'
 const SR='131f5206778c104d0e9eebba84d8e98b50749ac4e4726954d9a2674f6a03c07d'
 const BR='2bba608cf240f67b21a1ed02f159b51ce1c2a515b2d49e85eaba3d732aee6fa8'
 const UR='ffb083e5a2ddcdb52c28ec9a5bb4ab2d49caadfe539e83843836283ab5ae30d2'
-const EXPECTED='UNSEALED_EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_WAVE_1A_STEAM_MAINSTREAM'
+const EXPECTED='4c772250d80248013fed177b1284247e611a33d7e8ce64ea3e44a536828ddd8c'
 const fail=m=>{console.error(`CONTENT-CORPUS-200 Wave 1A Steam source acquisition verification failed: ${m}`);process.exit(1)}
 const ok=(v,m)=>{if(!v)fail(m)}; const read=x=>JSON.parse(fs.readFileSync(x,'utf8')); const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex')
 for(const x of [f.e,f.p,f.a,f.s,...f.b,f.u,f.page,f.pkg,f.ci])ok(fs.existsSync(x),`${path.relative(root,x)} must exist`)
