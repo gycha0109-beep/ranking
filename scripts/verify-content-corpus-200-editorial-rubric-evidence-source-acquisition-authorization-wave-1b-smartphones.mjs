@@ -29,7 +29,7 @@ const PLAN_SHA = '80eb6a1602ce7fae0155aeb2f872f1ac281039d8ed3a6a7cdcdcc0e9fc96a2
 const PRIOR_ACQUISITION_SHA = '4c772250d80248013fed177b1284247e611a33d7e8ce64ea3e44a536828ddd8c'
 const REGISTRY_SHA = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a1e11c7'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
-const EXPECTED = 'UNSEALED_EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_AUTHORIZATION_WAVE_1B_SMARTPHONES'
+const EXPECTED = 'a34b25be38637ff8ddcd4be59eca61f5816bdc8d5432056a4e9813c1cac9d6e6'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 Wave 1B smartphone acquisition authorization verification failed: ${message}`)
