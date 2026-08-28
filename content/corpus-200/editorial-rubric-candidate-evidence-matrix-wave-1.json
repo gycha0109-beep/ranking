@@ -1,0 +1,124 @@
+{
+  "version": "content-corpus-200-editorial-rubric-candidate-evidence-matrix-wave-1-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "rubricDefinitionVersion": "content-corpus-200-editorial-explicit-rubric-definition-wave-1-v1",
+  "rubricDefinitionSha256": "f25542a31dbf157f2195b9a5d7ba7f08ce6a19085cf9f584cec7c11813f3dd04",
+  "candidateMaterializationWaveVersion": "content-corpus-200-wave-1-v1",
+  "candidateMaterializationWaveSha256": "7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c",
+  "normalizationDirectionReviewVersion": "content-corpus-200-editorial-non-rubric-normalization-direction-contract-review-wave-1-v1",
+  "normalizationDirectionReviewSha256": "6ce05d88bad2a5468be5ff548e298f20507803addbad10410bf2b70378793fb4",
+  "status": "DERIVED_EXPLICIT_RUBRIC_CANDIDATE_EVIDENCE_REQUIREMENT_MATRIX_NO_OUTCOMES",
+  "observedAt": "2026-08-28T09:22:00+09:00",
+  "scope": {
+    "waveFamilies": 5,
+    "waveEditorialRows": 25,
+    "explicitRubricSlots": 89,
+    "familyScopedCandidateMemberships": 53,
+    "candidateSlotCells": 934,
+    "cellsWithCandidateSpecificRubricEvidence": 0,
+    "cellsRequiringRubricEvidence": 934,
+    "candidateRubricOutcomesAuthored": 0,
+    "numericDimensionValuesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "matrixDerivation": {
+    "mode": "CARTESIAN_PRODUCT_OF_EACH_EXPLICIT_RUBRIC_SLOT_WITH_ITS_FROZEN_FAMILY_CANDIDATE_UNIVERSE",
+    "slotIdentity": "manifestId + dimensionIndex + exactDimensionName",
+    "candidateIdentity": "familyId + itemKey",
+    "candidateLabels": "EXACT_FROZEN_WAVE_1_CANDIDATE_LABELS",
+    "candidateEligibilityProvenance": "SEALED_WAVE_1_CANDIDATE_UNIVERSE_SOURCE_SNAPSHOTS_ONLY",
+    "eligibilityProvenanceIsRubricEvidence": false,
+    "cellStatus": "EVIDENCE_REQUIRED_NOT_MATERIALIZED",
+    "cellMaterializationMode": "DERIVED_AND_HASHED_BY_VERIFIER_NOT_DUPLICATED_AS_934_STATIC_ROWS",
+    "sameItemKeyAcrossFamiliesRemainsSeparateCandidateIdentity": true,
+    "sameNamedDimensionsAcrossEditorialRowsRemainSeparateSlotContracts": true
+  },
+  "familyMatrix": [
+    {
+      "familyId": "steam-mainstream",
+      "frozenCandidates": 5,
+      "explicitRubricSlots": 18,
+      "candidateSlotCells": 90,
+      "candidateUniverseSourceSnapshots": 1,
+      "cellsWithCandidateSpecificRubricEvidence": 0,
+      "cellsRequiringRubricEvidence": 90
+    },
+    {
+      "familyId": "korean-box-office",
+      "frozenCandidates": 10,
+      "explicitRubricSlots": 19,
+      "candidateSlotCells": 190,
+      "candidateUniverseSourceSnapshots": 1,
+      "cellsWithCandidateSpecificRubricEvidence": 0,
+      "cellsRequiringRubricEvidence": 190
+    },
+    {
+      "familyId": "netflix-titles",
+      "frozenCandidates": 20,
+      "explicitRubricSlots": 17,
+      "candidateSlotCells": 340,
+      "candidateUniverseSourceSnapshots": 2,
+      "cellsWithCandidateSpecificRubricEvidence": 0,
+      "cellsRequiringRubricEvidence": 340
+    },
+    {
+      "familyId": "smartphones",
+      "frozenCandidates": 8,
+      "explicitRubricSlots": 18,
+      "candidateSlotCells": 144,
+      "candidateUniverseSourceSnapshots": 7,
+      "cellsWithCandidateSpecificRubricEvidence": 0,
+      "cellsRequiringRubricEvidence": 144
+    },
+    {
+      "familyId": "kbo-clubs",
+      "frozenCandidates": 10,
+      "explicitRubricSlots": 17,
+      "candidateSlotCells": 170,
+      "candidateUniverseSourceSnapshots": 3,
+      "cellsWithCandidateSpecificRubricEvidence": 0,
+      "cellsRequiringRubricEvidence": 170
+    }
+  ],
+  "evidenceBoundary": {
+    "candidateEligibilitySnapshotCanSatisfyRubricEvidenceByItself": false,
+    "factValueCanBeReusedAsRubricEvidenceWithoutExactReviewedBinding": false,
+    "chartRankCanBeReusedAsSubjectiveRubricEvidence": false,
+    "crossDimensionProxyEvidenceAllowed": false,
+    "crossCandidateInferenceAllowed": false,
+    "missingEvidenceImputationAllowed": false,
+    "modelOnlyJudgmentAllowed": false,
+    "futureCellEvidenceRequirement": "CANDIDATE_SPECIFIC_REVIEWED_EVIDENCE_REFERENCE_PLUS_DIMENSION_SPECIFIC_OBSERVATION_AND_MATERIAL_COUNTEREVIDENCE_IF_PRESENT",
+    "futureOutcomeRequirement": "SEALED_CELL_EVIDENCE_PLUS_SHORT_DIMENSION_SPECIFIC_RATIONALE_BEFORE_ANY_ORDINAL_OUTCOME"
+  },
+  "reviewSummary": {
+    "rubricContractsRemainDefinitionOnly": true,
+    "candidateUniversesRemainFrozen": true,
+    "eligibilityProvenanceSeparatedFromRubricEvidence": true,
+    "allCandidateSlotCellsEnumeratedByDeterministicDerivation": true,
+    "allCandidateSlotCellsCurrentlyEvidencePending": true,
+    "candidateRubricOutcomesMaterialized": 0,
+    "numericDimensionValuesMaterialized": 0,
+    "weightsMaterialized": 0,
+    "compositeScoringExecuted": false,
+    "editorialOrderingMaterialized": false,
+    "scoringExecutionReadyRows": 0
+  },
+  "gateDisposition": "WAVE_1_EXPLICIT_RUBRIC_CANDIDATE_EVIDENCE_REQUIREMENT_MATRIX_DERIVED_FOR_934_CELLS_WITH_ZERO_OUTCOMES",
+  "nextGate": "EDITORIAL_RUBRIC_CANDIDATE_EVIDENCE_COLLECTION_WAVE_1",
+  "authorityBoundary": {
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "candidateRubricOutcomeAuthoringAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  }
+}
