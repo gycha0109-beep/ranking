@@ -34,6 +34,7 @@ const COMPLETION_SHA = '293906bd122dcc0ac5611a2a4bcc37195a2e4d8e2b5c15bf288e281e
 const RECOVERY_SHA = '6ea390e55d827e3613f4cb35a4cd56468c7363c9dacecaaedbbd57fd23a47739'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
 const EXPECTED = 'UNSEALED_EDITORIAL_NON_RUBRIC_NORMALIZATION_DIRECTION_CONTRACT_REVIEW_WAVE_1'
+const EDITORIAL_RANKING_BASIS = 'Declared multi-dimension editorial composite; weights are authored and reviewed only after source materialization.'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial non-rubric normalization/direction contract review wave 1 verification failed: ${message}`)
@@ -139,7 +140,6 @@ const priorSlots = priorEvidence.sourceBindings.map((binding) => `${binding.edit
 const completionObservationSlots = completion.sourceObservationSets.map((set) => set.slotId)
 const recoverySlots = [recovery.recoveredSlot?.slotId]
 const coveredSlots = [...priorSlots, ...completionObservationSlots, ...recoverySlots]
-ok(new Set(coveredSlots).size === 7, `covered source slot union must be seven unique slots, got ${new Set(coveredSlots).size}`)
 const expectedCoveredSlots = [
   'cc200-smartphones-05:4:무게',
   'cc200-smartphones-06:0:폭',
@@ -149,6 +149,7 @@ const expectedCoveredSlots = [
   'cc200-kbo-clubs-05:1:장타율',
   'cc200-korean-box-office-06:3:러닝타임',
 ]
+ok(coveredSlots.length === 7 && new Set(coveredSlots).size === 7, 'covered source slot union must contain seven unique slots')
 ok(JSON.stringify(sorted(coveredSlots)) === JSON.stringify(sorted(expectedCoveredSlots)), 'covered source slots changed')
 const blockedSlots = recovery.remainingBlockers.map((slot) => slot.slotId)
 ok(blockedSlots.length === 8 && new Set(blockedSlots).size === 8, 'remaining blocker set must contain eight unique slots')
@@ -201,9 +202,7 @@ for (const contract of evidence.coveredSlotContracts) {
   ok(row?.compositeDimensions?.[slot.dimensionIndex]?.name === slot.dimensionName, `${contract.slotId} manifest slot identity mismatch`)
   ok(row.compositeDimensions[slot.dimensionIndex].weightStatus === 'UNASSIGNED_PRE_MATERIALIZATION', `${contract.slotId} weight must remain unassigned`)
   ok(contract.directionContract?.materialized === false, `${contract.slotId} direction must not be materialized`)
-  for (const forbidden of ['entries', 'values', 'normalizedEntries', 'normalizedValues', 'scores']) {
-    ok(!(forbidden in contract), `${contract.slotId} contract must not contain ${forbidden}`)
-  }
+  for (const forbidden of ['entries', 'values', 'normalizedEntries', 'normalizedValues', 'scores']) ok(!(forbidden in contract), `${contract.slotId} contract must not contain ${forbidden}`)
 }
 
 const expectedIntents = {
@@ -212,7 +211,11 @@ const expectedIntents = {
   'cc200-kbo-clubs-05': '장타와 득점 장면을 기대하는 팬에게 재미가 큰 팀은?',
   'cc200-korean-box-office-06': '취향 차이가 있어도 함께 보기 무난한 작품은?',
 }
-for (const [manifestId, rankingBasis] of Object.entries(expectedIntents)) ok(rowById.get(manifestId)?.rankingBasis === rankingBasis, `${manifestId} editorial intent changed`)
+for (const [manifestId, editorialQuestion] of Object.entries(expectedIntents)) {
+  const row = rowById.get(manifestId)
+  ok(row?.editorialQuestion === editorialQuestion, `${manifestId} editorial intent changed`)
+  ok(row?.rankingBasis === EDITORIAL_RANKING_BASIS, `${manifestId} canonical editorial ranking basis changed`)
+}
 
 const expectedDirectionKinds = {
   'cc200-smartphones-05:4:무게': 'LOWER_IS_BETTER',
