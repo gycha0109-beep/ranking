@@ -31,7 +31,7 @@ const REGISTRY_SHA = 'c0e71b22456b805bfa351eb53f92f121cb6f9d23df1518c5f55ff2b33a
 const RUBRIC_DEFINITION_SHA = 'f25542a31dbf157f2195b9a5d7ba7f08ce6a19085cf9f584cec7c11813f3dd04'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
 const NORMALIZATION_DIRECTION_SHA = '6ce05d88bad2a5468be5ff548e298f20507803addbad10410bf2b70378793fb4'
-const EXPECTED = 'UNSEALED_EDITORIAL_RUBRIC_CANDIDATE_EVIDENCE_MATRIX_WAVE_1'
+const EXPECTED = '82630125086df98a032b054757f9c65dfdc5bca38ea5eee8adcb78b1219e7c43'
 
 const fail = (message) => {
   console.error(`CONTENT-CORPUS-200 editorial rubric candidate evidence matrix wave 1 verification failed: ${message}`)
