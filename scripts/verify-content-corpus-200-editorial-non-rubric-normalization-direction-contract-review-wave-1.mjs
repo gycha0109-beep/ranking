@@ -33,7 +33,7 @@ const PRIOR_EVIDENCE_SHA = '1d87eeaf10751a36f3dd74a61bd461e50e8674d878e0065e8755
 const COMPLETION_SHA = '293906bd122dcc0ac5611a2a4bcc37195a2e4d8e2b5c15bf288e281e43ed025c'
 const RECOVERY_SHA = '6ea390e55d827e3613f4cb35a4cd56468c7363c9dacecaaedbbd57fd23a47739'
 const WAVE1_SHA = '7e0c2b11cf9f6f5b4468d3ab112a2fa31d5ace2a55ef4bca0713771647562f6c'
-const EXPECTED = 'UNSEALED_EDITORIAL_NON_RUBRIC_NORMALIZATION_DIRECTION_CONTRACT_REVIEW_WAVE_1'
+const EXPECTED = '6ce05d88bad2a5468be5ff548e298f20507803addbad10410bf2b70378793fb4'
 const EDITORIAL_RANKING_BASIS = 'Declared multi-dimension editorial composite; weights are authored and reviewed only after source materialization.'
 
 const fail = (message) => {
