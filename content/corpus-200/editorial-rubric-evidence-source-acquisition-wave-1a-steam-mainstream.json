@@ -1,0 +1,78 @@
+{
+  "version": "content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "sourceAcquisitionPlanVersion": "content-corpus-200-editorial-rubric-evidence-source-acquisition-plan-wave-1-v1",
+  "sourceAcquisitionPlanSha256": "80eb6a1602ce7fae0155aeb2f872f1ac281039d8ed3a6a7cdcdcc0e9fc96a28b",
+  "sourceAcquisitionAuthorizationVersion": "content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1a-steam-mainstream-v1",
+  "sourceAcquisitionAuthorizationSha256": "7abfd8007bf24a50ca3b353c1f3f36f264290d6a0a1a749f957bef8bd50bbcc1",
+  "status": "SOURCE_ACQUISITION_EXECUTED_PARTIAL_DIRECT_BINDINGS_NO_RUBRIC_OUTCOMES",
+  "acquiredAt": "2026-08-28T15:34:00+09:00",
+  "scope": {
+    "wave": "1A",
+    "familyId": "steam-mainstream",
+    "editorialRows": 5,
+    "frozenCandidates": 5,
+    "explicitRubricSlots": 18,
+    "candidateSlotCells": 90,
+    "reviewedSourceRecords": 16,
+    "directlyBoundCells": 56,
+    "unresolvedCells": 34,
+    "candidateRubricOutcomesAuthored": 0,
+    "numericDimensionValuesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "sourcePortfolioSummary": [
+    {"itemKey":"counter-strike-2","exactFrozenLabel":"Counter-Strike 2","reviewedSourceRecords":3,"directlyBoundCells":10,"unresolvedCells":8},
+    {"itemKey":"dota-2","exactFrozenLabel":"Dota 2","reviewedSourceRecords":3,"directlyBoundCells":13,"unresolvedCells":5},
+    {"itemKey":"pubg-battlegrounds","exactFrozenLabel":"PUBG: BATTLEGROUNDS","reviewedSourceRecords":4,"directlyBoundCells":13,"unresolvedCells":5},
+    {"itemKey":"palworld","exactFrozenLabel":"Palworld","reviewedSourceRecords":2,"directlyBoundCells":12,"unresolvedCells":6},
+    {"itemKey":"fivem","exactFrozenLabel":"FiveM","reviewedSourceRecords":4,"directlyBoundCells":8,"unresolvedCells":10}
+  ],
+  "registryDigests": {
+    "sourceRecordRegistrySha256": "131f5206778c104d0e9eebba84d8e98b50749ac4e4726954d9a2674f6a03c07d",
+    "directCellBindingRegistrySha256": "2bba608cf240f67b21a1ed02f159b51ce1c2a515b2d49e85eaba3d732aee6fa8",
+    "unresolvedCellRegistrySha256": "ffb083e5a2ddcdb52c28ec9a5bb4ab2d49caadfe539e83843836283ab5ae30d2"
+  },
+  "acquisitionReview": {
+    "all90ExactCellsDispositioned": true,
+    "all56BoundCellsReferenceReviewedCandidateSpecificSources": true,
+    "all34UnresolvedCellsRemainWithoutProxyOrImputation": true,
+    "searchResultSnippetsUsedAsEvidence": false,
+    "modelOnlyJudgmentsUsedAsEvidence": false,
+    "crossCandidateInferenceUsed": false,
+    "crossDimensionProxyUsed": false,
+    "missingEvidenceImputed": false,
+    "rubricOrdinalOutcomesAuthored": false,
+    "numericEditorialDimensionValuesAuthored": false,
+    "weightsOrCompositeScoringExecuted": false,
+    "publicPageConsumptionAdded": false
+  },
+  "gateDisposition": "WAVE_1A_STEAM_MAINSTREAM_SOURCE_ACQUISITION_MATERIALIZED_56_OF_90_EXACT_CELLS_WITH_34_UNRESOLVED_AND_ZERO_RUBRIC_OUTCOMES",
+  "nextGate": "EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_AUTHORIZATION_WAVE_1B_SMARTPHONES",
+  "authorityBoundary": {
+    "additionalExternalSourceAcquisitionAuthorized": false,
+    "candidateRubricOutcomeAuthoringAuthorized": false,
+    "numericEditorialDimensionValueAuthoringAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "artifactFiles": {
+    "sourceRecords": "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-source-records.json",
+    "cellBindings": [
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-cell-bindings-01-cs2-dota.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-cell-bindings-02-pubg-palworld.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-cell-bindings-03-fivem.json"
+    ],
+    "unresolvedCells": "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream-unresolved-cells.json"
+  }
+}
