@@ -85,6 +85,7 @@
     "verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-plan-wave-1": "node scripts/verify-content-corpus-200-editorial-rubric-evidence-source-acquisition-plan-wave-1.mjs",
     "verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1a-steam-mainstream": "node scripts/verify-content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1a-steam-mainstream.mjs",
     "verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream": "node scripts/verify-content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream.mjs",
+    "verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1b-smartphones": "node scripts/verify-content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1b-smartphones.mjs",
     "verify:ui-1": "node scripts/verify-ui-1-contracts.mjs",
     "verify:ui-2c": "node scripts/verify-ui-2c-contracts.mjs",
     "verify:ui-2d": "node scripts/verify-ui-2d-contracts.mjs",
