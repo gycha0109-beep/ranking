@@ -100,6 +100,7 @@ jobs:
       - run: npm run verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1a-steam-mainstream
       - run: npm run verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1b-smartphones
       - run: npm run verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1b-smartphones
+      - run: npm run verify:content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1c-kbo-clubs
       - run: npm run verify:ui-1
       - run: npm run verify:ui-2c
       - run: npm run verify:ui-2d
