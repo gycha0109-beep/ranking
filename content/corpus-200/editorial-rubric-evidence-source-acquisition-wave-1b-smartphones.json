@@ -1,0 +1,87 @@
+{
+  "version": "content-corpus-200-editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-v1",
+  "manifestVersion": "content-corpus-200-manifest-v1",
+  "manifestSha256": "f8441bd0d50388c2c536bc03bd56882fb13e11bf5922acc1408689d834136493",
+  "sourceAcquisitionPlanVersion": "content-corpus-200-editorial-rubric-evidence-source-acquisition-plan-wave-1-v1",
+  "sourceAcquisitionPlanSha256": "80eb6a1602ce7fae0155aeb2f872f1ac281039d8ed3a6a7cdcdcc0e9fc96a28b",
+  "sourceAcquisitionAuthorizationVersion": "content-corpus-200-editorial-rubric-evidence-source-acquisition-authorization-wave-1b-smartphones-v1",
+  "sourceAcquisitionAuthorizationSha256": "a34b25be38637ff8ddcd4be59eca61f5816bdc8d5432056a4e9813c1cac9d6e6",
+  "status": "SOURCE_ACQUISITION_EXECUTED_PARTIAL_DIRECT_BINDINGS_NO_RUBRIC_OUTCOMES",
+  "acquiredAt": "2026-08-28T16:39:00+09:00",
+  "scope": {
+    "wave": "1B",
+    "familyId": "smartphones",
+    "editorialRows": 5,
+    "frozenCandidates": 8,
+    "explicitRubricSlots": 18,
+    "candidateSlotCells": 144,
+    "reviewedSourceRecords": 19,
+    "directlyBoundCells": 120,
+    "unresolvedCells": 24,
+    "candidateRubricOutcomesAuthored": 0,
+    "numericDimensionValuesAuthored": 0,
+    "weightsAuthored": 0,
+    "compositeScoresAuthored": 0,
+    "editorialOrderingsAuthored": 0
+  },
+  "sourcePortfolioSummary": [
+    {"itemKey":"galaxy-s26","exactFrozenLabel":"Samsung Galaxy S26","reviewedSourceRecords":2,"directlyBoundCells":15,"unresolvedCells":3},
+    {"itemKey":"galaxy-s26-plus","exactFrozenLabel":"Samsung Galaxy S26+","reviewedSourceRecords":2,"directlyBoundCells":14,"unresolvedCells":4},
+    {"itemKey":"galaxy-s26-ultra","exactFrozenLabel":"Samsung Galaxy S26 Ultra","reviewedSourceRecords":2,"directlyBoundCells":14,"unresolvedCells":4},
+    {"itemKey":"iphone-17-pro","exactFrozenLabel":"Apple iPhone 17 Pro","reviewedSourceRecords":2,"directlyBoundCells":15,"unresolvedCells":3},
+    {"itemKey":"iphone-17-pro-max","exactFrozenLabel":"Apple iPhone 17 Pro Max","reviewedSourceRecords":2,"directlyBoundCells":15,"unresolvedCells":3},
+    {"itemKey":"xiaomi-15","exactFrozenLabel":"Xiaomi 15","reviewedSourceRecords":3,"directlyBoundCells":16,"unresolvedCells":2},
+    {"itemKey":"oneplus-15-sand-storm","exactFrozenLabel":"OnePlus 15 (Sand Storm)","reviewedSourceRecords":3,"directlyBoundCells":15,"unresolvedCells":3},
+    {"itemKey":"vivo-x300-pro","exactFrozenLabel":"vivo X300 Pro","reviewedSourceRecords":3,"directlyBoundCells":16,"unresolvedCells":2}
+  ],
+  "registryDigests": {
+    "sourceRecordRegistrySha256": "826c66c838de588a366bd750ef22784f0ad3e56945e0bbcb804ada46d55178f6",
+    "directCellBindingRegistrySha256": "e6cae8dc0aed706171edf80a08fe911c98d223f5901db82c791fd35145a58615",
+    "unresolvedCellRegistrySha256": "f8f0152b5bc47f1526ad5ef30539047ea5b30ecda80b075400e937e31ffa45a4"
+  },
+  "acquisitionReview": {
+    "all144ExactCellsDispositioned": true,
+    "all120BoundCellsReferenceReviewedCandidateSpecificSources": true,
+    "all24UnresolvedCellsRemainWithoutProxyOrImputation": true,
+    "allOnePlusIndependentReviewBindingsUseExactSandStormTestUnitsWhereVariantMaterial": true,
+    "searchResultSnippetsUsedAsEvidence": false,
+    "modelOnlyJudgmentsUsedAsEvidence": false,
+    "crossCandidateInferenceUsed": false,
+    "crossDimensionProxyUsed": false,
+    "missingEvidenceImputed": false,
+    "rubricOrdinalOutcomesAuthored": false,
+    "numericEditorialDimensionValuesAuthored": false,
+    "weightsOrCompositeScoringExecuted": false,
+    "publicPageConsumptionAdded": false
+  },
+  "gateDisposition": "WAVE_1B_SMARTPHONES_SOURCE_ACQUISITION_MATERIALIZED_120_OF_144_EXACT_CELLS_WITH_24_UNRESOLVED_AND_ZERO_RUBRIC_OUTCOMES",
+  "nextGate": "EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_AUTHORIZATION_WAVE_1C_KBO_CLUBS",
+  "authorityBoundary": {
+    "additionalExternalSourceAcquisitionAuthorized": false,
+    "candidateRubricOutcomeAuthoringAuthorized": false,
+    "numericEditorialDimensionValueAuthoringAuthorized": false,
+    "editorialWeightAssignmentAuthorized": false,
+    "editorialScoringExecutionAuthorized": false,
+    "editorialOrderingMaterializationAuthorized": false,
+    "productionDatabaseWritesAuthorized": false,
+    "publicPublicationAuthorized": false,
+    "recommendationEvaluationAuthorized": false,
+    "taxonomyMutationAuthorized": false,
+    "communityVoteFabricationAuthorized": false,
+    "rf1ActivationAuthorized": false
+  },
+  "artifactFiles": {
+    "sourceRecords": "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-source-records.json",
+    "cellBindings": [
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-01-galaxy-s26.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-02-galaxy-s26-plus.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-03-galaxy-s26-ultra.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-04-iphone-17-pro.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-05-iphone-17-pro-max.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-06-xiaomi-15.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-07-oneplus-15-sand-storm.json",
+      "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-cell-bindings-08-vivo-x300-pro.json"
+    ],
+    "unresolvedCells": "content/corpus-200/editorial-rubric-evidence-source-acquisition-wave-1b-smartphones-unresolved-cells.json"
+  }
+}
