@@ -27,7 +27,7 @@ const AUTH='a34b25be38637ff8ddcd4be59eca61f5816bdc8d5432056a4e9813c1cac9d6e6'
 const SR='826c66c838de588a366bd750ef22784f0ad3e56945e0bbcb804ada46d55178f6'
 const BR='e6cae8dc0aed706171edf80a08fe911c98d223f5901db82c791fd35145a58615'
 const UR='f8f0152b5bc47f1526ad5ef30539047ea5b30ecda80b075400e937e31ffa45a4'
-const EXPECTED='UNSEALED_EDITORIAL_RUBRIC_EVIDENCE_SOURCE_ACQUISITION_WAVE_1B_SMARTPHONES'
+const EXPECTED='3813c7d8e3d69c8d9ce495c25cfc8919868162e4cbe299a4249dc223092ffddc'
 const fail=m=>{console.error(`CONTENT-CORPUS-200 Wave 1B smartphone source acquisition verification failed: ${m}`);process.exit(1)}
 const ok=(v,m)=>{if(!v)fail(m)};const read=x=>JSON.parse(fs.readFileSync(x,'utf8'));const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex')
 for(const x of [f.e,f.p,f.a,f.s,...f.b,f.u,f.page,f.pkg,f.ci])ok(fs.existsSync(x),`${path.relative(root,x)} must exist`)
